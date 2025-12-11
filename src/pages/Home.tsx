@@ -213,17 +213,18 @@ const Home = () => {
               <path d="M 40 280 Q 80 265 105 290" stroke="#cc4444" strokeWidth="0.5" fill="none" />
             </svg>
             
-            {/* Iris */}
+            {/* Iris - moves with cursor */}
             <div style={{
               position: 'absolute',
               top: '50%',
               left: '50%',
-              transform: 'translate(-50%, -50%)',
               width: '180px',
               height: '180px',
               borderRadius: '50%',
               background: 'radial-gradient(circle, #2dd4bf 0%, #0891b2 30%, #0e7490 50%, #164e63 80%, #0c4a6e 100%)',
               boxShadow: 'inset 0 0 50px rgba(0,0,0,0.6), 0 0 30px rgba(8, 145, 178, 0.3)',
+              transform: `translate(calc(-50% + ${pupilPosition.x}px), calc(-50% + ${pupilPosition.y}px))`,
+              transition: 'transform 0.08s ease-out',
             }}>
               {/* Iris Texture */}
               {[...Array(36)].map((_, i) => (
@@ -250,7 +251,7 @@ const Home = () => {
                 border: '4px solid rgba(12,74,110,0.8)',
               }} />
               
-              {/* Pupil */}
+              {/* Pupil - centered within iris */}
               <div 
                 style={{ 
                   position: 'absolute',
@@ -260,8 +261,7 @@ const Home = () => {
                   height: '65px',
                   borderRadius: '50%',
                   backgroundColor: '#000',
-                  transform: `translate(calc(-50% + ${pupilPosition.x}px), calc(-50% + ${pupilPosition.y}px))`,
-                  transition: 'transform 0.08s ease-out',
+                  transform: 'translate(-50%, -50%)',
                   boxShadow: '0 0 30px rgba(0,0,0,0.9), inset 0 0 20px rgba(8, 145, 178, 0.2)',
                 }}
               >
