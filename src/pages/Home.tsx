@@ -321,6 +321,86 @@ const Home = () => {
             </div>
           </div>
 
+          {/* Top Eyelid */}
+          <div
+            style={{
+              position: "absolute",
+              top: "-10px",
+              left: "-10px",
+              right: "-10px",
+              height: "220px",
+              background: "linear-gradient(180deg, #f5e6d3 0%, #e8d5c4 60%, #d4b896 100%)",
+              borderRadius: "50% 50% 0 0 / 100% 100% 0 0",
+              transformOrigin: "bottom center",
+              animation: "blink 4s ease-in-out infinite",
+              boxShadow: "inset 0 -10px 30px rgba(0,0,0,0.1)",
+              zIndex: 10,
+            }}
+          >
+            {/* Eyelid crease */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "30px",
+                left: "20%",
+                right: "20%",
+                height: "2px",
+                background: "rgba(0,0,0,0.08)",
+                borderRadius: "50%",
+              }}
+            />
+            {/* Eyelashes */}
+            <div style={{ position: "absolute", bottom: "-5px", left: "10%", right: "10%", display: "flex", justifyContent: "space-around" }}>
+              {[...Array(15)].map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: "2px",
+                    height: `${12 + Math.sin(i * 0.5) * 4}px`,
+                    background: "#2d1f14",
+                    borderRadius: "2px",
+                    transform: `rotate(${(i - 7) * 3}deg)`,
+                    transformOrigin: "top",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom Eyelid */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "-10px",
+              left: "-10px",
+              right: "-10px",
+              height: "80px",
+              background: "linear-gradient(0deg, #f5e6d3 0%, #e8d5c4 60%, #d4b896 100%)",
+              borderRadius: "0 0 50% 50% / 0 0 100% 100%",
+              transformOrigin: "top center",
+              animation: "blinkBottom 4s ease-in-out infinite",
+              boxShadow: "inset 0 10px 20px rgba(0,0,0,0.05)",
+              zIndex: 10,
+            }}
+          >
+            {/* Bottom Eyelashes */}
+            <div style={{ position: "absolute", top: "-3px", left: "15%", right: "15%", display: "flex", justifyContent: "space-around" }}>
+              {[...Array(10)].map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: "1.5px",
+                    height: `${6 + Math.sin(i * 0.6) * 2}px`,
+                    background: "#2d1f14",
+                    borderRadius: "2px",
+                    transform: `rotate(${(i - 5) * 2}deg)`,
+                    transformOrigin: "bottom",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
           {/* Scanning Line Animation */}
           <div
             style={{
@@ -459,6 +539,14 @@ const Home = () => {
         @keyframes gridMove {
           0% { transform: translate(0, 0); }
           100% { transform: translate(80px, 80px); }
+        }
+        @keyframes blink {
+          0%, 92%, 100% { transform: scaleY(0); }
+          95%, 97% { transform: scaleY(1); }
+        }
+        @keyframes blinkBottom {
+          0%, 92%, 100% { transform: scaleY(0); }
+          95%, 97% { transform: scaleY(1); }
         }
       `}</style>
     </div>
