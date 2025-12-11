@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Upload, X, Microscope, Eye } from "lucide-react";
+import { Upload, X, Microscope, Eye, UserPlus, User } from "lucide-react";
 
 interface Patient {
   id: string;
@@ -9,7 +9,7 @@ interface Patient {
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (file: File, type: 'oct' | 'fundus', patientId?: string) => void;
+  onUpload: (file: File, type: 'oct' | 'fundus', patientId?: string, newPatientName?: string) => void;
 }
 
 // Mock patients - in real app this would come from props or context
@@ -23,7 +23,9 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [scanType, setScanType] = useState<'oct' | 'fundus'>('oct');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [patientOption, setPatientOption] = useState<'none' | 'existing' | 'new'>('none');
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
+  const [newPatientName, setNewPatientName] = useState<string>('');
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -57,18 +59,24 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
 
   const handleSubmit = () => {
     if (selectedFile) {
-      onUpload(selectedFile, scanType, selectedPatientId || undefined);
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      setSelectedPatientId('');
+      const patientId = patientOption === 'existing' ? selectedPatientId : undefined;
+      const patientName = patientOption === 'new' ? newPatientName : undefined;
+      onUpload(selectedFile, scanType, patientId, patientName);
+      resetForm();
       onClose();
     }
   };
 
-  const handleClose = () => {
+  const resetForm = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
+    setPatientOption('none');
     setSelectedPatientId('');
+    setNewPatientName('');
+  };
+
+  const handleClose = () => {
+    resetForm();
     onClose();
   };
 
@@ -101,6 +109,8 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
         padding: '24px',
         width: '100%',
         maxWidth: '500px',
+        maxHeight: '90vh',
+        overflowY: 'auto',
         boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
       }}>
         <button
@@ -126,29 +136,119 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
           Upload Medical Scan
         </h2>
 
-        {/* Patient Selection */}
+        {/* Patient Assignment Options */}
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '8px', color: '#374151' }}>
-            Assign to Patient (Optional)
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '12px', color: '#374151' }}>
+            Assign to Patient
           </label>
-          <select
-            value={selectedPatientId}
-            onChange={(e) => setSelectedPatientId(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '1px solid #e5e7eb',
-              backgroundColor: '#f9fafb',
-              fontSize: '14px',
-              cursor: 'pointer',
-            }}
-          >
-            <option value="">-- No patient (standalone scan) --</option>
-            {mockPatients.map(patient => (
-              <option key={patient.id} value={patient.id}>{patient.name}</option>
-            ))}
-          </select>
+          
+          {/* Option Buttons */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+            <button
+              onClick={() => setPatientOption('none')}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: patientOption === 'none' ? '2px solid #0891b2' : '1px solid #e5e7eb',
+                backgroundColor: patientOption === 'none' ? '#ecfeff' : '#f9fafb',
+                color: patientOption === 'none' ? '#0891b2' : '#6b7280',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '13px',
+              }}
+            >
+              <X size={16} />
+              None
+            </button>
+            <button
+              onClick={() => setPatientOption('existing')}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: patientOption === 'existing' ? '2px solid #0891b2' : '1px solid #e5e7eb',
+                backgroundColor: patientOption === 'existing' ? '#ecfeff' : '#f9fafb',
+                color: patientOption === 'existing' ? '#0891b2' : '#6b7280',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '13px',
+              }}
+            >
+              <User size={16} />
+              Existing
+            </button>
+            <button
+              onClick={() => setPatientOption('new')}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: patientOption === 'new' ? '2px solid #0891b2' : '1px solid #e5e7eb',
+                backgroundColor: patientOption === 'new' ? '#ecfeff' : '#f9fafb',
+                color: patientOption === 'new' ? '#0891b2' : '#6b7280',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '13px',
+              }}
+            >
+              <UserPlus size={16} />
+              New Patient
+            </button>
+          </div>
+
+          {/* Existing Patient Dropdown */}
+          {patientOption === 'existing' && (
+            <select
+              value={selectedPatientId}
+              onChange={(e) => setSelectedPatientId(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                backgroundColor: '#f9fafb',
+                fontSize: '14px',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="">-- Select a patient --</option>
+              {mockPatients.map(patient => (
+                <option key={patient.id} value={patient.id}>{patient.name}</option>
+              ))}
+            </select>
+          )}
+
+          {/* New Patient Input */}
+          {patientOption === 'new' && (
+            <input
+              type="text"
+              value={newPatientName}
+              onChange={(e) => setNewPatientName(e.target.value)}
+              placeholder="Enter patient name"
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                backgroundColor: '#f9fafb',
+                fontSize: '14px',
+                boxSizing: 'border-box',
+              }}
+            />
+          )}
         </div>
 
         {/* Scan Type Selection */}
@@ -264,13 +364,13 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!selectedFile}
+            disabled={!selectedFile || (patientOption === 'existing' && !selectedPatientId) || (patientOption === 'new' && !newPatientName.trim())}
             style={{
               flex: 1,
               padding: '12px',
               borderRadius: '8px',
               border: 'none',
-              backgroundColor: selectedFile ? '#0891b2' : '#9ca3af',
+              backgroundColor: selectedFile && (patientOption === 'none' || (patientOption === 'existing' && selectedPatientId) || (patientOption === 'new' && newPatientName.trim())) ? '#0891b2' : '#9ca3af',
               color: 'white',
               cursor: selectedFile ? 'pointer' : 'not-allowed',
               fontWeight: 500,
