@@ -3,6 +3,8 @@ import { TextualAnalysis } from "./analysis/TextualAnalysis";
 import { VisualAnalysis } from "./analysis/VisualAnalysis";
 import { ComparisonView } from "./analysis/ComparisonView";
 import { VisualizationView } from "./analysis/VisualizationView";
+import { DoctorReport } from "./analysis/DoctorReport";
+import { PatientReport } from "./analysis/PatientReport";
 import { Upload } from "lucide-react";
 
 interface AnalysisPanelProps {
@@ -39,6 +41,8 @@ export function AnalysisPanel({ scan, viewMode, allScans, onUploadClick }: Analy
       {viewMode === 'visual' && <VisualAnalysis scan={scan} />}
       {viewMode === 'comparison' && <ComparisonView currentScan={scan} allScans={allScans} />}
       {viewMode === 'visualization' && <VisualizationView scan={scan} />}
+      {viewMode === 'doctor-report' && <DoctorReport scan={scan} />}
+      {viewMode === 'patient-report' && <PatientReport scan={scan} />}
     </div>
   );
 }

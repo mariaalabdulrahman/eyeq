@@ -1,4 +1,4 @@
-import { FileText, BarChart3, GitCompare, Layers } from "lucide-react";
+import { FileText, BarChart3, GitCompare, Layers, Stethoscope, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ViewMode } from "@/types/scan";
 
@@ -12,6 +12,8 @@ const modes: { mode: ViewMode; icon: React.ElementType; label: string }[] = [
   { mode: 'visual', icon: BarChart3, label: 'Visual' },
   { mode: 'comparison', icon: GitCompare, label: 'Compare' },
   { mode: 'visualization', icon: Layers, label: 'Visualize' },
+  { mode: 'doctor-report', icon: Stethoscope, label: 'Doctor Report' },
+  { mode: 'patient-report', icon: User, label: 'Patient Report' },
 ];
 
 export function ViewModeButtons({ activeMode, onModeChange }: ViewModeButtonsProps) {
