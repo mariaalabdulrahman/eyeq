@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "./jsx-out",
+    "jsx": "preserve",
+    "allowImportingTsExtensions": false
+  },
+  "include": ["src"]
+}
