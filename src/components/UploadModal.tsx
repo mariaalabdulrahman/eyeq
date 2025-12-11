@@ -1,16 +1,29 @@
 import { useState, useCallback } from "react";
+import { Upload, X, Microscope, Eye } from "lucide-react";
+
+interface Patient {
+  id: string;
+  name: string;
+}
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (file: File, type: 'oct' | 'fundus') => void;
+  onUpload: (file: File, type: 'oct' | 'fundus', patientId?: string) => void;
 }
+
+// Mock patients - in real app this would come from props or context
+const mockPatients: Patient[] = [
+  { id: '1', name: 'John Smith' },
+  { id: '2', name: 'Mary Johnson' },
+];
 
 export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [scanType, setScanType] = useState<'oct' | 'fundus'>('oct');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -44,9 +57,10 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
 
   const handleSubmit = () => {
     if (selectedFile) {
-      onUpload(selectedFile, scanType);
+      onUpload(selectedFile, scanType, selectedPatientId || undefined);
       setSelectedFile(null);
       setPreviewUrl(null);
+      setSelectedPatientId('');
       onClose();
     }
   };
@@ -54,6 +68,7 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
   const handleClose = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
+    setSelectedPatientId('');
     onClose();
   };
 
@@ -99,15 +114,42 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
             border: 'none',
             background: 'transparent',
             cursor: 'pointer',
-            fontSize: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          ✕
+          <X size={20} />
         </button>
 
         <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '24px', color: '#111' }}>
           Upload Medical Scan
         </h2>
+
+        {/* Patient Selection */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '8px', color: '#374151' }}>
+            Assign to Patient (Optional)
+          </label>
+          <select
+            value={selectedPatientId}
+            onChange={(e) => setSelectedPatientId(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb',
+              backgroundColor: '#f9fafb',
+              fontSize: '14px',
+              cursor: 'pointer',
+            }}
+          >
+            <option value="">-- No patient (standalone scan) --</option>
+            {mockPatients.map(patient => (
+              <option key={patient.id} value={patient.id}>{patient.name}</option>
+            ))}
+          </select>
+        </div>
 
         {/* Scan Type Selection */}
         <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
@@ -128,7 +170,8 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
               fontWeight: 500,
             }}
           >
-            🔬 OCT Scan
+            <Microscope size={18} />
+            OCT Scan
           </button>
           <button
             onClick={() => setScanType('fundus')}
@@ -147,7 +190,8 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
               fontWeight: 500,
             }}
           >
-            👁️ Fundus Image
+            <Eye size={18} />
+            Fundus Image
           </button>
         </div>
 
@@ -177,7 +221,7 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
             </div>
           ) : (
             <>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📤</div>
+              <Upload size={48} style={{ margin: '0 auto 16px', color: '#9ca3af' }} />
               <p style={{ fontWeight: 500, marginBottom: '8px', color: '#111' }}>
                 Drop your scan here or click to browse
               </p>
