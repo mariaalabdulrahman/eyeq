@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, ScanLine, FolderOpen, GitCompare, BarChart3, Stethoscope, Eye, Brain, Cpu, Activity, Zap, Database, Shield, Scan, Target, Layers } from "lucide-react";
+import { Upload, ScanLine, FolderOpen, GitCompare, BarChart3, Stethoscope, Eye } from "lucide-react";
+
+import aiBrainImg from "@/assets/ai-brain.png";
+import eyeScanImg from "@/assets/eye-scan.png";
+import dnaDataImg from "@/assets/dna-data.png";
+import mlNetworkImg from "@/assets/ml-network.png";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -40,17 +45,11 @@ const Home = () => {
     { icon: Stethoscope, label: "Doctor Tools", angle: 140, action: () => navigate('/dashboard') },
   ];
 
-  const floatingIcons = [
-    { Icon: Brain, size: 60, x: 5, y: 15, duration: 8, delay: 0 },
-    { Icon: Cpu, size: 50, x: 90, y: 20, duration: 10, delay: 1 },
-    { Icon: Activity, size: 55, x: 8, y: 70, duration: 9, delay: 2 },
-    { Icon: Zap, size: 45, x: 88, y: 75, duration: 7, delay: 0.5 },
-    { Icon: Database, size: 48, x: 15, y: 45, duration: 11, delay: 1.5 },
-    { Icon: Shield, size: 52, x: 85, y: 50, duration: 8.5, delay: 2.5 },
-    { Icon: Scan, size: 58, x: 3, y: 88, duration: 9.5, delay: 0.8 },
-    { Icon: Target, size: 46, x: 92, y: 85, duration: 10.5, delay: 1.2 },
-    { Icon: Layers, size: 54, x: 50, y: 5, duration: 8, delay: 3 },
-    { Icon: Eye, size: 50, x: 50, y: 92, duration: 9, delay: 2 },
+  const floatingGraphics = [
+    { src: aiBrainImg, size: 200, x: 3, y: 10, duration: 12, delay: 0 },
+    { src: eyeScanImg, size: 180, x: 85, y: 8, duration: 14, delay: 1 },
+    { src: dnaDataImg, size: 160, x: 5, y: 65, duration: 11, delay: 2 },
+    { src: mlNetworkImg, size: 190, x: 82, y: 70, duration: 13, delay: 0.5 },
   ];
 
   return (
@@ -67,39 +66,43 @@ const Home = () => {
         position: 'absolute',
         inset: 0,
         backgroundImage: `
-          linear-gradient(rgba(8, 145, 178, 0.05) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(8, 145, 178, 0.05) 1px, transparent 1px)
+          linear-gradient(rgba(8, 145, 178, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(8, 145, 178, 0.04) 1px, transparent 1px)
         `,
-        backgroundSize: '60px 60px',
-        animation: 'gridMove 20s linear infinite',
+        backgroundSize: '80px 80px',
+        animation: 'gridMove 25s linear infinite',
       }} />
 
-      {/* Large Floating Tech Icons */}
-      {floatingIcons.map((item, i) => {
-        const IconComponent = item.Icon;
-        return (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              left: `${item.x}%`,
-              top: `${item.y}%`,
-              animation: `floatIcon ${item.duration}s ease-in-out infinite`,
-              animationDelay: `${item.delay}s`,
-              opacity: 0.15,
-              zIndex: 1,
-            }}
-          >
-            <IconComponent 
-              size={item.size} 
-              style={{ 
-                color: '#0891b2',
-                filter: 'drop-shadow(0 0 10px rgba(8, 145, 178, 0.3))',
-              }} 
-            />
-          </div>
-        );
-      })}
+      {/* Large Floating Graphics */}
+      {floatingGraphics.map((item, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            left: `${item.x}%`,
+            top: `${item.y}%`,
+            width: `${item.size}px`,
+            height: `${item.size}px`,
+            animation: `floatGraphic ${item.duration}s ease-in-out infinite`,
+            animationDelay: `${item.delay}s`,
+            opacity: 0.4,
+            zIndex: 1,
+            borderRadius: '20px',
+            overflow: 'hidden',
+          }}
+        >
+          <img 
+            src={item.src} 
+            alt="" 
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover',
+              filter: 'blur(1px)',
+            }} 
+          />
+        </div>
+      ))}
 
       {/* Circular Tech Rings */}
       <div style={{
@@ -109,7 +112,7 @@ const Home = () => {
         transform: 'translate(-50%, -50%)',
         width: '900px',
         height: '900px',
-        border: '1px solid rgba(8, 145, 178, 0.08)',
+        border: '1px solid rgba(8, 145, 178, 0.06)',
         borderRadius: '50%',
         animation: 'pulse 4s ease-in-out infinite',
       }} />
@@ -120,7 +123,7 @@ const Home = () => {
         transform: 'translate(-50%, -50%)',
         width: '700px',
         height: '700px',
-        border: '1px solid rgba(8, 145, 178, 0.1)',
+        border: '1px solid rgba(8, 145, 178, 0.08)',
         borderRadius: '50%',
         animation: 'pulse 4s ease-in-out infinite 0.5s',
       }} />
@@ -131,7 +134,7 @@ const Home = () => {
         transform: 'translate(-50%, -50%)',
         width: '500px',
         height: '500px',
-        border: '1px solid rgba(8, 145, 178, 0.12)',
+        border: '1px solid rgba(8, 145, 178, 0.1)',
         borderRadius: '50%',
         animation: 'pulse 4s ease-in-out infinite 1s',
       }} />
@@ -321,7 +324,7 @@ const Home = () => {
                   padding: '12px 20px',
                   borderRadius: '24px',
                   border: '1px solid rgba(8, 145, 178, 0.2)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   cursor: 'pointer',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 0 20px rgba(8, 145, 178, 0.05)',
                   transition: 'all 0.3s ease',
@@ -339,7 +342,7 @@ const Home = () => {
                   e.currentTarget.style.boxShadow = '0 8px 30px rgba(8, 145, 178, 0.4)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
                   e.currentTarget.style.color = '#374151';
                   e.currentTarget.style.borderColor = 'rgba(8, 145, 178, 0.2)';
                   e.currentTarget.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
@@ -391,11 +394,11 @@ const Home = () => {
 
       {/* CSS Animations */}
       <style>{`
-        @keyframes floatIcon {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          25% { transform: translateY(-15px) rotate(5deg); }
-          50% { transform: translateY(-8px) rotate(-3deg); }
-          75% { transform: translateY(-20px) rotate(3deg); }
+        @keyframes floatGraphic {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          25% { transform: translateY(-20px) scale(1.02); }
+          50% { transform: translateY(-10px) scale(0.98); }
+          75% { transform: translateY(-25px) scale(1.01); }
         }
         @keyframes pulse {
           0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
@@ -411,7 +414,7 @@ const Home = () => {
         }
         @keyframes gridMove {
           0% { transform: translate(0, 0); }
-          100% { transform: translate(60px, 60px); }
+          100% { transform: translate(80px, 80px); }
         }
       `}</style>
     </div>
