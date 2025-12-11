@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Patient, Disease } from "@/types/scan";
+import { Eye, ArrowLeft, UserPlus, Camera, Stethoscope, User, Lightbulb, FileText } from "lucide-react";
 
 // Mock patient data
 const mockPatients: Patient[] = [
@@ -107,7 +108,7 @@ const PatientRecords = () => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <span style={{ fontSize: '20px' }}>👁️</span>
+            <Eye size={24} style={{ color: '#0891b2' }} />
           </div>
           <div>
             <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#111' }}>EyeQ</h1>
@@ -126,7 +127,7 @@ const PatientRecords = () => {
               fontWeight: 500,
             }}
           >
-            ← Back to Dashboard
+            <ArrowLeft size={16} style={{ marginRight: '6px' }} /> Back to Dashboard
           </button>
           <button
             onClick={() => setShowNewPatientModal(true)}
@@ -138,9 +139,11 @@ const PatientRecords = () => {
               color: 'white',
               cursor: 'pointer',
               fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
-            + New Patient
+            <UserPlus size={16} style={{ marginRight: '6px' }} /> New Patient
           </button>
         </div>
       </header>
@@ -237,7 +240,7 @@ const PatientRecords = () => {
                 marginBottom: '24px',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
               }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>📷 All Scans ({selectedPatient.scans.length})</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={20} /> All Scans ({selectedPatient.scans.length})</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
                   {selectedPatient.scans.map((scan) => (
                     <div key={scan.id} style={{ 
@@ -270,7 +273,7 @@ const PatientRecords = () => {
                 marginBottom: '24px',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
               }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>🩺 Doctor's Comprehensive Report</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}><Stethoscope size={20} /> Doctor's Comprehensive Report</h3>
                 <div style={{ backgroundColor: '#f8fafc', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
                   <p style={{ fontWeight: 600, marginBottom: '8px' }}>Clinical Summary</p>
                   <p style={{ color: '#374151', lineHeight: 1.6 }}>
@@ -337,7 +340,7 @@ const PatientRecords = () => {
                 padding: '24px',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
               }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>👤 Patient-Friendly Summary</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}><User size={20} /> Patient-Friendly Summary</h3>
                 <div style={{ backgroundColor: '#ecfeff', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
                   <p style={{ fontWeight: 600, color: '#0891b2', marginBottom: '8px' }}>Your Eye Health Overview</p>
                   <p style={{ color: '#374151', lineHeight: 1.6 }}>
@@ -375,7 +378,7 @@ const PatientRecords = () => {
                   borderRadius: '8px',
                   borderLeft: '4px solid #22c55e',
                 }}>
-                  <p style={{ fontWeight: 600, color: '#166534', marginBottom: '4px' }}>💡 Next Steps</p>
+                  <p style={{ fontWeight: 600, color: '#166534', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}><Lightbulb size={16} /> Next Steps</p>
                   <p style={{ fontSize: '14px', color: '#374151' }}>
                     {calculateOverallRisk(selectedPatient).level === 'High Risk' 
                       ? 'Please schedule an appointment with an eye specialist as soon as possible.'
@@ -395,7 +398,7 @@ const PatientRecords = () => {
               flexDirection: 'column',
               color: '#6b7280',
             }}>
-              <span style={{ fontSize: '48px', marginBottom: '16px' }}>📋</span>
+              <FileText size={48} style={{ marginBottom: '16px', color: '#9ca3af' }} />
               <p style={{ fontSize: '18px' }}>Select a patient to view their records</p>
             </div>
           )}

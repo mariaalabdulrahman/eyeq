@@ -1,5 +1,5 @@
 import { ScanAnalysis } from "@/types/scan";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, RadialBarChart, RadialBar, Legend } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from "recharts";
 
 interface VisualAnalysisProps {
   scan: ScanAnalysis;
@@ -24,57 +24,60 @@ export function VisualAnalysis({ scan }: VisualAnalysisProps) {
     fill: d.probability >= 70 ? COLORS.high : d.probability >= 40 ? COLORS.medium : COLORS.low,
   }));
 
-  const radialData = scan.diseases.map((d, i) => ({
-    name: d.name,
-    probability: d.probability,
-    fill: d.probability >= 70 ? COLORS.high : d.probability >= 40 ? COLORS.medium : COLORS.low,
-  }));
-
   const overallHealth = Math.max(0, 100 - (scan.diseases.reduce((acc, d) => acc + d.probability, 0) / Math.max(scan.diseases.length, 1)));
+
+  // Calculate the angle for the gauge needle based on percentage
+  // 0% = -90deg (left), 100% = 90deg (right)
+  const gaugeAngle = (overallHealth / 100) * 180 - 90;
+  const gaugeColor = overallHealth >= 70 ? COLORS.low : overallHealth >= 40 ? COLORS.medium : COLORS.high;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full overflow-y-auto scrollbar-thin">
       {/* Health Score Gauge */}
       <div className="bg-card border border-border rounded-xl p-6">
         <h3 className="font-semibold text-foreground mb-4">Overall Health Score</h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadialBarChart
-              cx="50%"
-              cy="50%"
-              innerRadius="60%"
-              outerRadius="90%"
-              barSize={20}
-              data={[{ name: 'Health', value: overallHealth, fill: overallHealth >= 70 ? COLORS.low : overallHealth >= 40 ? COLORS.medium : COLORS.high }]}
-              startAngle={180}
-              endAngle={0}
-            >
-              <RadialBar
-                background={{ fill: 'hsl(222 47% 14%)' }}
-                dataKey="value"
-                cornerRadius={10}
+        <div className="h-64 flex flex-col items-center justify-center">
+          {/* SVG Gauge */}
+          <svg viewBox="0 0 200 120" className="w-full max-w-[300px]">
+            {/* Background arc */}
+            <path
+              d="M 20 100 A 80 80 0 0 1 180 100"
+              fill="none"
+              stroke="hsl(var(--muted))"
+              strokeWidth="16"
+              strokeLinecap="round"
+            />
+            {/* Colored arc based on percentage */}
+            <path
+              d="M 20 100 A 80 80 0 0 1 180 100"
+              fill="none"
+              stroke={gaugeColor}
+              strokeWidth="16"
+              strokeLinecap="round"
+              strokeDasharray={`${(overallHealth / 100) * 251.2} 251.2`}
+            />
+            {/* Needle */}
+            <g transform={`rotate(${gaugeAngle}, 100, 100)`}>
+              <line
+                x1="100"
+                y1="100"
+                x2="100"
+                y2="35"
+                stroke="hsl(var(--foreground))"
+                strokeWidth="3"
+                strokeLinecap="round"
               />
-              <text
-                x="50%"
-                y="50%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="fill-foreground"
-                style={{ fontSize: '2.5rem', fontWeight: 'bold' }}
-              >
-                {Math.round(overallHealth)}%
-              </text>
-              <text
-                x="50%"
-                y="62%"
-                textAnchor="middle"
-                className="fill-muted-foreground"
-                style={{ fontSize: '0.875rem' }}
-              >
-                Health Score
-              </text>
-            </RadialBarChart>
-          </ResponsiveContainer>
+              <circle cx="100" cy="100" r="8" fill="hsl(var(--foreground))" />
+            </g>
+            {/* Labels */}
+            <text x="20" y="115" className="fill-muted-foreground" fontSize="10" textAnchor="middle">0%</text>
+            <text x="180" y="115" className="fill-muted-foreground" fontSize="10" textAnchor="middle">100%</text>
+          </svg>
+          {/* Score display */}
+          <div className="text-center mt-4">
+            <span className="text-4xl font-bold" style={{ color: gaugeColor }}>{Math.round(overallHealth)}%</span>
+            <p className="text-muted-foreground text-sm mt-1">Health Score</p>
+          </div>
         </div>
       </div>
 
@@ -99,14 +102,14 @@ export function VisualAnalysis({ scan }: VisualAnalysisProps) {
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(222 47% 8%)',
-                  border: '1px solid hsl(222 47% 18%)',
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
-                  color: 'hsl(210 40% 96%)',
+                  color: 'hsl(var(--foreground))',
                 }}
               />
               <Legend
-                formatter={(value) => <span style={{ color: 'hsl(210 40% 96%)' }}>{value}</span>}
+                formatter={(value) => <span style={{ color: 'hsl(var(--foreground))' }}>{value}</span>}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -122,22 +125,22 @@ export function VisualAnalysis({ scan }: VisualAnalysisProps) {
               <XAxis
                 type="number"
                 domain={[0, 100]}
-                tick={{ fill: 'hsl(215 20% 55%)' }}
-                axisLine={{ stroke: 'hsl(222 47% 18%)' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
               />
               <YAxis
                 type="category"
                 dataKey="name"
-                tick={{ fill: 'hsl(215 20% 55%)', fontSize: 12 }}
-                axisLine={{ stroke: 'hsl(222 47% 18%)' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
                 width={100}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(222 47% 8%)',
-                  border: '1px solid hsl(222 47% 18%)',
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
-                  color: 'hsl(210 40% 96%)',
+                  color: 'hsl(var(--foreground))',
                 }}
                 formatter={(value: number) => [`${value}%`, 'Probability']}
               />

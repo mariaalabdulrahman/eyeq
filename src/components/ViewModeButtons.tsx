@@ -1,15 +1,16 @@
 import { ViewMode } from "@/types/scan";
+import { FileText, BarChart3, GitCompare, Microscope, LucideIcon } from "lucide-react";
 
 interface ViewModeButtonsProps {
   activeMode: ViewMode;
   onModeChange: (mode: ViewMode) => void;
 }
 
-const modes: { mode: ViewMode; icon: string; label: string }[] = [
-  { mode: 'textual', icon: '📄', label: 'Textual' },
-  { mode: 'visual', icon: '📊', label: 'Visual' },
-  { mode: 'comparison', icon: '⚖️', label: 'Compare' },
-  { mode: 'visualization', icon: '🔬', label: 'Visualize' },
+const modes: { mode: ViewMode; icon: LucideIcon; label: string }[] = [
+  { mode: 'textual', icon: FileText, label: 'Textual' },
+  { mode: 'visual', icon: BarChart3, label: 'Visual' },
+  { mode: 'comparison', icon: GitCompare, label: 'Compare' },
+  { mode: 'visualization', icon: Microscope, label: 'Visualize' },
 ];
 
 export function ViewModeButtons({ activeMode, onModeChange }: ViewModeButtonsProps) {
@@ -18,7 +19,7 @@ export function ViewModeButtons({ activeMode, onModeChange }: ViewModeButtonsPro
       <p style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
         View Mode
       </p>
-      {modes.map(({ mode, icon, label }) => (
+      {modes.map(({ mode, icon: Icon, label }) => (
         <button
           key={mode}
           onClick={() => onModeChange(mode)}
@@ -38,7 +39,7 @@ export function ViewModeButtons({ activeMode, onModeChange }: ViewModeButtonsPro
             transition: 'all 0.2s',
           }}
         >
-          <span>{icon}</span>
+          <Icon size={18} />
           {label}
         </button>
       ))}

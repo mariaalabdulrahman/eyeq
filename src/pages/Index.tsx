@@ -7,6 +7,7 @@ import { AnalysisPanel } from "@/components/AnalysisPanel";
 import { UploadModal } from "@/components/UploadModal";
 import { useScanAnalysis } from "@/hooks/useScanAnalysis";
 import { ViewMode } from "@/types/scan";
+import { Eye, FolderOpen } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -58,7 +59,7 @@ const Index = () => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <span style={{ fontSize: '20px' }}>👁️</span>
+            <Eye size={24} style={{ color: '#0891b2' }} />
           </div>
           <div>
             <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#111' }}>EyeQ</h1>
@@ -79,7 +80,7 @@ const Index = () => {
             gap: '8px',
           }}
         >
-          📋 Patient Records
+          <FolderOpen size={18} /> Patient Records
         </button>
       </header>
 
