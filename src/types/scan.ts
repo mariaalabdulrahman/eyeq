@@ -23,4 +23,4 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-export type ViewMode = 'textual' | 'visual' | 'comparison' | 'visualization';
+export type ViewMode = 'textual' | 'visual' | 'comparison' | 'visualization' | 'doctor-report' | 'patient-report';
