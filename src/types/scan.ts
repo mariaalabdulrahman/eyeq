@@ -10,10 +10,17 @@ export interface ScanAnalysis {
   name: string;
   imageUrl: string;
   uploadedAt: Date;
-  type: 'eye' | 'ultrasound';
+  type: 'oct' | 'fundus';
   diseases: Disease[];
   summary: string;
-  chatHistory: ChatMessage[];
+}
+
+export interface Patient {
+  id: string;
+  name: string;
+  dateOfBirth: string;
+  scans: ScanAnalysis[];
+  createdAt: Date;
 }
 
 export interface ChatMessage {
@@ -21,6 +28,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  selectedScanIds: string[];
 }
 
-export type ViewMode = 'textual' | 'visual' | 'comparison' | 'visualization' | 'doctor-report' | 'patient-report';
+export type ViewMode = 'textual' | 'visual' | 'comparison' | 'visualization';

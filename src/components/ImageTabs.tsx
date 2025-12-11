@@ -1,5 +1,3 @@
-import { Plus, X, Eye, Radio } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { ScanAnalysis } from "@/types/scan";
 
 interface ImageTabsProps {
@@ -12,47 +10,37 @@ interface ImageTabsProps {
 
 export function ImageTabs({ scans, activeTab, onTabChange, onAddNew, onRemoveTab }: ImageTabsProps) {
   return (
-    <div className="flex items-center gap-1 bg-card border-b border-border px-4 py-2 overflow-x-auto scrollbar-thin">
+    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '8px 16px', backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', overflowX: 'auto' }}>
       {scans.map((scan) => (
-        <button
+        <div
           key={scan.id}
           onClick={() => onTabChange(scan.id)}
-          className={cn(
-            "group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-            activeTab === scan.id
-              ? "bg-primary text-primary-foreground glow-primary"
-              : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-          )}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            backgroundColor: activeTab === scan.id ? '#ecfeff' : 'transparent',
+            border: activeTab === scan.id ? '1px solid #0891b2' : '1px solid transparent',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
         >
-          {scan.type === 'eye' ? (
-            <Eye className="w-4 h-4" />
-          ) : (
-            <Radio className="w-4 h-4" />
-          )}
-          <span className="max-w-[120px] truncate">{scan.name}</span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemoveTab(scan.id);
-            }}
-            className={cn(
-              "ml-1 p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity",
-              activeTab === scan.id
-                ? "hover:bg-primary-foreground/20"
-                : "hover:bg-muted"
-            )}
-          >
-            <X className="w-3 h-3" />
+          <img src={scan.imageUrl} alt={scan.name} style={{ width: '24px', height: '24px', borderRadius: '4px', objectFit: 'cover' }} />
+          <span style={{ fontSize: '14px', fontWeight: activeTab === scan.id ? 600 : 400, color: activeTab === scan.id ? '#0891b2' : '#374151', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {scan.name}
+          </span>
+          <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '10px', backgroundColor: scan.type === 'oct' ? '#dbeafe' : '#fef3c7', color: scan.type === 'oct' ? '#1d4ed8' : '#92400e', fontWeight: 600 }}>
+            {scan.type.toUpperCase()}
+          </span>
+          <button onClick={(e) => { e.stopPropagation(); onRemoveTab(scan.id); }} style={{ width: '20px', height: '20px', borderRadius: '50%', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', fontSize: '14px', color: '#9ca3af' }}>
+            ×
           </button>
-        </button>
+        </div>
       ))}
-      
-      <button
-        onClick={onAddNew}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-transparent border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary hover:bg-secondary/50 transition-all duration-200"
-      >
-        <Plus className="w-4 h-4" />
-        <span>New Scan</span>
+      <button onClick={onAddNew} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '8px', border: '1px dashed #d1d5db', backgroundColor: 'transparent', cursor: 'pointer', color: '#6b7280', fontSize: '14px' }}>
+        <span>+</span> Add Scan
       </button>
     </div>
   );

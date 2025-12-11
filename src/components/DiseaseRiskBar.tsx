@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import { Disease } from "@/types/scan";
 
 interface DiseaseRiskBarProps {
@@ -6,59 +5,32 @@ interface DiseaseRiskBarProps {
 }
 
 export function DiseaseRiskBar({ disease }: DiseaseRiskBarProps) {
-  const getColorClass = () => {
-    if (disease.probability >= 70) return "bg-destructive";
-    if (disease.probability >= 40) return "bg-warning";
-    return "bg-success";
+  const getColor = () => {
+    if (disease.probability >= 70) return '#ef4444';
+    if (disease.probability >= 40) return '#f59e0b';
+    return '#22c55e';
   };
 
-  const getGlowClass = () => {
-    if (disease.probability >= 70) return "glow-destructive";
-    if (disease.probability >= 40) return "glow-warning";
-    return "glow-success";
-  };
-
-  const getSeverityBadge = () => {
-    const base = "px-2 py-0.5 rounded-full text-xs font-medium";
-    switch (disease.severity) {
-      case 'high':
-        return cn(base, "bg-destructive/20 text-destructive");
-      case 'medium':
-        return cn(base, "bg-warning/20 text-warning");
-      case 'low':
-        return cn(base, "bg-success/20 text-success");
-    }
+  const getBgColor = () => {
+    if (disease.probability >= 70) return '#fef2f2';
+    if (disease.probability >= 40) return '#fffbeb';
+    return '#f0fdf4';
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 animate-slide-in">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-semibold text-foreground">{disease.name}</h4>
-        <span className={getSeverityBadge()}>
-          {disease.severity} risk
+    <div style={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+        <div>
+          <h4 style={{ fontWeight: 600, color: '#111', marginBottom: '2px' }}>{disease.name}</h4>
+          <p style={{ fontSize: '13px', color: '#6b7280' }}>{disease.description}</p>
+        </div>
+        <span style={{ padding: '4px 10px', borderRadius: '16px', fontSize: '13px', fontWeight: 600, backgroundColor: getBgColor(), color: getColor() }}>
+          {disease.probability}%
         </span>
       </div>
-      
-      <div className="mb-3">
-        <div className="flex justify-between text-sm mb-1.5">
-          <span className="text-muted-foreground">Probability</span>
-          <span className="font-mono font-medium text-foreground">{disease.probability}%</span>
-        </div>
-        <div className="h-3 bg-secondary rounded-full overflow-hidden">
-          <div
-            className={cn(
-              "h-full rounded-full transition-all duration-500",
-              getColorClass(),
-              getGlowClass()
-            )}
-            style={{ width: `${disease.probability}%` }}
-          />
-        </div>
+      <div style={{ height: '8px', backgroundColor: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
+        <div style={{ width: `${disease.probability}%`, height: '100%', backgroundColor: getColor(), borderRadius: '4px' }} />
       </div>
-      
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        {disease.description}
-      </p>
     </div>
   );
 }

@@ -1,18 +1,15 @@
 import { useState, useCallback } from "react";
-import { Upload, X, Eye, Radio } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (file: File, type: 'eye' | 'ultrasound') => void;
+  onUpload: (file: File, type: 'oct' | 'fundus') => void;
 }
 
 export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [scanType, setScanType] = useState<'eye' | 'ultrasound'>('eye');
+  const [scanType, setScanType] = useState<'oct' | 'fundus'>('oct');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -63,44 +60,94 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={handleClose} />
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 50,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <div 
+        onClick={handleClose}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(4px)',
+        }}
+      />
       
-      <div className="relative bg-card border border-border rounded-xl p-6 w-full max-w-lg animate-fade-in">
+      <div style={{
+        position: 'relative',
+        backgroundColor: 'white',
+        border: '1px solid #e5e7eb',
+        borderRadius: '12px',
+        padding: '24px',
+        width: '100%',
+        maxWidth: '500px',
+        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+      }}>
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 p-1 rounded-lg hover:bg-secondary transition-colors"
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            padding: '8px',
+            borderRadius: '8px',
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            fontSize: '20px',
+          }}
         >
-          <X className="w-5 h-5 text-muted-foreground" />
+          ✕
         </button>
 
-        <h2 className="text-xl font-semibold text-foreground mb-6">Upload Medical Scan</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '24px', color: '#111' }}>
+          Upload Medical Scan
+        </h2>
 
         {/* Scan Type Selection */}
-        <div className="flex gap-3 mb-6">
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
           <button
-            onClick={() => setScanType('eye')}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border transition-all duration-200",
-              scanType === 'eye'
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-border bg-secondary text-muted-foreground hover:text-foreground"
-            )}
+            onClick={() => setScanType('oct')}
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '12px',
+              borderRadius: '8px',
+              border: scanType === 'oct' ? '2px solid #0891b2' : '1px solid #e5e7eb',
+              backgroundColor: scanType === 'oct' ? '#ecfeff' : '#f9fafb',
+              color: scanType === 'oct' ? '#0891b2' : '#6b7280',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
           >
-            <Eye className="w-5 h-5" />
-            <span className="font-medium">Eye Scan</span>
+            🔬 OCT Scan
           </button>
           <button
-            onClick={() => setScanType('ultrasound')}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border transition-all duration-200",
-              scanType === 'ultrasound'
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-border bg-secondary text-muted-foreground hover:text-foreground"
-            )}
+            onClick={() => setScanType('fundus')}
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '12px',
+              borderRadius: '8px',
+              border: scanType === 'fundus' ? '2px solid #0891b2' : '1px solid #e5e7eb',
+              backgroundColor: scanType === 'fundus' ? '#ecfeff' : '#f9fafb',
+              color: scanType === 'fundus' ? '#0891b2' : '#6b7280',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
           >
-            <Radio className="w-5 h-5" />
-            <span className="font-medium">Ultrasound</span>
+            👁️ Fundus Image
           </button>
         </div>
 
@@ -110,30 +157,31 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
-          className={cn(
-            "relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200",
-            dragActive
-              ? "border-primary bg-primary/5"
-              : "border-border hover:border-muted-foreground",
-            previewUrl && "border-solid border-primary"
-          )}
+          style={{
+            position: 'relative',
+            border: dragActive ? '2px dashed #0891b2' : previewUrl ? '2px solid #0891b2' : '2px dashed #e5e7eb',
+            borderRadius: '12px',
+            padding: '32px',
+            textAlign: 'center',
+            backgroundColor: dragActive ? '#ecfeff' : '#f9fafb',
+          }}
         >
           {previewUrl ? (
-            <div className="space-y-4">
+            <div>
               <img
                 src={previewUrl}
                 alt="Preview"
-                className="max-h-48 mx-auto rounded-lg object-contain"
+                style={{ maxHeight: '192px', margin: '0 auto', borderRadius: '8px', objectFit: 'contain' }}
               />
-              <p className="text-sm text-muted-foreground">{selectedFile?.name}</p>
+              <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '16px' }}>{selectedFile?.name}</p>
             </div>
           ) : (
             <>
-              <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-foreground font-medium mb-2">
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📤</div>
+              <p style={{ fontWeight: 500, marginBottom: '8px', color: '#111' }}>
                 Drop your scan here or click to browse
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p style={{ fontSize: '14px', color: '#6b7280' }}>
                 Supports JPG, PNG, DICOM formats
               </p>
             </>
@@ -143,23 +191,49 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
             type="file"
             accept="image/*"
             onChange={handleFileSelect}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              opacity: 0,
+              cursor: 'pointer',
+            }}
           />
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 mt-6">
-          <Button variant="outline" onClick={handleClose} className="flex-1">
+        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+          <button
+            onClick={handleClose}
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb',
+              backgroundColor: 'white',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
+          >
             Cancel
-          </Button>
-          <Button
-            variant="glow"
+          </button>
+          <button
             onClick={handleSubmit}
             disabled={!selectedFile}
-            className="flex-1"
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: selectedFile ? '#0891b2' : '#9ca3af',
+              color: 'white',
+              cursor: selectedFile ? 'pointer' : 'not-allowed',
+              fontWeight: 500,
+            }}
           >
             Analyze Scan
-          </Button>
+          </button>
         </div>
       </div>
     </div>
