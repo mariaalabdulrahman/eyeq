@@ -1,5 +1,3 @@
-import { FileText, BarChart3, GitCompare, Layers, Stethoscope, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ViewMode } from "@/types/scan";
 
 interface ViewModeButtonsProps {
@@ -7,32 +5,42 @@ interface ViewModeButtonsProps {
   onModeChange: (mode: ViewMode) => void;
 }
 
-const modes: { mode: ViewMode; icon: React.ElementType; label: string }[] = [
-  { mode: 'textual', icon: FileText, label: 'Textual' },
-  { mode: 'visual', icon: BarChart3, label: 'Visual' },
-  { mode: 'comparison', icon: GitCompare, label: 'Compare' },
-  { mode: 'visualization', icon: Layers, label: 'Visualize' },
-  { mode: 'doctor-report', icon: Stethoscope, label: 'Doctor Report' },
-  { mode: 'patient-report', icon: User, label: 'Patient Report' },
+const modes: { mode: ViewMode; icon: string; label: string }[] = [
+  { mode: 'textual', icon: '📄', label: 'Textual' },
+  { mode: 'visual', icon: '📊', label: 'Visual' },
+  { mode: 'comparison', icon: '⚖️', label: 'Compare' },
+  { mode: 'visualization', icon: '🔬', label: 'Visualize' },
 ];
 
 export function ViewModeButtons({ activeMode, onModeChange }: ViewModeButtonsProps) {
   return (
-    <div className="flex flex-col gap-2 p-4 border-t border-sidebar-border">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px', borderTop: '1px solid #e5e7eb' }}>
+      <p style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
         View Mode
       </p>
-      {modes.map(({ mode, icon: Icon, label }) => (
-        <Button
+      {modes.map(({ mode, icon, label }) => (
+        <button
           key={mode}
-          variant={activeMode === mode ? "sidebar-active" : "sidebar"}
-          size="sm"
           onClick={() => onModeChange(mode)}
-          className="justify-start gap-3"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '10px 12px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: activeMode === mode ? '#0891b2' : 'transparent',
+            color: activeMode === mode ? 'white' : '#374151',
+            cursor: 'pointer',
+            textAlign: 'left',
+            fontWeight: 500,
+            fontSize: '14px',
+            transition: 'all 0.2s',
+          }}
         >
-          <Icon className="w-4 h-4" />
+          <span>{icon}</span>
           {label}
-        </Button>
+        </button>
       ))}
     </div>
   );

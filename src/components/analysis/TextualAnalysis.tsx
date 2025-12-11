@@ -1,6 +1,5 @@
 import { ScanAnalysis } from "@/types/scan";
 import { DiseaseRiskBar } from "@/components/DiseaseRiskBar";
-import { AlertTriangle, CheckCircle } from "lucide-react";
 
 interface TextualAnalysisProps {
   scan: ScanAnalysis;
@@ -11,50 +10,65 @@ export function TextualAnalysis({ scan }: TextualAnalysisProps) {
   const hasHighRisk = highRiskDiseases.length > 0;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', height: '100%' }}>
       {/* Image Display */}
-      <div className="bg-card border border-border rounded-xl p-4 flex flex-col">
-        <h3 className="font-semibold text-foreground mb-4">Scan Image</h3>
-        <div className="flex-1 flex items-center justify-center bg-secondary/50 rounded-lg overflow-hidden">
+      <div style={{ 
+        backgroundColor: 'white', 
+        border: '1px solid #e5e7eb', 
+        borderRadius: '12px', 
+        padding: '16px',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        <h3 style={{ fontWeight: 600, marginBottom: '16px', color: '#111' }}>Scan Image</h3>
+        <div style={{ 
+          flex: 1, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          backgroundColor: '#f3f4f6', 
+          borderRadius: '8px',
+          overflow: 'hidden',
+        }}>
           <img
             src={scan.imageUrl}
             alt={scan.name}
-            className="max-w-full max-h-full object-contain"
+            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
           />
         </div>
       </div>
 
       {/* Analysis Results */}
-      <div className="flex flex-col gap-4 overflow-y-auto scrollbar-thin pr-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' }}>
         {/* Summary Card */}
-        <div className={cn(
-          "bg-card border rounded-xl p-4",
-          hasHighRisk ? "border-destructive/50" : "border-success/50"
-        )}>
-          <div className="flex items-center gap-3 mb-3">
-            {hasHighRisk ? (
-              <AlertTriangle className="w-6 h-6 text-destructive" />
-            ) : (
-              <CheckCircle className="w-6 h-6 text-success" />
-            )}
-            <h3 className="font-semibold text-foreground">
+        <div style={{
+          backgroundColor: 'white',
+          border: `1px solid ${hasHighRisk ? '#fca5a5' : '#86efac'}`,
+          borderRadius: '12px',
+          padding: '16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <span style={{ fontSize: '24px' }}>{hasHighRisk ? '⚠️' : '✅'}</span>
+            <h3 style={{ fontWeight: 600, color: '#111' }}>
               {hasHighRisk ? "Attention Required" : "Analysis Complete"}
             </h3>
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.6 }}>
             {scan.summary}
           </p>
         </div>
 
         {/* Disease List */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-foreground">Detected Conditions</h3>
+        <div>
+          <h3 style={{ fontWeight: 600, marginBottom: '12px', color: '#111' }}>Detected Conditions</h3>
           {scan.diseases.length > 0 ? (
-            scan.diseases.map((disease, index) => (
-              <DiseaseRiskBar key={index} disease={disease} />
-            ))
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {scan.diseases.map((disease, index) => (
+                <DiseaseRiskBar key={index} disease={disease} />
+              ))}
+            </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p style={{ fontSize: '14px', color: '#6b7280' }}>
               No significant conditions detected.
             </p>
           )}
@@ -63,5 +77,3 @@ export function TextualAnalysis({ scan }: TextualAnalysisProps) {
     </div>
   );
 }
-
-import { cn } from "@/lib/utils";

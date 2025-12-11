@@ -1,25 +1,23 @@
 import { useState, useCallback } from "react";
-import { ScanAnalysis, ChatMessage, Disease } from "@/types/scan";
+import { ScanAnalysis, ChatMessage, Disease, Patient } from "@/types/scan";
 
-// Mock disease data for demo
-const generateMockDiseases = (type: 'eye' | 'ultrasound'): Disease[] => {
-  const eyeDiseases: Disease[] = [
-    { name: "Diabetic Retinopathy", probability: Math.floor(Math.random() * 40) + 10, severity: 'low', description: "Early signs of diabetic damage to retinal blood vessels. Regular monitoring recommended." },
-    { name: "Glaucoma", probability: Math.floor(Math.random() * 30) + 5, severity: 'low', description: "Optic nerve shows minimal changes. Baseline measurement established for future comparison." },
-    { name: "Macular Degeneration", probability: Math.floor(Math.random() * 50) + 20, severity: 'medium', description: "Some drusen deposits detected in macular region. Follow-up recommended in 6 months." },
-    { name: "Cataracts", probability: Math.floor(Math.random() * 25), severity: 'low', description: "Lens clarity within normal range. No significant opacity detected." },
+const generateMockDiseases = (type: 'oct' | 'fundus'): Disease[] => {
+  const octDiseases: Disease[] = [
+    { name: "Diabetic Macular Edema", probability: Math.floor(Math.random() * 40) + 10, severity: 'low', description: "Fluid accumulation in the macula detected via cross-sectional imaging." },
+    { name: "Age-Related Macular Degeneration", probability: Math.floor(Math.random() * 50) + 20, severity: 'medium', description: "Drusen deposits and RPE changes visible in OCT layers." },
+    { name: "Epiretinal Membrane", probability: Math.floor(Math.random() * 30) + 5, severity: 'low', description: "Thin membrane on retinal surface causing mild distortion." },
+    { name: "Vitreomacular Traction", probability: Math.floor(Math.random() * 25), severity: 'low', description: "Vitreous attachment causing tractional forces on macula." },
   ];
 
-  const ultrasoundDiseases: Disease[] = [
-    { name: "Tissue Abnormality", probability: Math.floor(Math.random() * 35) + 15, severity: 'medium', description: "Irregular tissue density detected. Further imaging may be warranted." },
-    { name: "Cyst Formation", probability: Math.floor(Math.random() * 20) + 5, severity: 'low', description: "Small fluid-filled structure identified. Likely benign, monitoring suggested." },
-    { name: "Inflammation Markers", probability: Math.floor(Math.random() * 45) + 25, severity: 'medium', description: "Increased echogenicity suggesting possible inflammatory process." },
-    { name: "Structural Anomaly", probability: Math.floor(Math.random() * 15), severity: 'low', description: "Minor anatomical variation observed. Within normal limits." },
+  const fundusDiseases: Disease[] = [
+    { name: "Diabetic Retinopathy", probability: Math.floor(Math.random() * 45) + 15, severity: 'medium', description: "Microaneurysms and hemorrhages visible in fundus photography." },
+    { name: "Glaucoma", probability: Math.floor(Math.random() * 35) + 10, severity: 'low', description: "Optic disc cupping and nerve fiber layer changes detected." },
+    { name: "Hypertensive Retinopathy", probability: Math.floor(Math.random() * 30) + 5, severity: 'low', description: "Arteriovenous nicking and vessel wall changes observed." },
+    { name: "Papilledema", probability: Math.floor(Math.random() * 20), severity: 'low', description: "Optic disc swelling potentially indicating increased intracranial pressure." },
   ];
 
-  const diseases = type === 'eye' ? eyeDiseases : ultrasoundDiseases;
+  const diseases = type === 'oct' ? octDiseases : fundusDiseases;
   
-  // Randomly select 2-4 diseases and adjust severity based on probability
   return diseases
     .sort(() => Math.random() - 0.5)
     .slice(0, Math.floor(Math.random() * 3) + 2)
@@ -34,18 +32,29 @@ const generateSummary = (diseases: Disease[]): string => {
   const mediumRisk = diseases.filter(d => d.probability >= 40 && d.probability < 70);
   
   if (highRisk.length > 0) {
-    return `Analysis detected ${highRisk.length} condition(s) requiring immediate attention: ${highRisk.map(d => d.name).join(', ')}. Please consult with a specialist for further evaluation and treatment options.`;
+    return `Analysis detected ${highRisk.length} condition(s) requiring immediate attention: ${highRisk.map(d => d.name).join(', ')}. Please consult with a specialist.`;
   } else if (mediumRisk.length > 0) {
-    return `Analysis identified ${mediumRisk.length} condition(s) with moderate probability: ${mediumRisk.map(d => d.name).join(', ')}. Regular monitoring and follow-up examination recommended within 3-6 months.`;
+    return `Analysis identified ${mediumRisk.length} condition(s) with moderate probability: ${mediumRisk.map(d => d.name).join(', ')}. Follow-up recommended.`;
   }
-  return "Scan analysis complete. No significant abnormalities detected. All measurements within normal parameters. Routine follow-up recommended as per standard care guidelines.";
+  return "Scan analysis complete. No significant abnormalities detected. Routine follow-up recommended.";
 };
 
 export function useScanAnalysis() {
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
   const [scans, setScans] = useState<ScanAnalysis[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
+    {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      content: 'Welcome to EyeQ! Upload OCT or Fundus scans to begin analysis. Select images when asking questions for contextual answers.',
+      timestamp: new Date(),
+      selectedScanIds: [],
+    }
+  ]);
 
-  const addScan = useCallback((file: File, type: 'eye' | 'ultrasound') => {
+  const addScan = useCallback((file: File, type: 'oct' | 'fundus', patientId?: string) => {
     const imageUrl = URL.createObjectURL(file);
     const diseases = generateMockDiseases(type);
     
@@ -57,18 +66,19 @@ export function useScanAnalysis() {
       type,
       diseases,
       summary: generateSummary(diseases),
-      chatHistory: [
-        {
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          content: `I've analyzed your ${type === 'eye' ? 'eye scan' : 'ultrasound'} image. ${generateSummary(diseases)} Feel free to ask me any questions about the findings.`,
-          timestamp: new Date(),
-        }
-      ],
     };
 
     setScans(prev => [...prev, newScan]);
     setActiveTabId(newScan.id);
+
+    // Add to patient record if patient selected
+    if (patientId) {
+      setPatients(prev => prev.map(p => 
+        p.id === patientId 
+          ? { ...p, scans: [...p.scans, newScan] }
+          : p
+      ));
+    }
   }, []);
 
   const removeScan = useCallback((id: string) => {
@@ -81,50 +91,77 @@ export function useScanAnalysis() {
     });
   }, [activeTabId]);
 
-  const addChatMessage = useCallback((scanId: string, content: string) => {
+  const addPatient = useCallback((name: string, dateOfBirth: string) => {
+    const newPatient: Patient = {
+      id: crypto.randomUUID(),
+      name,
+      dateOfBirth,
+      scans: [],
+      createdAt: new Date(),
+    };
+    setPatients(prev => [...prev, newPatient]);
+    return newPatient.id;
+  }, []);
+
+  const addChatMessage = useCallback((content: string, selectedScanIds: string[]) => {
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
       content,
       timestamp: new Date(),
+      selectedScanIds,
     };
 
-    // Simulate AI response
-    const aiResponses = [
-      "Based on the scan analysis, I can see that the detected conditions are within manageable ranges. Regular monitoring would be beneficial.",
-      "The imaging shows some areas of interest that warrant attention. I'd recommend discussing these findings with your healthcare provider.",
-      "Looking at the probability scores, the analysis suggests a relatively healthy baseline with some minor observations to note.",
-      "The scan quality is good and allows for detailed analysis. The highlighted regions indicate areas where the AI detected potential markers.",
-      "Comparing this to typical findings, the results show some deviation from baseline that should be monitored over time.",
-    ];
+    const selectedScans = scans.filter(s => selectedScanIds.includes(s.id));
+    let aiResponse = "Please select at least one image to ask questions about.";
+    
+    if (selectedScans.length > 0) {
+      const scanNames = selectedScans.map(s => s.name).join(', ');
+      const allDiseases = selectedScans.flatMap(s => s.diseases);
+      const highRisk = allDiseases.filter(d => d.probability >= 50);
+      
+      if (highRisk.length > 0) {
+        aiResponse = `Based on the selected scans (${scanNames}), I found ${highRisk.length} conditions with elevated risk: ${highRisk.map(d => `${d.name} (${d.probability}%)`).join(', ')}. Would you like more details on any specific finding?`;
+      } else {
+        aiResponse = `Analyzing ${scanNames}: The scans show generally healthy patterns with some minor observations. All detected conditions are within low-risk ranges. Continue regular monitoring as recommended.`;
+      }
+    }
 
     const aiMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'assistant',
-      content: aiResponses[Math.floor(Math.random() * aiResponses.length)],
+      content: aiResponse,
       timestamp: new Date(),
+      selectedScanIds: [],
     };
 
-    setScans(prev => prev.map(scan => {
-      if (scan.id === scanId) {
-        return {
-          ...scan,
-          chatHistory: [...scan.chatHistory, userMessage, aiMessage],
-        };
-      }
-      return scan;
-    }));
-  }, []);
+    setChatHistory(prev => [...prev, userMessage, aiMessage]);
+  }, [scans]);
+
+  const assignScansToPatient = useCallback((patientId: string, scanIds: string[]) => {
+    const scansToAssign = scans.filter(s => scanIds.includes(s.id));
+    setPatients(prev => prev.map(p => 
+      p.id === patientId 
+        ? { ...p, scans: [...p.scans, ...scansToAssign] }
+        : p
+    ));
+  }, [scans]);
 
   const activeScan = scans.find(s => s.id === activeTabId) || null;
 
   return {
     scans,
+    patients,
     activeScan,
     activeTabId,
+    chatHistory,
+    currentPatientId,
     setActiveTabId,
+    setCurrentPatientId,
     addScan,
     removeScan,
+    addPatient,
     addChatMessage,
+    assignScansToPatient,
   };
 }

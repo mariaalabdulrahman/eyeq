@@ -1,16 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ChatMessage, ScanAnalysis } from "@/types/scan";
-import { cn } from "@/lib/utils";
 
 interface ChatSidebarProps {
-  scan: ScanAnalysis | null;
-  onSendMessage: (message: string) => void;
+  scans: ScanAnalysis[];
+  chatHistory: ChatMessage[];
+  onSendMessage: (message: string, selectedScanIds: string[]) => void;
 }
 
-export function ChatSidebar({ scan, onSendMessage }: ChatSidebarProps) {
+export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarProps) {
   const [input, setInput] = useState("");
+  const [selectedScans, setSelectedScans] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -19,70 +18,110 @@ export function ChatSidebar({ scan, onSendMessage }: ChatSidebarProps) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [scan?.chatHistory]);
+  }, [chatHistory]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim()) {
-      onSendMessage(input.trim());
+    if (input.trim() && selectedScans.length > 0) {
+      onSendMessage(input.trim(), selectedScans);
       setInput("");
     }
   };
 
-  if (!scan) {
-    return (
-      <div className="h-full flex items-center justify-center text-muted-foreground text-sm text-center px-4">
-        <p>Upload a scan to start analyzing and chatting with the AI assistant.</p>
-      </div>
+  const toggleScanSelection = (scanId: string) => {
+    setSelectedScans(prev => 
+      prev.includes(scanId) 
+        ? prev.filter(id => id !== scanId)
+        : [...prev, scanId]
     );
-  }
+  };
 
   return (
-    <div className="flex flex-col h-full">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold text-sidebar-foreground">AI Assistant</h3>
+      <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '20px' }}>🤖</span>
+          <h3 style={{ fontWeight: 600, color: '#111' }}>AI Assistant</h3>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          Ask questions about {scan.name}
+        <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+          Select images below, then ask questions
         </p>
       </div>
 
+      {/* Image Selection */}
+      {scans.length > 0 && (
+        <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
+          <p style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>
+            Select Images for Context
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {scans.map((scan) => (
+              <button
+                key={scan.id}
+                onClick={() => toggleScanSelection(scan.id)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '16px',
+                  border: selectedScans.includes(scan.id) ? '2px solid #0891b2' : '1px solid #e5e7eb',
+                  backgroundColor: selectedScans.includes(scan.id) ? '#ecfeff' : 'white',
+                  color: selectedScans.includes(scan.id) ? '#0891b2' : '#374151',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                {selectedScans.includes(scan.id) && '✓ '}
+                {scan.name.slice(0, 15)}{scan.name.length > 15 ? '...' : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
-        {scan.chatHistory.map((message) => (
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+        {chatHistory.map((message) => (
           <div
             key={message.id}
-            className={cn(
-              "flex gap-3 animate-slide-in",
-              message.role === "user" ? "flex-row-reverse" : ""
-            )}
+            style={{
+              display: 'flex',
+              gap: '12px',
+              marginBottom: '16px',
+              flexDirection: message.role === 'user' ? 'row-reverse' : 'row',
+            }}
           >
             <div
-              className={cn(
-                "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                message.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-sidebar-accent text-primary"
-              )}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: message.role === 'user' ? '#0891b2' : '#f3f4f6',
+                flexShrink: 0,
+              }}
             >
-              {message.role === "user" ? (
-                <User className="w-4 h-4" />
-              ) : (
-                <Bot className="w-4 h-4" />
-              )}
+              {message.role === 'user' ? '👤' : '🤖'}
             </div>
             <div
-              className={cn(
-                "rounded-xl px-4 py-2.5 max-w-[85%]",
-                message.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-sidebar-accent text-sidebar-foreground"
-              )}
+              style={{
+                borderRadius: '12px',
+                padding: '10px 14px',
+                maxWidth: '85%',
+                backgroundColor: message.role === 'user' ? '#0891b2' : '#f3f4f6',
+                color: message.role === 'user' ? 'white' : '#111',
+              }}
             >
-              <p className="text-sm leading-relaxed">{message.content}</p>
+              <p style={{ fontSize: '14px', lineHeight: 1.5 }}>{message.content}</p>
+              {message.selectedScanIds.length > 0 && (
+                <p style={{ fontSize: '11px', opacity: 0.7, marginTop: '4px' }}>
+                  📎 {message.selectedScanIds.length} image(s) referenced
+                </p>
+              )}
             </div>
           </div>
         ))}
@@ -90,18 +129,45 @@ export function ChatSidebar({ scan, onSendMessage }: ChatSidebarProps) {
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="p-4 border-t border-sidebar-border">
-        <div className="flex gap-2">
+      <form onSubmit={handleSubmit} style={{ padding: '16px', borderTop: '1px solid #e5e7eb' }}>
+        {selectedScans.length === 0 && scans.length > 0 && (
+          <p style={{ fontSize: '12px', color: '#ef4444', marginBottom: '8px' }}>
+            ⚠️ Select at least one image above to ask questions
+          </p>
+        )}
+        <div style={{ display: 'flex', gap: '8px' }}>
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about the scan..."
-            className="flex-1 bg-sidebar-accent text-sidebar-foreground placeholder:text-muted-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder={scans.length === 0 ? "Upload scans to start..." : "Ask about the selected scans..."}
+            disabled={scans.length === 0}
+            style={{
+              flex: 1,
+              backgroundColor: '#f3f4f6',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              fontSize: '14px',
+              border: '1px solid #e5e7eb',
+              outline: 'none',
+            }}
           />
-          <Button type="submit" size="icon" variant="glow" disabled={!input.trim()}>
-            <Send className="w-4 h-4" />
-          </Button>
+          <button 
+            type="submit" 
+            disabled={!input.trim() || selectedScans.length === 0}
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: input.trim() && selectedScans.length > 0 ? '#0891b2' : '#9ca3af',
+              color: 'white',
+              cursor: input.trim() && selectedScans.length > 0 ? 'pointer' : 'not-allowed',
+              fontSize: '16px',
+            }}
+          >
+            ➤
+          </button>
         </div>
       </form>
     </div>
