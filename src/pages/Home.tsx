@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, ScanLine, FolderOpen, GitCompare, BarChart3, Stethoscope, Eye } from "lucide-react";
+import { Upload, ScanLine, FolderOpen, GitCompare, BarChart3, Stethoscope, Eye, Brain, Cpu, Activity, Zap, Database, Shield, Scan, Target, Layers } from "lucide-react";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -40,10 +40,23 @@ const Home = () => {
     { icon: Stethoscope, label: "Doctor Tools", angle: 140, action: () => navigate('/dashboard') },
   ];
 
+  const floatingIcons = [
+    { Icon: Brain, size: 60, x: 5, y: 15, duration: 8, delay: 0 },
+    { Icon: Cpu, size: 50, x: 90, y: 20, duration: 10, delay: 1 },
+    { Icon: Activity, size: 55, x: 8, y: 70, duration: 9, delay: 2 },
+    { Icon: Zap, size: 45, x: 88, y: 75, duration: 7, delay: 0.5 },
+    { Icon: Database, size: 48, x: 15, y: 45, duration: 11, delay: 1.5 },
+    { Icon: Shield, size: 52, x: 85, y: 50, duration: 8.5, delay: 2.5 },
+    { Icon: Scan, size: 58, x: 3, y: 88, duration: 9.5, delay: 0.8 },
+    { Icon: Target, size: 46, x: 92, y: 85, duration: 10.5, delay: 1.2 },
+    { Icon: Layers, size: 54, x: 50, y: 5, duration: 8, delay: 3 },
+    { Icon: Eye, size: 50, x: 50, y: 92, duration: 9, delay: 2 },
+  ];
+
   return (
     <div style={{ 
       minHeight: '100vh', 
-      backgroundColor: '#0a0f1a', 
+      backgroundColor: '#ffffff', 
       display: 'flex', 
       flexDirection: 'column',
       position: 'relative',
@@ -54,31 +67,39 @@ const Home = () => {
         position: 'absolute',
         inset: 0,
         backgroundImage: `
-          linear-gradient(rgba(8, 145, 178, 0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(8, 145, 178, 0.03) 1px, transparent 1px)
+          linear-gradient(rgba(8, 145, 178, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(8, 145, 178, 0.05) 1px, transparent 1px)
         `,
-        backgroundSize: '50px 50px',
+        backgroundSize: '60px 60px',
         animation: 'gridMove 20s linear infinite',
       }} />
-      
-      {/* Floating Particles */}
-      {[...Array(20)].map((_, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            width: `${Math.random() * 4 + 2}px`,
-            height: `${Math.random() * 4 + 2}px`,
-            backgroundColor: '#0891b2',
-            borderRadius: '50%',
-            opacity: Math.random() * 0.5 + 0.1,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animation: `float ${Math.random() * 10 + 10}s ease-in-out infinite`,
-            animationDelay: `${Math.random() * 5}s`,
-          }}
-        />
-      ))}
+
+      {/* Large Floating Tech Icons */}
+      {floatingIcons.map((item, i) => {
+        const IconComponent = item.Icon;
+        return (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              left: `${item.x}%`,
+              top: `${item.y}%`,
+              animation: `floatIcon ${item.duration}s ease-in-out infinite`,
+              animationDelay: `${item.delay}s`,
+              opacity: 0.15,
+              zIndex: 1,
+            }}
+          >
+            <IconComponent 
+              size={item.size} 
+              style={{ 
+                color: '#0891b2',
+                filter: 'drop-shadow(0 0 10px rgba(8, 145, 178, 0.3))',
+              }} 
+            />
+          </div>
+        );
+      })}
 
       {/* Circular Tech Rings */}
       <div style={{
@@ -86,9 +107,9 @@ const Home = () => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: '800px',
-        height: '800px',
-        border: '1px solid rgba(8, 145, 178, 0.1)',
+        width: '900px',
+        height: '900px',
+        border: '1px solid rgba(8, 145, 178, 0.08)',
         borderRadius: '50%',
         animation: 'pulse 4s ease-in-out infinite',
       }} />
@@ -97,9 +118,9 @@ const Home = () => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: '600px',
-        height: '600px',
-        border: '1px solid rgba(8, 145, 178, 0.15)',
+        width: '700px',
+        height: '700px',
+        border: '1px solid rgba(8, 145, 178, 0.1)',
         borderRadius: '50%',
         animation: 'pulse 4s ease-in-out infinite 0.5s',
       }} />
@@ -108,9 +129,9 @@ const Home = () => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: '400px',
-        height: '400px',
-        border: '1px solid rgba(8, 145, 178, 0.2)',
+        width: '500px',
+        height: '500px',
+        border: '1px solid rgba(8, 145, 178, 0.12)',
         borderRadius: '50%',
         animation: 'pulse 4s ease-in-out infinite 1s',
       }} />
@@ -122,7 +143,7 @@ const Home = () => {
             width: '40px',
             height: '40px',
             borderRadius: '12px',
-            backgroundColor: 'rgba(8, 145, 178, 0.2)',
+            backgroundColor: 'rgba(8, 145, 178, 0.1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -130,7 +151,7 @@ const Home = () => {
             <Eye size={24} style={{ color: '#0891b2' }} />
           </div>
           <div>
-            <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>EyeQ</h1>
+            <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#111' }}>EyeQ</h1>
             <p style={{ fontSize: '12px', color: '#6b7280' }}>by LucidEye</p>
           </div>
         </div>
@@ -142,10 +163,9 @@ const Home = () => {
         <h2 style={{ 
           fontSize: '48px', 
           fontWeight: 700, 
-          color: '#fff', 
+          color: '#111', 
           marginBottom: '16px', 
           textAlign: 'center',
-          textShadow: '0 0 40px rgba(8, 145, 178, 0.3)',
         }}>
           Intelligent Eye Analysis
         </h2>
@@ -153,41 +173,41 @@ const Home = () => {
           Advanced AI-powered medical imaging analysis for OCT and Fundus scans
         </p>
 
-        {/* Big Eye - Just the eyeball, no skin */}
+        {/* Big Eye - Just the eyeball */}
         <div 
           ref={containerRef}
-          style={{ position: 'relative', width: '500px', height: '500px' }}
+          style={{ position: 'relative', width: '400px', height: '400px' }}
         >
           {/* Outer Glow */}
           <div style={{
             position: 'absolute',
-            inset: '-20px',
+            inset: '-30px',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(8, 145, 178, 0.2) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(8, 145, 178, 0.15) 0%, transparent 70%)',
             animation: 'glow 3s ease-in-out infinite',
           }} />
 
-          {/* Sclera (White of Eye) - Main eyeball */}
+          {/* Sclera (White of Eye) */}
           <div style={{
             position: 'absolute',
             inset: 0,
-            backgroundColor: '#f8f8f8',
+            backgroundColor: '#fafafa',
             borderRadius: '50%',
             boxShadow: `
-              inset 0 0 60px rgba(0,0,0,0.15),
-              inset -20px 0 40px rgba(200,180,160,0.15),
-              0 0 80px rgba(8, 145, 178, 0.3),
-              0 20px 60px rgba(0,0,0,0.4)
+              inset 0 0 60px rgba(0,0,0,0.1),
+              inset -20px 0 40px rgba(200,180,160,0.1),
+              0 0 60px rgba(8, 145, 178, 0.2),
+              0 20px 60px rgba(0,0,0,0.15)
             `,
             overflow: 'hidden',
           }}>
             {/* Blood Vessels */}
-            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.2 }}>
-              <path d="M 20 150 Q 80 130 150 170" stroke="#cc4444" strokeWidth="1" fill="none" />
-              <path d="M 400 100 Q 350 140 320 120" stroke="#cc4444" strokeWidth="0.8" fill="none" />
-              <path d="M 30 250 Q 70 230 100 260" stroke="#cc4444" strokeWidth="0.6" fill="none" />
-              <path d="M 450 300 Q 400 280 380 320" stroke="#cc4444" strokeWidth="0.7" fill="none" />
-              <path d="M 50 350 Q 100 330 130 360" stroke="#cc4444" strokeWidth="0.5" fill="none" />
+            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.15 }}>
+              <path d="M 20 120 Q 60 100 120 140" stroke="#cc4444" strokeWidth="1" fill="none" />
+              <path d="M 320 80 Q 280 110 260 95" stroke="#cc4444" strokeWidth="0.8" fill="none" />
+              <path d="M 25 200 Q 55 185 80 210" stroke="#cc4444" strokeWidth="0.6" fill="none" />
+              <path d="M 360 240 Q 320 225 305 255" stroke="#cc4444" strokeWidth="0.7" fill="none" />
+              <path d="M 40 280 Q 80 265 105 290" stroke="#cc4444" strokeWidth="0.5" fill="none" />
             </svg>
             
             {/* Iris */}
@@ -196,13 +216,13 @@ const Home = () => {
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: '220px',
-              height: '220px',
+              width: '180px',
+              height: '180px',
               borderRadius: '50%',
               background: 'radial-gradient(circle, #2dd4bf 0%, #0891b2 30%, #0e7490 50%, #164e63 80%, #0c4a6e 100%)',
-              boxShadow: 'inset 0 0 50px rgba(0,0,0,0.6), 0 0 30px rgba(8, 145, 178, 0.4)',
+              boxShadow: 'inset 0 0 50px rgba(0,0,0,0.6), 0 0 30px rgba(8, 145, 178, 0.3)',
             }}>
-              {/* Iris Texture - Radial Lines */}
+              {/* Iris Texture */}
               {[...Array(36)].map((_, i) => (
                 <div
                   key={i}
@@ -233,8 +253,8 @@ const Home = () => {
                   position: 'absolute',
                   top: '50%',
                   left: '50%',
-                  width: '80px',
-                  height: '80px',
+                  width: '65px',
+                  height: '65px',
                   borderRadius: '50%',
                   backgroundColor: '#000',
                   transform: `translate(calc(-50% + ${pupilPosition.x}px), calc(-50% + ${pupilPosition.y}px))`,
@@ -245,19 +265,19 @@ const Home = () => {
                 {/* Light Reflections */}
                 <div style={{
                   position: 'absolute',
-                  top: '12px',
-                  right: '14px',
-                  width: '18px',
-                  height: '18px',
+                  top: '10px',
+                  right: '12px',
+                  width: '15px',
+                  height: '15px',
                   borderRadius: '50%',
                   backgroundColor: 'rgba(255,255,255,0.95)',
                 }} />
                 <div style={{
                   position: 'absolute',
-                  top: '28px',
-                  right: '24px',
-                  width: '8px',
-                  height: '8px',
+                  top: '24px',
+                  right: '20px',
+                  width: '6px',
+                  height: '6px',
                   borderRadius: '50%',
                   backgroundColor: 'rgba(255,255,255,0.7)',
                 }} />
@@ -273,14 +293,14 @@ const Home = () => {
             transform: 'translateX(-50%)',
             width: '2px',
             height: '100%',
-            background: 'linear-gradient(180deg, transparent, rgba(8, 145, 178, 0.8), transparent)',
+            background: 'linear-gradient(180deg, transparent, rgba(8, 145, 178, 0.6), transparent)',
             animation: 'scanLine 3s ease-in-out infinite',
-            opacity: 0.6,
+            opacity: 0.5,
           }} />
 
           {/* Feature Buttons Around Eye */}
           {features.map((feature, index) => {
-            const radius = 320;
+            const radius = 280;
             const angleRad = (feature.angle * Math.PI) / 180;
             const x = Math.cos(angleRad) * radius;
             const y = Math.sin(angleRad) * radius;
@@ -300,14 +320,14 @@ const Home = () => {
                   gap: '8px',
                   padding: '12px 20px',
                   borderRadius: '24px',
-                  border: '1px solid rgba(8, 145, 178, 0.3)',
-                  backgroundColor: 'rgba(10, 15, 26, 0.9)',
+                  border: '1px solid rgba(8, 145, 178, 0.2)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.3), 0 0 20px rgba(8, 145, 178, 0.1)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 0 20px rgba(8, 145, 178, 0.05)',
                   transition: 'all 0.3s ease',
                   fontWeight: 500,
                   fontSize: '14px',
-                  color: '#e5e7eb',
+                  color: '#374151',
                   whiteSpace: 'nowrap',
                   backdropFilter: 'blur(10px)',
                 }}
@@ -316,14 +336,14 @@ const Home = () => {
                   e.currentTarget.style.color = 'white';
                   e.currentTarget.style.borderColor = '#0891b2';
                   e.currentTarget.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1.1)`;
-                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(8, 145, 178, 0.5)';
+                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(8, 145, 178, 0.4)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(10, 15, 26, 0.9)';
-                  e.currentTarget.style.color = '#e5e7eb';
-                  e.currentTarget.style.borderColor = 'rgba(8, 145, 178, 0.3)';
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                  e.currentTarget.style.color = '#374151';
+                  e.currentTarget.style.borderColor = 'rgba(8, 145, 178, 0.2)';
                   e.currentTarget.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3), 0 0 20px rgba(8, 145, 178, 0.1)';
+                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08), 0 0 20px rgba(8, 145, 178, 0.05)';
                 }}
               >
                 <Icon size={18} />
@@ -342,20 +362,22 @@ const Home = () => {
             fontSize: '18px',
             fontWeight: 600,
             borderRadius: '12px',
-            border: '1px solid #0891b2',
-            backgroundColor: 'rgba(8, 145, 178, 0.2)',
+            border: 'none',
+            backgroundColor: '#0891b2',
             color: 'white',
             cursor: 'pointer',
-            boxShadow: '0 0 30px rgba(8,145,178,0.3)',
+            boxShadow: '0 4px 20px rgba(8,145,178,0.3)',
             transition: 'all 0.3s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#0891b2';
-            e.currentTarget.style.boxShadow = '0 0 50px rgba(8,145,178,0.5)';
+            e.currentTarget.style.backgroundColor = '#0e7490';
+            e.currentTarget.style.boxShadow = '0 8px 30px rgba(8,145,178,0.5)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(8, 145, 178, 0.2)';
-            e.currentTarget.style.boxShadow = '0 0 30px rgba(8,145,178,0.3)';
+            e.currentTarget.style.backgroundColor = '#0891b2';
+            e.currentTarget.style.boxShadow = '0 4px 20px rgba(8,145,178,0.3)';
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
           Start Analyzing
@@ -369,15 +391,15 @@ const Home = () => {
 
       {/* CSS Animations */}
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          25% { transform: translateY(-20px) translateX(10px); }
-          50% { transform: translateY(-10px) translateX(-10px); }
-          75% { transform: translateY(-30px) translateX(5px); }
+        @keyframes floatIcon {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          25% { transform: translateY(-15px) rotate(5deg); }
+          50% { transform: translateY(-8px) rotate(-3deg); }
+          75% { transform: translateY(-20px) rotate(3deg); }
         }
         @keyframes pulse {
           0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.05); }
+          50% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.03); }
         }
         @keyframes glow {
           0%, 100% { opacity: 0.5; }
@@ -389,7 +411,7 @@ const Home = () => {
         }
         @keyframes gridMove {
           0% { transform: translate(0, 0); }
-          100% { transform: translate(50px, 50px); }
+          100% { transform: translate(60px, 60px); }
         }
       `}</style>
     </div>
