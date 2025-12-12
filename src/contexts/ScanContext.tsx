@@ -1,6 +1,9 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { ScanAnalysis, ChatMessage, Disease, Patient } from "@/types/scan";
 import { getImagePreviewUrl } from "@/lib/tifUtils";
+
+const STORAGE_KEY = 'eyeq_patients';
+const SCANS_STORAGE_KEY = 'eyeq_scans';
 
 const generateMockDiseases = (hasOct: boolean): Disease[] => {
   const fundusDiseases: Disease[] = [
@@ -206,10 +209,48 @@ const initialPatients: Patient[] = [
   },
 ];
 
+// Load patients from localStorage or use initial data
+const loadPatientsFromStorage = (): Patient[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Convert date strings back to Date objects
+      return parsed.map((p: any) => ({
+        ...p,
+        createdAt: new Date(p.createdAt),
+        scans: p.scans.map((s: any) => ({
+          ...s,
+          uploadedAt: new Date(s.uploadedAt),
+        })),
+      }));
+    }
+  } catch (e) {
+    console.error('Error loading patients from storage:', e);
+  }
+  return initialPatients;
+};
+
+const loadScansFromStorage = (): ScanAnalysis[] => {
+  try {
+    const stored = localStorage.getItem(SCANS_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return parsed.map((s: any) => ({
+        ...s,
+        uploadedAt: new Date(s.uploadedAt),
+      }));
+    }
+  } catch (e) {
+    console.error('Error loading scans from storage:', e);
+  }
+  return [];
+};
+
 export function ScanProvider({ children }: { children: ReactNode }) {
-  const [patients, setPatients] = useState<Patient[]>(initialPatients);
+  const [patients, setPatients] = useState<Patient[]>(() => loadPatientsFromStorage());
   const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
-  const [scans, setScans] = useState<ScanAnalysis[]>([]);
+  const [scans, setScans] = useState<ScanAnalysis[]>(() => loadScansFromStorage());
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
     {
@@ -220,6 +261,24 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       selectedScanIds: [],
     }
   ]);
+
+  // Persist patients to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
+    } catch (e) {
+      console.error('Error saving patients to storage:', e);
+    }
+  }, [patients]);
+
+  // Persist scans to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(SCANS_STORAGE_KEY, JSON.stringify(scans));
+    } catch (e) {
+      console.error('Error saving scans to storage:', e);
+    }
+  }, [scans]);
 
   const addScan = useCallback(async (fundusFile: File, octFile?: File, patientId?: string, eyeSide?: 'left' | 'right') => {
     const fundusUrl = await getImagePreviewUrl(fundusFile);
