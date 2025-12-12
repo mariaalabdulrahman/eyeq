@@ -29,15 +29,17 @@ import fundus_righteye1 from "@/assets/fundus/righteye1.jpg";
 import fundus_righteye2 from "@/assets/fundus/righteye2.jpg";
 
 // Import OCT scans (B&W TIF images)
-import oct_09 from "@/assets/oct/oct_09.tif";
-import oct_017_2 from "@/assets/oct/oct_017_2.tif";
-import oct_024 from "@/assets/oct/oct_024.tif";
-import oct_012 from "@/assets/oct/oct_012.tif";
 import oct_030 from "@/assets/oct/oct_030.tif";
 import oct_039 from "@/assets/oct/oct_039.tif";
 import oct_01_2 from "@/assets/oct/oct_01_2.tif";
 import oct_010 from "@/assets/oct/oct_010.tif";
 import oct_017_3 from "@/assets/oct/oct_017_3.tif";
+
+// John Smith OCT images
+import oct_lefteye1 from "@/assets/oct/lefteye1.jpg";
+import oct_lefteye2 from "@/assets/oct/lefteye2.jpg";
+import oct_righteye1 from "@/assets/oct/righteye1.jpg";
+import oct_righteye2 from "@/assets/oct/righteye2.jpg";
 
 const STORAGE_KEY = 'eyeq_patients';
 const SCANS_STORAGE_KEY = 'eyeq_scans';
@@ -200,7 +202,7 @@ const initialPatients: Patient[] = [
         eyeSide: 'left',
         visitNumber: 1,
         visitDate: new Date('2024-01-10'),
-        linkedOctUrl: oct_09,
+        linkedOctUrl: oct_lefteye1,
         linkedOctName: 'OCT Scan Left Eye V1',
         diseases: [
           { name: 'Diabetic Retinopathy', probability: 72, severity: 'high', description: 'Moderate non-proliferative diabetic retinopathy with microaneurysms and hemorrhages.', detectedFrom: 'fundus', justification: 'Multiple microaneurysms, dot-blot hemorrhages, and hard exudates detected in the posterior pole. The pattern is consistent with moderate NPDR.', references: ['ETDRS Study, 1991', 'AAO Preferred Practice Pattern: Diabetic Retinopathy, 2019'] },
@@ -217,7 +219,7 @@ const initialPatients: Patient[] = [
         eyeSide: 'right',
         visitNumber: 1,
         visitDate: new Date('2024-01-10'),
-        linkedOctUrl: oct_017_2,
+        linkedOctUrl: oct_righteye1,
         linkedOctName: 'OCT Scan Right Eye V1',
         diseases: [
           { name: 'Diabetic Retinopathy', probability: 65, severity: 'medium', description: 'Mild to moderate NPDR with scattered microaneurysms.', detectedFrom: 'fundus', justification: 'Scattered microaneurysms and few dot hemorrhages visible. Less severe than left eye.', references: ['ETDRS Study, 1991'] },
@@ -235,7 +237,7 @@ const initialPatients: Patient[] = [
         eyeSide: 'left',
         visitNumber: 2,
         visitDate: new Date('2024-04-15'),
-        linkedOctUrl: oct_024,
+        linkedOctUrl: oct_lefteye2,
         linkedOctName: 'OCT Follow-up Left V2',
         diseases: [
           { name: 'Diabetic Retinopathy', probability: 68, severity: 'medium', description: 'Stable NPDR following treatment.', detectedFrom: 'fundus', justification: 'Microaneurysms stable, no new hemorrhages. Partial resolution of hard exudates after anti-VEGF.', references: ['DRCR.net Protocol T, NEJM 2015'] },
@@ -252,7 +254,7 @@ const initialPatients: Patient[] = [
         eyeSide: 'right',
         visitNumber: 2,
         visitDate: new Date('2024-04-15'),
-        linkedOctUrl: oct_012,
+        linkedOctUrl: oct_righteye2,
         linkedOctName: 'OCT Follow-up Right V2',
         diseases: [
           { name: 'Diabetic Retinopathy', probability: 70, severity: 'high', description: 'Progression to moderate NPDR with new hemorrhages.', detectedFrom: 'fundus', justification: 'New intraretinal hemorrhages noted. Microaneurysms increased in number.', references: ['ETDRS Study, 1991'] },
@@ -450,15 +452,15 @@ const fundusImageMap: Record<string, string> = {
   'fundus_DiscEdema6': fundus_DiscEdema6,
   'fundus_DiscEdema8': fundus_DiscEdema8,
   // OCT scans
-  'oct_09': oct_09,
-  'oct_017_2': oct_017_2,
-  'oct_024': oct_024,
-  'oct_012': oct_012,
   'oct_030': oct_030,
   'oct_039': oct_039,
   'oct_01_2': oct_01_2,
   'oct_010': oct_010,
   'oct_017_3': oct_017_3,
+  'oct_lefteye1': oct_lefteye1,
+  'oct_lefteye2': oct_lefteye2,
+  'oct_righteye1': oct_righteye1,
+  'oct_righteye2': oct_righteye2,
 };
 
 // Helper to restore image URLs from localStorage
