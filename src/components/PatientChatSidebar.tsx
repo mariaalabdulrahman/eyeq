@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Patient } from "@/types/scan";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Maximize2, Minimize2, ChevronDown } from "lucide-react";
 
 interface PatientChatMessage {
   id: string;
@@ -136,7 +137,10 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
   const [input, setInput] = useState("");
   const [selectedPatients, setSelectedPatients] = useState<string[]>([]);
   const [chatHistory, setChatHistory] = useState<PatientChatMessage[]>([]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -145,6 +149,17 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
   useEffect(() => {
     scrollToBottom();
   }, [chatHistory]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setPatientDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const generateResponse = (question: string, selectedPatientIds: string[]): PatientChatMessage => {
     const relevantPatients = selectedPatientIds.length > 0 
@@ -365,46 +380,137 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100%',
+      ...(isFullscreen ? {
+        position: 'fixed',
+        inset: 0,
+        zIndex: 100,
+        backgroundColor: 'white',
+      } : {}),
+    }}>
       {/* Header */}
-      <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '20px' }}>🤖</span>
-          <h3 style={{ fontWeight: 600, color: '#111' }}>Patient Analytics AI</h3>
+      <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '20px' }}>🤖</span>
+            <h3 style={{ fontWeight: 600, color: '#111' }}>Patient Analytics AI</h3>
+          </div>
+          <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+            Select patients or ask general queries
+          </p>
         </div>
-        <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-          Select patients or ask general queries
-        </p>
+        <button
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            backgroundColor: 'white',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          title={isFullscreen ? 'Minimize' : 'Expand to fullscreen'}
+        >
+          {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+        </button>
       </div>
 
-      {/* Patient Selection */}
+      {/* Patient Selection - Dropdown */}
       {patients.length > 0 && (
-        <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb', maxHeight: '150px', overflowY: 'auto' }}>
+        <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
           <p style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>
             Filter by Patients (optional)
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {patients.map((patient) => (
-              <button
-                key={patient.id}
-                onClick={() => {
-                  togglePatientSelection(patient.id);
-                  onPatientSelect?.(patient.id);
-                }}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '14px',
-                  border: selectedPatients.includes(patient.id) ? '2px solid #0891b2' : '1px solid #e5e7eb',
-                  backgroundColor: selectedPatients.includes(patient.id) ? '#ecfeff' : 'white',
-                  color: selectedPatients.includes(patient.id) ? '#0891b2' : '#374151',
-                  fontSize: '11px',
-                  cursor: 'pointer',
-                }}
-              >
-                {selectedPatients.includes(patient.id) && '✓ '}
-                {patient.name}
-              </button>
-            ))}
+          <div ref={dropdownRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setPatientDropdownOpen(!patientDropdownOpen)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                backgroundColor: 'white',
+                fontSize: '13px',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                color: '#374151',
+              }}
+            >
+              <span>
+                {selectedPatients.length === 0 
+                  ? 'All patients' 
+                  : selectedPatients.length === 1 
+                    ? patients.find(p => p.id === selectedPatients[0])?.name 
+                    : `${selectedPatients.length} patients selected`}
+              </span>
+              <ChevronDown size={16} style={{ transform: patientDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            </button>
+            {patientDropdownOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                marginTop: '4px',
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                zIndex: 50,
+                maxHeight: '200px',
+                overflowY: 'auto',
+              }}>
+                <button
+                  onClick={() => { setSelectedPatients([]); setPatientDropdownOpen(false); }}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: 'none',
+                    backgroundColor: selectedPatients.length === 0 ? '#ecfeff' : 'white',
+                    color: selectedPatients.length === 0 ? '#0891b2' : '#374151',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    borderBottom: '1px solid #f3f4f6',
+                  }}
+                >
+                  All patients
+                </button>
+                {patients.map((patient) => (
+                  <button
+                    key={patient.id}
+                    onClick={() => {
+                      togglePatientSelection(patient.id);
+                      onPatientSelect?.(patient.id);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: 'none',
+                      backgroundColor: selectedPatients.includes(patient.id) ? '#ecfeff' : 'white',
+                      color: selectedPatients.includes(patient.id) ? '#0891b2' : '#374151',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span style={{ width: '16px' }}>{selectedPatients.includes(patient.id) ? '✓' : ''}</span>
+                    {patient.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

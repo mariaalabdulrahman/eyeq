@@ -29,11 +29,11 @@ const Index = () => {
     addChatMessage,
   } = useScanContext();
 
-  const handleUpload = (fundusFile: File, octFile?: File, patientId?: string, newPatientName?: string, eyeSide?: 'left' | 'right') => {
+  const handleUpload = (fundusFile: File, octFile?: File, patientId?: string, newPatientData?: { name: string; age: number; gender: 'male' | 'female' | 'other'; relevantInfo?: string }, eyeSide?: 'left' | 'right') => {
     let assignPatientId = patientId;
     
-    if (newPatientName) {
-      assignPatientId = addPatient(newPatientName, '');
+    if (newPatientData) {
+      assignPatientId = addPatient(newPatientData.name, '', newPatientData.age, newPatientData.gender, newPatientData.relevantInfo);
     }
     
     addScan(fundusFile, octFile, assignPatientId, eyeSide);
