@@ -93,11 +93,14 @@ export function useScanAnalysis() {
     });
   }, [activeTabId]);
 
-  const addPatient = useCallback((name: string, dateOfBirth: string) => {
+  const addPatient = useCallback((name: string, dateOfBirth: string, age?: number, gender?: 'male' | 'female' | 'other', relevantInfo?: string) => {
     const newPatient: Patient = {
       id: crypto.randomUUID(),
       name,
       dateOfBirth,
+      age: age || 0,
+      gender: gender || 'other',
+      relevantInfo,
       scans: [],
       createdAt: new Date(),
     };

@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Upload, ScanLine, FolderOpen, GitCompare, BarChart3, Stethoscope } from "lucide-react";
 import Logo from "@/components/Logo";
+import { NewPatientModal } from "@/components/NewPatientModal";
+import { useScanContext } from "@/contexts/ScanContext";
 import kkeshLogo from "@/assets/kkesh-logo.png";
 
 import aiBrainImg from "@/assets/ai-brain.png";
@@ -11,8 +13,10 @@ import mlNetworkImg from "@/assets/ml-network.png";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { addPatient } = useScanContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const [pupilPosition, setPupilPosition] = useState({ x: 0, y: 0 });
+  const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -45,11 +49,20 @@ const Home = () => {
   ];
 
   const floatingGraphics = [
-    { src: aiBrainImg, size: 200, x: 3, y: 10, duration: 12, delay: 0 },
-    { src: eyeScanImg, size: 180, x: 85, y: 8, duration: 14, delay: 1 },
+    { src: aiBrainImg, size: 200, x: 3, y: 18, duration: 12, delay: 0 },
+    { src: eyeScanImg, size: 180, x: 85, y: 16, duration: 14, delay: 1 },
     { src: dnaDataImg, size: 160, x: 5, y: 65, duration: 11, delay: 2 },
     { src: mlNetworkImg, size: 190, x: 82, y: 70, duration: 13, delay: 0.5 },
   ];
+
+  const handleNewPatientSubmit = (data: { name: string; age: number; gender: 'male' | 'female' | 'other'; relevantInfo?: string }) => {
+    const today = new Date();
+    const birthYear = today.getFullYear() - data.age;
+    const dateOfBirth = `${birthYear}-01-01`;
+    
+    const patientId = addPatient(data.name, dateOfBirth, data.age, data.gender, data.relevantInfo);
+    navigate(`/dashboard?patientId=${patientId}`);
+  };
 
   return (
     <div
@@ -437,7 +450,7 @@ const Home = () => {
 
         {/* CTA Button */}
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => setIsNewPatientModalOpen(true)}
           style={{
             marginTop: "50px",
             padding: "14px 36px",
@@ -462,9 +475,16 @@ const Home = () => {
             e.currentTarget.style.transform = "translateY(0)";
           }}
         >
-          Start Analyzing
+          New Analysis
         </button>
       </main>
+
+      {/* New Patient Modal */}
+      <NewPatientModal
+        isOpen={isNewPatientModalOpen}
+        onClose={() => setIsNewPatientModalOpen(false)}
+        onSubmit={handleNewPatientSubmit}
+      />
 
       {/* Footer */}
       <footer

@@ -74,14 +74,19 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text(`Patient: ${patient.name}`, 20, 55);
-    doc.text(`DOB: ${new Date(patient.dateOfBirth).toLocaleDateString()}`, 20, 62);
-    doc.text(`Total Scans: ${patient.scans.length}`, 20, 69);
-    doc.text(`Risk Level: ${risk.level}`, 20, 76);
+    doc.text(`Age: ${patient.age} | Gender: ${patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}`, 20, 62);
+    doc.text(`DOB: ${new Date(patient.dateOfBirth).toLocaleDateString()}`, 20, 69);
+    doc.text(`Total Scans: ${patient.scans.length}`, 20, 76);
+    doc.text(`Risk Level: ${risk.level}`, 20, 83);
+    if (patient.relevantInfo) {
+      doc.text(`Medical History: ${patient.relevantInfo.substring(0, 60)}${patient.relevantInfo.length > 60 ? '...' : ''}`, 20, 90);
+    }
 
     // Diseases Table
+    const tableStartY = patient.relevantInfo ? 105 : 95;
     if (diseases.length > 0) {
       doc.setFontSize(14);
-      doc.text(reportType === 'doctor' ? "Clinical Findings" : "Health Findings", 20, 90);
+      doc.text(reportType === 'doctor' ? "Clinical Findings" : "Health Findings", 20, tableStartY - 5);
 
       const tableData = diseases.map(d => [
         d.name,
@@ -93,7 +98,7 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
       ]);
 
       autoTable(doc, {
-        startY: 95,
+        startY: tableStartY,
         head: [['Condition', 'Probability', 'Severity', reportType === 'doctor' ? 'Clinical Notes' : 'Status']],
         body: tableData,
         theme: 'striped',
@@ -145,7 +150,9 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
                 <Stethoscope size={28} style={{ color: '#0891b2' }} />
                 <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#111' }}>Clinical Report</h2>
               </div>
-              <p style={{ color: '#6b7280' }}>Patient: {patient.name} | DOB: {new Date(patient.dateOfBirth).toLocaleDateString()}</p>
+              <p style={{ color: '#6b7280' }}>
+                Patient: {patient.name} | Age: {patient.age} | Gender: {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}
+              </p>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
