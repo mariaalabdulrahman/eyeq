@@ -1,24 +1,15 @@
 import { useState, useCallback } from "react";
 import { Upload, X, Microscope, Eye, UserPlus, User } from "lucide-react";
-
-interface Patient {
-  id: string;
-  name: string;
-}
+import { Patient } from "@/types/scan";
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpload: (file: File, type: 'oct' | 'fundus', patientId?: string, newPatientName?: string) => void;
+  patients: Patient[];
 }
 
-// Mock patients - in real app this would come from props or context
-const mockPatients: Patient[] = [
-  { id: '1', name: 'John Smith' },
-  { id: '2', name: 'Mary Johnson' },
-];
-
-export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
+export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModalProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [scanType, setScanType] = useState<'oct' | 'fundus'>('oct');
@@ -225,7 +216,7 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
               }}
             >
               <option value="">-- Select a patient --</option>
-              {mockPatients.map(patient => (
+              {patients.map(patient => (
                 <option key={patient.id} value={patient.id}>{patient.name}</option>
               ))}
             </select>

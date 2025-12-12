@@ -5,7 +5,7 @@ import { ChatSidebar } from "@/components/ChatSidebar";
 import { ViewModeButtons } from "@/components/ViewModeButtons";
 import { AnalysisPanel } from "@/components/AnalysisPanel";
 import { UploadModal } from "@/components/UploadModal";
-import { useScanAnalysis } from "@/hooks/useScanAnalysis";
+import { useScanContext } from "@/contexts/ScanContext";
 import { ViewMode } from "@/types/scan";
 import { FolderOpen } from "lucide-react";
 import Logo from "@/components/Logo";
@@ -19,17 +19,26 @@ const Index = () => {
   
   const {
     scans,
+    patients,
     activeScan,
     activeTabId,
     chatHistory,
     setActiveTabId,
     addScan,
+    addPatient,
     removeScan,
     addChatMessage,
-  } = useScanAnalysis();
+  } = useScanContext();
 
-  const handleUpload = (file: File, type: 'oct' | 'fundus') => {
-    addScan(file, type);
+  const handleUpload = (file: File, type: 'oct' | 'fundus', patientId?: string, newPatientName?: string) => {
+    let assignPatientId = patientId;
+    
+    // If creating a new patient, do that first
+    if (newPatientName) {
+      assignPatientId = addPatient(newPatientName, '');
+    }
+    
+    addScan(file, type, assignPatientId);
   };
 
   const handleSendMessage = (message: string, selectedScanIds: string[]) => {
@@ -196,6 +205,7 @@ const Index = () => {
         isOpen={uploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
         onUpload={handleUpload}
+        patients={patients}
       />
     </div>
   );
