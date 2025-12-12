@@ -18,6 +18,17 @@ import fundus_MacularScar from "@/assets/fundus/Macular_Scar27.jpg";
 import fundus_DiscEdema6 from "@/assets/fundus/Disc_Edema6.jpg";
 import fundus_DiscEdema8 from "@/assets/fundus/Disc_Edema8.jpg";
 
+// Import OCT scans (B&W TIF images)
+import oct_09 from "@/assets/oct/oct_09.tif";
+import oct_017_2 from "@/assets/oct/oct_017_2.tif";
+import oct_024 from "@/assets/oct/oct_024.tif";
+import oct_012 from "@/assets/oct/oct_012.tif";
+import oct_030 from "@/assets/oct/oct_030.tif";
+import oct_039 from "@/assets/oct/oct_039.tif";
+import oct_01_2 from "@/assets/oct/oct_01_2.tif";
+import oct_010 from "@/assets/oct/oct_010.tif";
+import oct_017_3 from "@/assets/oct/oct_017_3.tif";
+
 const STORAGE_KEY = 'eyeq_patients';
 const SCANS_STORAGE_KEY = 'eyeq_scans';
 
@@ -179,7 +190,7 @@ const initialPatients: Patient[] = [
         eyeSide: 'left',
         visitNumber: 1,
         visitDate: new Date('2024-01-10'),
-        linkedOctUrl: fundus_Myopia12,
+        linkedOctUrl: oct_09,
         linkedOctName: 'OCT Scan Left Eye V1',
         diseases: [
           { name: 'Diabetic Retinopathy', probability: 72, severity: 'high', description: 'Moderate non-proliferative diabetic retinopathy with microaneurysms and hemorrhages.', detectedFrom: 'fundus', justification: 'Multiple microaneurysms, dot-blot hemorrhages, and hard exudates detected in the posterior pole. The pattern is consistent with moderate NPDR.', references: ['ETDRS Study, 1991', 'AAO Preferred Practice Pattern: Diabetic Retinopathy, 2019'] },
@@ -196,7 +207,7 @@ const initialPatients: Patient[] = [
         eyeSide: 'right',
         visitNumber: 1,
         visitDate: new Date('2024-01-10'),
-        linkedOctUrl: fundus_CSCR99,
+        linkedOctUrl: oct_017_2,
         linkedOctName: 'OCT Scan Right Eye V1',
         diseases: [
           { name: 'Diabetic Retinopathy', probability: 65, severity: 'medium', description: 'Mild to moderate NPDR with scattered microaneurysms.', detectedFrom: 'fundus', justification: 'Scattered microaneurysms and few dot hemorrhages visible. Less severe than left eye.', references: ['ETDRS Study, 1991'] },
@@ -214,7 +225,7 @@ const initialPatients: Patient[] = [
         eyeSide: 'left',
         visitNumber: 2,
         visitDate: new Date('2024-04-15'),
-        linkedOctUrl: fundus_MacularScar,
+        linkedOctUrl: oct_024,
         linkedOctName: 'OCT Follow-up Left V2',
         diseases: [
           { name: 'Diabetic Retinopathy', probability: 68, severity: 'medium', description: 'Stable NPDR following treatment.', detectedFrom: 'fundus', justification: 'Microaneurysms stable, no new hemorrhages. Partial resolution of hard exudates after anti-VEGF.', references: ['DRCR.net Protocol T, NEJM 2015'] },
@@ -231,7 +242,7 @@ const initialPatients: Patient[] = [
         eyeSide: 'right',
         visitNumber: 2,
         visitDate: new Date('2024-04-15'),
-        linkedOctUrl: fundus_DiscEdema6,
+        linkedOctUrl: oct_012,
         linkedOctName: 'OCT Follow-up Right V2',
         diseases: [
           { name: 'Diabetic Retinopathy', probability: 70, severity: 'high', description: 'Progression to moderate NPDR with new hemorrhages.', detectedFrom: 'fundus', justification: 'New intraretinal hemorrhages noted. Microaneurysms increased in number.', references: ['ETDRS Study, 1991'] },
@@ -290,7 +301,7 @@ const initialPatients: Patient[] = [
         eyeSide: 'left',
         visitNumber: 1,
         visitDate: new Date('2024-01-12'),
-        linkedOctUrl: fundus_CSCR99,
+        linkedOctUrl: oct_030,
         linkedOctName: 'OCT RNFL Analysis',
         diseases: [
           { name: 'Glaucoma', probability: 78, severity: 'high', description: 'Significant optic nerve changes detected.', detectedFrom: 'both', justification: 'Increased cup-to-disc ratio (0.8) with peripapillary atrophy visible in fundus. OCT shows RNFL thinning in superior and inferior quadrants.', references: ['AAO Glaucoma Guidelines, 2020'] },
@@ -306,10 +317,12 @@ const initialPatients: Patient[] = [
         eyeSide: 'right',
         visitNumber: 1,
         visitDate: new Date('2024-01-12'),
+        linkedOctUrl: oct_039,
+        linkedOctName: 'OCT Macula Right',
         diseases: [
-          { name: 'Central Serous Chorioretinopathy', probability: 55, severity: 'medium', description: 'Serous detachment of neurosensory retina.', detectedFrom: 'fundus', justification: 'Fundus shows characteristic dome-shaped elevation at macula consistent with CSCR.', references: ['Daruich A. et al. Prog Retin Eye Res 2015'] },
+          { name: 'Central Serous Chorioretinopathy', probability: 55, severity: 'medium', description: 'Serous detachment of neurosensory retina.', detectedFrom: 'both', justification: 'Fundus shows characteristic dome-shaped elevation at macula. OCT confirms subretinal fluid accumulation.', references: ['Daruich A. et al. Prog Retin Eye Res 2015'] },
         ],
-        summary: 'CSCR detected. Monitor for resolution.',
+        summary: 'CSCR detected and confirmed on OCT. Monitor for resolution.',
       },
     ],
   },
@@ -332,11 +345,13 @@ const initialPatients: Patient[] = [
         eyeSide: 'right',
         visitNumber: 1,
         visitDate: new Date('2024-01-15'),
+        linkedOctUrl: oct_01_2,
+        linkedOctName: 'OCT Macula Right',
         diseases: [
-          { name: 'Pathological Myopia', probability: 68, severity: 'medium', description: 'Myopic degeneration with tessellation visible.', detectedFrom: 'fundus', justification: 'Fundus shows tigroid/tessellated appearance with visible choroidal vessels.', references: ['Ohno-Matsui K. Asia Pac J Ophthalmol 2016'] },
+          { name: 'Pathological Myopia', probability: 68, severity: 'medium', description: 'Myopic degeneration with tessellation visible.', detectedFrom: 'both', justification: 'Fundus shows tigroid/tessellated appearance with visible choroidal vessels. OCT confirms posterior staphyloma and retinal thinning.', references: ['Ohno-Matsui K. Asia Pac J Ophthalmol 2016'] },
           { name: 'Lacquer Cracks', probability: 35, severity: 'low', description: 'Linear breaks in Bruch membrane.', detectedFrom: 'fundus', justification: 'Yellowish linear lesions visible consistent with lacquer cracks.', references: ['Ohno-Matsui K. Retina 2003'] },
         ],
-        summary: 'Pathological myopia detected. Regular monitoring advised.',
+        summary: 'Pathological myopia detected with OCT confirmation. Regular monitoring advised.',
       },
       {
         id: 's4b',
@@ -347,10 +362,12 @@ const initialPatients: Patient[] = [
         eyeSide: 'left',
         visitNumber: 1,
         visitDate: new Date('2024-01-15'),
+        linkedOctUrl: oct_010,
+        linkedOctName: 'OCT Macula Left',
         diseases: [
-          { name: 'Retinitis Pigmentosa', probability: 85, severity: 'high', description: 'Bone spicule pigmentation and attenuated vessels.', detectedFrom: 'fundus', justification: 'Classic bone spicule pigmentation pattern visible in mid-periphery with vessel attenuation.', references: ['Hartong DT. Lancet 2006'] },
+          { name: 'Retinitis Pigmentosa', probability: 85, severity: 'high', description: 'Bone spicule pigmentation and attenuated vessels.', detectedFrom: 'both', justification: 'Classic bone spicule pigmentation pattern visible in mid-periphery with vessel attenuation. OCT shows outer retinal layer loss.', references: ['Hartong DT. Lancet 2006'] },
         ],
-        summary: 'Retinitis pigmentosa confirmed. Genetic counseling recommended.',
+        summary: 'Retinitis pigmentosa confirmed on fundus and OCT. Genetic counseling recommended.',
       },
     ],
   },
@@ -373,10 +390,12 @@ const initialPatients: Patient[] = [
         eyeSide: 'left',
         visitNumber: 1,
         visitDate: new Date('2024-01-20'),
+        linkedOctUrl: oct_017_3,
+        linkedOctName: 'OCT Optic Nerve Left',
         diseases: [
-          { name: 'Optic Disc Edema', probability: 82, severity: 'high', description: 'Swelling of the optic disc with blurred margins.', detectedFrom: 'fundus', justification: 'Fundus shows optic disc swelling with hemorrhages at disc margin, suggestive of papilledema.', references: ['Friedman DI. UpToDate 2023'] },
+          { name: 'Optic Disc Edema', probability: 82, severity: 'high', description: 'Swelling of the optic disc with blurred margins.', detectedFrom: 'both', justification: 'Fundus shows optic disc swelling with hemorrhages at disc margin. OCT confirms RNFL thickening consistent with papilledema.', references: ['Friedman DI. UpToDate 2023'] },
         ],
-        summary: 'Optic disc edema detected. Urgent neurological evaluation recommended.',
+        summary: 'Optic disc edema confirmed on OCT. Urgent neurological evaluation recommended.',
       },
       {
         id: 's6',
@@ -396,7 +415,7 @@ const initialPatients: Patient[] = [
   },
 ];
 
-// Map of fundus image keys to actual imports for restoring from localStorage
+// Map of image keys to actual imports for restoring from localStorage
 const fundusImageMap: Record<string, string> = {
   'fundus_DR165': fundus_DR165,
   'fundus_DR161': fundus_DR161,
@@ -412,6 +431,16 @@ const fundusImageMap: Record<string, string> = {
   'fundus_MacularScar': fundus_MacularScar,
   'fundus_DiscEdema6': fundus_DiscEdema6,
   'fundus_DiscEdema8': fundus_DiscEdema8,
+  // OCT scans
+  'oct_09': oct_09,
+  'oct_017_2': oct_017_2,
+  'oct_024': oct_024,
+  'oct_012': oct_012,
+  'oct_030': oct_030,
+  'oct_039': oct_039,
+  'oct_01_2': oct_01_2,
+  'oct_010': oct_010,
+  'oct_017_3': oct_017_3,
 };
 
 // Helper to restore image URLs from localStorage
