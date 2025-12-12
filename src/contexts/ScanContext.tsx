@@ -9,6 +9,8 @@ import fundus_Myopia12 from "@/assets/fundus/Myopia12.jpg";
 import fundus_Retinitis from "@/assets/fundus/Retinitis_Pigmentosa138.jpg";
 import fundus_CSCR99 from "@/assets/fundus/CSCR99.jpg";
 import fundus_MacularScar from "@/assets/fundus/Macular_Scar27.jpg";
+import fundus_DiscEdema6 from "@/assets/fundus/Disc_Edema6.jpg";
+import fundus_DiscEdema8 from "@/assets/fundus/Disc_Edema8.jpg";
 
 const STORAGE_KEY = 'eyeq_patients';
 const SCANS_STORAGE_KEY = 'eyeq_scans';
@@ -257,6 +259,41 @@ const initialPatients: Patient[] = [
       },
     ],
   },
+  {
+    id: '4',
+    name: 'Emily Davis',
+    dateOfBirth: '1980-05-20',
+    age: 44,
+    gender: 'female',
+    relevantInfo: 'Recent headaches, vision changes reported',
+    createdAt: new Date('2024-01-20'),
+    scans: [
+      {
+        id: 's5',
+        name: 'Disc Edema Scan (Left)',
+        imageUrl: fundus_DiscEdema6,
+        uploadedAt: new Date('2024-01-20'),
+        type: 'fundus',
+        eyeSide: 'left',
+        diseases: [
+          { name: 'Optic Disc Edema', probability: 82, severity: 'high', description: 'Swelling of the optic disc with blurred margins.', detectedFrom: 'fundus', justification: 'Fundus shows optic disc swelling with hemorrhages at disc margin, suggestive of papilledema.', references: ['Friedman DI. UpToDate 2023'] },
+        ],
+        summary: 'Optic disc edema detected. Urgent neurological evaluation recommended.',
+      },
+      {
+        id: 's6',
+        name: 'Disc Edema Scan (Right)',
+        imageUrl: fundus_DiscEdema8,
+        uploadedAt: new Date('2024-01-20'),
+        type: 'fundus',
+        eyeSide: 'right',
+        diseases: [
+          { name: 'Optic Disc Edema', probability: 78, severity: 'high', description: 'Bilateral optic disc swelling observed.', detectedFrom: 'fundus', justification: 'Right eye also shows disc swelling confirming bilateral papilledema.', references: ['Friedman DI. UpToDate 2023'] },
+        ],
+        summary: 'Bilateral disc edema confirmed. MRI brain recommended.',
+      },
+    ],
+  },
 ];
 
 // Map of fundus image keys to actual imports for restoring from localStorage
@@ -267,6 +304,8 @@ const fundusImageMap: Record<string, string> = {
   'fundus_Retinitis': fundus_Retinitis,
   'fundus_CSCR99': fundus_CSCR99,
   'fundus_MacularScar': fundus_MacularScar,
+  'fundus_DiscEdema6': fundus_DiscEdema6,
+  'fundus_DiscEdema8': fundus_DiscEdema8,
 };
 
 // Helper to restore image URLs from localStorage
