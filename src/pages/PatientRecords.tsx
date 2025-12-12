@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Patient } from "@/types/scan";
-import { ArrowLeft, UserPlus, Home, Stethoscope, User, BarChart3, Lock, X } from "lucide-react";
+import { ArrowLeft, UserPlus, Home, Stethoscope, User, BarChart3, Lock, X, Edit2, Save } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useScanContext } from "@/contexts/ScanContext";
 import { PatientChatSidebar } from "@/components/PatientChatSidebar";
@@ -12,7 +12,7 @@ type RecordsViewMode = 'home' | 'doctor-report' | 'patient-report' | 'statistics
 
 const PatientRecords = () => {
   const navigate = useNavigate();
-  const { patients, addPatient } = useScanContext();
+  const { patients, addPatient, updatePatient } = useScanContext();
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
   const [viewMode, setViewMode] = useState<RecordsViewMode>('home');
@@ -24,6 +24,37 @@ const PatientRecords = () => {
   const [newPatientDob, setNewPatientDob] = useState("");
   const [chatHeight, setChatHeight] = useState(300);
   const [sidebarWidth, setSidebarWidth] = useState(350);
+  
+  // Patient editing state
+  const [isEditingPatient, setIsEditingPatient] = useState(false);
+  const [editPatientData, setEditPatientData] = useState({
+    name: '',
+    age: 0,
+    gender: 'other' as 'male' | 'female' | 'other',
+    relevantInfo: '',
+  });
+
+  // Sync editPatientData when selectedPatient changes
+  useEffect(() => {
+    if (selectedPatient) {
+      setEditPatientData({
+        name: selectedPatient.name,
+        age: selectedPatient.age || 0,
+        gender: selectedPatient.gender || 'other',
+        relevantInfo: selectedPatient.relevantInfo || '',
+      });
+    }
+  }, [selectedPatient]);
+
+  // Update selectedPatient when patients changes
+  useEffect(() => {
+    if (selectedPatient) {
+      const updated = patients.find(p => p.id === selectedPatient.id);
+      if (updated) {
+        setSelectedPatient(updated);
+      }
+    }
+  }, [patients, selectedPatient?.id]);
 
   const calculateOverallRisk = (patient: Patient): { level: string; color: string } => {
     const allDiseases = patient.scans.flatMap(s => s.diseases);
@@ -316,21 +347,126 @@ const PatientRecords = () => {
                   boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <h2 style={{ fontSize: '28px', fontWeight: 700, color: '#111' }}>{selectedPatient.name}</h2>
-                      <p style={{ color: '#6b7280', marginTop: '4px' }}>
-                        Date of Birth: {new Date(selectedPatient.dateOfBirth).toLocaleDateString()} | 
-                        Patient since: {selectedPatient.createdAt.toLocaleDateString()}
-                      </p>
+                    <div style={{ flex: 1 }}>
+                      {isEditingPatient ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <input
+                            type="text"
+                            value={editPatientData.name}
+                            onChange={(e) => setEditPatientData({ ...editPatientData, name: e.target.value })}
+                            placeholder="Patient Name"
+                            style={{
+                              fontSize: '24px',
+                              fontWeight: 700,
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              border: '2px solid #0891b2',
+                              outline: 'none',
+                            }}
+                          />
+                          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Age</label>
+                              <input
+                                type="number"
+                                value={editPatientData.age}
+                                onChange={(e) => setEditPatientData({ ...editPatientData, age: parseInt(e.target.value) || 0 })}
+                                style={{
+                                  padding: '8px 12px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #e5e7eb',
+                                  width: '80px',
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Gender</label>
+                              <select
+                                value={editPatientData.gender}
+                                onChange={(e) => setEditPatientData({ ...editPatientData, gender: e.target.value as 'male' | 'female' | 'other' })}
+                                style={{
+                                  padding: '8px 12px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #e5e7eb',
+                                }}
+                              >
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Medical History</label>
+                            <textarea
+                              value={editPatientData.relevantInfo}
+                              onChange={(e) => setEditPatientData({ ...editPatientData, relevantInfo: e.target.value })}
+                              placeholder="Relevant medical history..."
+                              style={{
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                border: '1px solid #e5e7eb',
+                                width: '100%',
+                                minHeight: '60px',
+                                resize: 'vertical',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <h2 style={{ fontSize: '28px', fontWeight: 700, color: '#111' }}>{selectedPatient.name}</h2>
+                          <p style={{ color: '#6b7280', marginTop: '4px' }}>
+                            Age: {selectedPatient.age || 'N/A'} | Gender: {selectedPatient.gender ? selectedPatient.gender.charAt(0).toUpperCase() + selectedPatient.gender.slice(1) : 'N/A'}
+                          </p>
+                          <p style={{ color: '#6b7280', marginTop: '2px' }}>
+                            DOB: {new Date(selectedPatient.dateOfBirth).toLocaleDateString()} | 
+                            Patient since: {selectedPatient.createdAt.toLocaleDateString()}
+                          </p>
+                          {selectedPatient.relevantInfo && (
+                            <p style={{ color: '#374151', marginTop: '8px', fontSize: '14px', padding: '8px 12px', backgroundColor: '#f9fafb', borderRadius: '6px' }}>
+                              <strong>Medical History:</strong> {selectedPatient.relevantInfo}
+                            </p>
+                          )}
+                        </>
+                      )}
                     </div>
-                    <div style={{
-                      padding: '8px 16px',
-                      borderRadius: '20px',
-                      backgroundColor: calculateOverallRisk(selectedPatient).color + '20',
-                      color: calculateOverallRisk(selectedPatient).color,
-                      fontWeight: 600,
-                    }}>
-                      {calculateOverallRisk(selectedPatient).level}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                      <div style={{
+                        padding: '8px 16px',
+                        borderRadius: '20px',
+                        backgroundColor: calculateOverallRisk(selectedPatient).color + '20',
+                        color: calculateOverallRisk(selectedPatient).color,
+                        fontWeight: 600,
+                      }}>
+                        {calculateOverallRisk(selectedPatient).level}
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (isEditingPatient) {
+                            // Save changes
+                            updatePatient(selectedPatient.id, editPatientData);
+                            setIsEditingPatient(false);
+                          } else {
+                            setIsEditingPatient(true);
+                          }
+                        }}
+                        style={{
+                          padding: '8px 14px',
+                          borderRadius: '8px',
+                          border: '1px solid #e5e7eb',
+                          backgroundColor: isEditingPatient ? '#0891b2' : 'white',
+                          color: isEditingPatient ? 'white' : '#374151',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '13px',
+                          fontWeight: 500,
+                        }}
+                      >
+                        {isEditingPatient ? <><Save size={14} /> Save</> : <><Edit2 size={14} /> Edit Info</>}
+                      </button>
                     </div>
                   </div>
                 </div>
