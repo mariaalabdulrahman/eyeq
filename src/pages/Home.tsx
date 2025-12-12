@@ -515,6 +515,12 @@ const Home = () => {
         isOpen={activeModal === 'compare'}
         onClose={() => setActiveModal(null)}
         onSelect={handleSelectForCompare}
+        onCreatePatient={(data) => {
+          const today = new Date();
+          const birthYear = today.getFullYear() - (new Date(data.dateOfBirth).getFullYear() ? today.getFullYear() - new Date(data.dateOfBirth).getFullYear() : 0);
+          const patientId = addPatient(data.name, data.dateOfBirth, undefined, data.gender, undefined, data.medicalTags);
+          return patientId;
+        }}
         patients={patients}
         title="Compare Scans"
         description="Select a patient to compare their scans"
@@ -526,6 +532,10 @@ const Home = () => {
         isOpen={activeModal === 'textual'}
         onClose={() => setActiveModal(null)}
         onSelect={handleSelectForTextual}
+        onCreatePatient={(data) => {
+          const patientId = addPatient(data.name, data.dateOfBirth, undefined, data.gender, undefined, data.medicalTags);
+          return patientId;
+        }}
         patients={patients}
         title="Scan Analysis"
         description="Select a patient to view their scan analysis"

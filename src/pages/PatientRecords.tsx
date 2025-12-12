@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Patient } from "@/types/scan";
-import { ArrowLeft, UserPlus, Home, Stethoscope, User, BarChart3, Lock, X, Edit2, Save } from "lucide-react";
+import { Patient, ScanAnalysis } from "@/types/scan";
+import { ArrowLeft, UserPlus, Home, Stethoscope, User, BarChart3, Lock, X, Edit2, Save, ZoomIn } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useScanContext } from "@/contexts/ScanContext";
 import { PatientChatSidebar } from "@/components/PatientChatSidebar";
 import { PatientReport } from "@/components/PatientReport";
 import { PatientStatistics } from "@/components/PatientStatistics";
 import { MedicalTagInput } from "@/components/MedicalTagInput";
+import { TifImage } from "@/components/TifImage";
 
 type RecordsViewMode = 'home' | 'doctor-report' | 'patient-report' | 'statistics';
 
@@ -49,6 +50,9 @@ const PatientRecords = () => {
     gender: 'other' as 'male' | 'female' | 'other',
     medicalTags: [] as string[],
   });
+  
+  // Expanded scan modal state
+  const [expandedScan, setExpandedScan] = useState<ScanAnalysis | null>(null);
 
   // Sync editPatientData when selectedPatient changes
   useEffect(() => {
@@ -716,17 +720,64 @@ const PatientRecords = () => {
                   <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>All Scans ({selectedPatient.scans.length})</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
                     {selectedPatient.scans.map((scan) => (
-                      <div key={scan.id} style={{ 
-                        border: '1px solid #e5e7eb', 
-                        borderRadius: '8px', 
-                        overflow: 'hidden',
-                        backgroundColor: '#f9fafb',
-                      }}>
-                        <img 
-                          src={scan.imageUrl} 
-                          alt={scan.name}
-                          style={{ width: '100%', height: '150px', objectFit: 'cover' }}
-                        />
+                      <div 
+                        key={scan.id} 
+                        style={{ 
+                          border: '1px solid #e5e7eb', 
+                          borderRadius: '8px', 
+                          overflow: 'hidden',
+                          backgroundColor: '#f9fafb',
+                          cursor: 'pointer',
+                          transition: 'box-shadow 0.2s, transform 0.2s',
+                        }}
+                        onClick={() => setExpandedScan(scan)}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.boxShadow = 'none';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                      >
+                        <div style={{ position: 'relative' }}>
+                          <img 
+                            src={scan.imageUrl} 
+                            alt={scan.name}
+                            style={{ width: '100%', height: '150px', objectFit: 'cover' }}
+                          />
+                          <div style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            backgroundColor: 'rgba(0,0,0,0.6)',
+                            color: 'white',
+                            fontSize: '11px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}>
+                            <ZoomIn size={12} />
+                            Click to expand
+                          </div>
+                          {scan.linkedOctUrl && (
+                            <div style={{
+                              position: 'absolute',
+                              bottom: '8px',
+                              left: '8px',
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              backgroundColor: '#0891b2',
+                              color: 'white',
+                              fontSize: '10px',
+                              fontWeight: 600,
+                            }}>
+                              + OCT
+                            </div>
+                          )}
+                        </div>
                         <div style={{ padding: '12px' }}>
                           <p style={{ fontWeight: 600, fontSize: '14px' }}>{scan.name}</p>
                           <p style={{ fontSize: '12px', color: '#6b7280' }}>
@@ -923,6 +974,138 @@ const PatientRecords = () => {
                 Create Patient
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Expanded Scan Modal */}
+      {expandedScan && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 60,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div 
+            onClick={() => setExpandedScan(null)}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: 'rgba(0,0,0,0.8)',
+            }}
+          />
+          <div style={{
+            position: 'relative',
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '24px',
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+          }}>
+            <button
+              onClick={() => setExpandedScan(null)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '8px',
+                backgroundColor: '#f3f4f6',
+              }}
+            >
+              <X size={20} style={{ color: '#6b7280' }} />
+            </button>
+            
+            <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '16px' }}>
+              {expandedScan.name}
+            </h3>
+            <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '20px' }}>
+              {expandedScan.type.toUpperCase()} • Uploaded: {expandedScan.uploadedAt.toLocaleDateString()}
+              {expandedScan.visitDate && ` • Visit: ${new Date(expandedScan.visitDate).toLocaleDateString()}`}
+            </p>
+            
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: expandedScan.linkedOctUrl ? '1fr 1fr' : '1fr', 
+              gap: '24px',
+              maxWidth: expandedScan.linkedOctUrl ? '1000px' : '500px',
+            }}>
+              {/* Fundus Image */}
+              <div>
+                <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: '#374151' }}>
+                  Fundus Image
+                </p>
+                <img 
+                  src={expandedScan.imageUrl}
+                  alt={expandedScan.name}
+                  style={{
+                    width: '100%',
+                    maxHeight: '500px',
+                    objectFit: 'contain',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                  }}
+                />
+              </div>
+              
+              {/* OCT Image */}
+              {expandedScan.linkedOctUrl && (
+                <div>
+                  <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: '#374151' }}>
+                    OCT Scan {expandedScan.linkedOctName && `(${expandedScan.linkedOctName})`}
+                  </p>
+                  <div style={{
+                    width: '100%',
+                    maxHeight: '500px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    overflow: 'hidden',
+                    backgroundColor: '#000',
+                  }}>
+                    <TifImage 
+                      src={expandedScan.linkedOctUrl}
+                      alt={expandedScan.linkedOctName || 'OCT Scan'}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Disease Info */}
+            {expandedScan.diseases && expandedScan.diseases.length > 0 && (
+              <div style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+                <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>Detected Conditions</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {expandedScan.diseases.map((disease, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '16px',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        backgroundColor: disease.probability >= 70 ? '#fef2f2' : disease.probability >= 40 ? '#fffbeb' : '#f0fdf4',
+                        color: disease.probability >= 70 ? '#dc2626' : disease.probability >= 40 ? '#d97706' : '#22c55e',
+                      }}
+                    >
+                      {disease.name} ({disease.probability}%)
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
