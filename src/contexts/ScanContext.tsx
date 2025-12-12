@@ -318,7 +318,12 @@ const restoreImageUrl = (url: string): string => {
   for (const [key, importedUrl] of Object.entries(fundusImageMap)) {
     if (url === importedUrl) return importedUrl;
   }
-  return url;
+  // If it's a data URL or valid http URL, return as-is
+  if (url.startsWith('data:') || url.startsWith('http')) {
+    return url;
+  }
+  // Default to a known fundus image if nothing matches
+  return fundus_DR165;
 };
 
 // Helper to get storage key for an image
@@ -335,6 +340,21 @@ const loadPatientsFromStorage = (): Patient[] => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
+      
+      // Check if any scans have invalid blob URLs - if so, reset to initial data
+      const hasInvalidUrls = parsed.some((p: any) => 
+        p.scans?.some((s: any) => 
+          (typeof s.imageUrl === 'string' && s.imageUrl.startsWith('blob:')) ||
+          (typeof s.linkedOctUrl === 'string' && s.linkedOctUrl.startsWith('blob:'))
+        )
+      );
+      
+      if (hasInvalidUrls) {
+        console.warn('Detected invalid blob URLs in patient scans. Resetting to initial data.');
+        localStorage.removeItem(STORAGE_KEY);
+        return initialPatients;
+      }
+      
       // Convert date strings back to Date objects and restore image URLs
       return parsed.map((p: any) => ({
         ...p,
