@@ -197,32 +197,46 @@ const Home = () => {
             }}
           />
 
-          {/* Sclera (White of Eye) */}
+          {/* Sclera (White of Eye) - More realistic */}
           <div
             style={{
               position: "absolute",
               inset: 0,
-              backgroundColor: "#fafafa",
+              backgroundColor: "#fefefe",
               borderRadius: "50%",
               boxShadow: `
-              inset 0 0 60px rgba(0,0,0,0.1),
-              inset -20px 0 40px rgba(200,180,160,0.1),
-              0 0 60px rgba(8, 145, 178, 0.2),
-              0 20px 60px rgba(0,0,0,0.15)
+              inset 0 0 80px rgba(0,0,0,0.08),
+              inset -25px 0 50px rgba(200,180,160,0.08),
+              inset 25px 0 50px rgba(180,160,140,0.06),
+              0 0 80px rgba(8, 145, 178, 0.15),
+              0 25px 80px rgba(0,0,0,0.12)
             `,
               overflow: "hidden",
             }}
           >
-            {/* Blood Vessels */}
-            <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.15 }}>
-              <path d="M 20 120 Q 60 100 120 140" stroke="#cc4444" strokeWidth="1" fill="none" />
-              <path d="M 320 80 Q 280 110 260 95" stroke="#cc4444" strokeWidth="0.8" fill="none" />
-              <path d="M 25 200 Q 55 185 80 210" stroke="#cc4444" strokeWidth="0.6" fill="none" />
-              <path d="M 360 240 Q 320 225 305 255" stroke="#cc4444" strokeWidth="0.7" fill="none" />
-              <path d="M 40 280 Q 80 265 105 290" stroke="#cc4444" strokeWidth="0.5" fill="none" />
+            {/* Subtle sclera texture */}
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              background: "radial-gradient(ellipse at 30% 20%, rgba(255,220,200,0.04) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(200,180,160,0.03) 0%, transparent 50%)",
+            }} />
+            
+            {/* Blood Vessels - More detailed and realistic */}
+            <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.12 }}>
+              {/* Main vessels */}
+              <path d="M 15 100 Q 45 85 85 110 Q 110 120 130 115" stroke="#b91c1c" strokeWidth="1.2" fill="none" />
+              <path d="M 330 70 Q 295 90 270 80 Q 250 75 235 85" stroke="#b91c1c" strokeWidth="1" fill="none" />
+              <path d="M 20 180 Q 50 165 75 185 Q 95 200 110 190" stroke="#dc2626" strokeWidth="0.9" fill="none" />
+              <path d="M 370 220 Q 335 205 310 230 Q 290 245 270 235" stroke="#dc2626" strokeWidth="0.8" fill="none" />
+              <path d="M 30 260 Q 65 245 95 270 Q 115 285 130 275" stroke="#b91c1c" strokeWidth="0.7" fill="none" />
+              <path d="M 355 300 Q 320 285 295 305" stroke="#dc2626" strokeWidth="0.6" fill="none" />
+              {/* Smaller branching vessels */}
+              <path d="M 85 110 Q 100 105 110 115" stroke="#ef4444" strokeWidth="0.5" fill="none" />
+              <path d="M 270 80 Q 260 85 255 78" stroke="#ef4444" strokeWidth="0.4" fill="none" />
+              <path d="M 75 185 Q 85 175 95 180" stroke="#ef4444" strokeWidth="0.4" fill="none" />
             </svg>
 
-            {/* Iris - moves with cursor - BLUE */}
+            {/* Iris - moves with cursor - LIGHTER BLUE */}
             <div
               style={{
                 position: "absolute",
@@ -231,37 +245,62 @@ const Home = () => {
                 width: "200px",
                 height: "200px",
                 borderRadius: "50%",
-                background: "radial-gradient(circle at 30% 30%, #60a5fa 0%, #3b82f6 15%, #2563eb 30%, #1d4ed8 50%, #1e3a8a 80%, #172554 100%)",
-                boxShadow: "inset 0 0 50px rgba(0,0,0,0.6), 0 0 30px rgba(8, 145, 178, 0.3)",
+                background: "radial-gradient(circle at 35% 35%, #93c5fd 0%, #60a5fa 12%, #3b82f6 25%, #2563eb 45%, #1d4ed8 70%, #1e40af 100%)",
+                boxShadow: "inset 0 0 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(59,130,246,0.3), 0 0 25px rgba(8, 145, 178, 0.25)",
                 transform: `translate(calc(-50% + ${pupilPosition.x}px), calc(-50% + ${pupilPosition.y}px))`,
                 transition: "transform 0.08s ease-out",
               }}
             >
-              {/* Iris Texture */}
-              {[...Array(36)].map((_, i) => (
+              {/* Iris Texture - More detailed radial fibers */}
+              {[...Array(48)].map((_, i) => (
                 <div
                   key={i}
                   style={{
                     position: "absolute",
                     top: "50%",
                     left: "50%",
-                    width: "2px",
+                    width: i % 2 === 0 ? "1.5px" : "1px",
                     height: "50%",
                     background:
-                      "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.2) 30%, rgba(96,165,250,0.3) 60%, transparent 100%)",
+                      i % 3 === 0 
+                        ? "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.25) 25%, rgba(147,197,253,0.4) 50%, rgba(37,99,235,0.2) 75%, transparent 100%)"
+                        : "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.15) 30%, rgba(96,165,250,0.25) 60%, transparent 100%)",
                     transformOrigin: "top",
-                    transform: `rotate(${i * 10}deg)`,
+                    transform: `rotate(${i * 7.5}deg)`,
                   }}
                 />
               ))}
+              
+              {/* Iris color variations - corona effect */}
+              <div style={{
+                position: "absolute",
+                inset: "20%",
+                borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(251,191,36,0.15) 0%, rgba(251,191,36,0.08) 30%, transparent 60%)",
+              }} />
 
-              {/* Limbal Ring */}
+              {/* Limbal Ring - darker edge */}
               <div
                 style={{
                   position: "absolute",
-                  inset: "-4px",
+                  inset: "-3px",
                   borderRadius: "50%",
-                  border: "4px solid rgba(30,58,138,0.9)",
+                  border: "5px solid rgba(30,64,175,0.85)",
+                  boxShadow: "inset 0 0 10px rgba(0,0,0,0.3)",
+                }}
+              />
+              
+              {/* Collarette ring */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  width: "85px",
+                  height: "85px",
+                  borderRadius: "50%",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  transform: "translate(-50%, -50%)",
                 }}
               />
 
@@ -271,35 +310,46 @@ const Home = () => {
                   position: "absolute",
                   top: "50%",
                   left: "50%",
-                  width: "65px",
-                  height: "65px",
+                  width: "60px",
+                  height: "60px",
                   borderRadius: "50%",
-                  backgroundColor: "#000",
+                  background: "radial-gradient(circle at 40% 40%, #1a1a1a 0%, #000000 60%, #000000 100%)",
                   transform: "translate(-50%, -50%)",
-                  boxShadow: "0 0 30px rgba(0,0,0,0.9), inset 0 0 20px rgba(8, 145, 178, 0.2)",
+                  boxShadow: "0 0 35px rgba(0,0,0,0.95), inset 0 0 15px rgba(30,64,175,0.15)",
                 }}
               >
-                {/* Light Reflections */}
+                {/* Light Reflections - More realistic catchlights */}
                 <div
                   style={{
                     position: "absolute",
-                    top: "10px",
-                    right: "12px",
-                    width: "15px",
-                    height: "15px",
+                    top: "8px",
+                    right: "10px",
+                    width: "16px",
+                    height: "14px",
                     borderRadius: "50%",
-                    backgroundColor: "rgba(255,255,255,0.95)",
+                    background: "radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.7) 60%, transparent 100%)",
                   }}
                 />
                 <div
                   style={{
                     position: "absolute",
-                    top: "24px",
-                    right: "20px",
-                    width: "6px",
+                    bottom: "12px",
+                    left: "10px",
+                    width: "8px",
                     height: "6px",
                     borderRadius: "50%",
-                    backgroundColor: "rgba(255,255,255,0.7)",
+                    background: "radial-gradient(ellipse, rgba(255,255,255,0.6) 0%, transparent 100%)",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "22px",
+                    right: "16px",
+                    width: "5px",
+                    height: "5px",
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(255,255,255,0.5)",
                   }}
                 />
               </div>
