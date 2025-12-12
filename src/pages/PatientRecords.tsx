@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Patient, Disease } from "@/types/scan";
-import { Eye, ArrowLeft, UserPlus, Camera, Stethoscope, User, Lightbulb, FileText } from "lucide-react";
+import { ArrowLeft, UserPlus, Camera, Stethoscope, User, Lightbulb, FileText } from "lucide-react";
+import Logo from "@/components/Logo";
 
 // Mock patient data
 const mockPatients: Patient[] = [
@@ -95,25 +96,11 @@ const PatientRecords = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-        <div 
+        <div
           onClick={() => navigate('/')}
-          style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+          style={{ cursor: 'pointer' }}
         >
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '12px',
-            backgroundColor: '#ecfeff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <Eye size={24} style={{ color: '#0891b2' }} />
-          </div>
-          <div>
-            <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#111' }}>EyeQ</h1>
-            <p style={{ fontSize: '12px', color: '#6b7280' }}>by LucidEye</p>
-          </div>
+          <Logo size={40} />
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button

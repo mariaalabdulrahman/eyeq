@@ -7,7 +7,8 @@ import { AnalysisPanel } from "@/components/AnalysisPanel";
 import { UploadModal } from "@/components/UploadModal";
 import { useScanAnalysis } from "@/hooks/useScanAnalysis";
 import { ViewMode } from "@/types/scan";
-import { Eye, FolderOpen } from "lucide-react";
+import { FolderOpen } from "lucide-react";
+import Logo from "@/components/Logo";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -46,25 +47,11 @@ const Index = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-        <div 
+        <div
           onClick={() => navigate('/')}
-          style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+          style={{ cursor: 'pointer' }}
         >
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '12px',
-            backgroundColor: '#ecfeff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <Eye size={24} style={{ color: '#0891b2' }} />
-          </div>
-          <div>
-            <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#111' }}>EyeQ</h1>
-            <p style={{ fontSize: '12px', color: '#6b7280' }}>by LucidEye</p>
-          </div>
+          <Logo size={40} />
         </div>
         <button
           onClick={() => navigate('/records')}

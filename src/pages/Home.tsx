@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, ScanLine, FolderOpen, GitCompare, BarChart3, Stethoscope, Eye } from "lucide-react";
+import { Upload, ScanLine, FolderOpen, GitCompare, BarChart3, Stethoscope } from "lucide-react";
+import Logo from "@/components/Logo";
 
 import aiBrainImg from "@/assets/ai-brain.png";
 import eyeScanImg from "@/assets/eye-scan.png";
@@ -148,24 +149,8 @@ const Home = () => {
 
       {/* Header */}
       <header style={{ padding: "24px 32px", position: "relative", zIndex: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "12px",
-              backgroundColor: "rgba(8, 145, 178, 0.1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Eye size={24} style={{ color: "#0891b2" }} />
-          </div>
-          <div>
-            <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#111" }}>EyeQ</h1>
-            <p style={{ fontSize: "12px", color: "#6b7280" }}>by LucidEye</p>
-          </div>
+        <div onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
+          <Logo size={40} />
         </div>
       </header>
 
