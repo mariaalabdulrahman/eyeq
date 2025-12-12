@@ -242,12 +242,12 @@ const initialPatients: Patient[] = [
         diseases: [
           {
             name: "Hypertensive Retinopathy",
-            probability: 68,
+            probability: 56,
             severity: "medium",
-            description: "Stable hypertensive changes following treatment.",
+            description: "Improved hypertensive changes following treatment.",
             detectedFrom: "fundus",
             justification:
-              "Arteriovenous nicking stable, no new hemorrhages. Some resolution of arteriolar narrowing with blood pressure control.",
+              "Arteriovenous nicking improved, no new hemorrhages. Resolution of arteriolar narrowing with blood pressure control.",
             references: ["Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004"],
           },
           {
@@ -261,7 +261,7 @@ const initialPatients: Patient[] = [
             references: ["Fraser-Bell S, et al. Eye 2008"],
           },
         ],
-        summary: "Stable hypertensive retinopathy following blood pressure management. Continue current therapy.",
+        summary: "Improved hypertensive retinopathy following blood pressure management. Continue current therapy.",
       },
       {
         id: "s1d",
@@ -277,11 +277,11 @@ const initialPatients: Patient[] = [
         diseases: [
           {
             name: "Hypertensive Retinopathy",
-            probability: 70,
-            severity: "high",
-            description: "Progression of hypertensive changes with new vessel abnormalities.",
+            probability: 49,
+            severity: "medium",
+            description: "Significant improvement of hypertensive changes following treatment.",
             detectedFrom: "fundus",
-            justification: "New cotton wool spots noted. Arteriovenous nicking more pronounced.",
+            justification: "Cotton wool spots resolved. Arteriovenous nicking improved with blood pressure control.",
             references: ["Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004"],
           },
           {
@@ -295,7 +295,7 @@ const initialPatients: Patient[] = [
             references: ["Hayreh SS. Hypertensive retinopathy. Ophthalmologica 1989"],
           },
         ],
-        summary: "Hypertensive retinopathy progression in right eye. Intensify blood pressure management.",
+        summary: "Improved hypertensive retinopathy in right eye following blood pressure management.",
       },
     ],
   },
