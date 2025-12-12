@@ -127,7 +127,7 @@ interface ScanContextType {
   currentPatientId: string | null;
   setActiveTabId: (id: string | null) => void;
   setCurrentPatientId: (id: string | null) => void;
-  addScan: (fundusFile: File, octFile?: File, patientId?: string) => void;
+  addScan: (fundusFile: File, octFile?: File, patientId?: string, eyeSide?: 'left' | 'right') => void;
   removeScan: (id: string) => void;
   addPatient: (name: string, dateOfBirth: string) => string;
   addChatMessage: (content: string, selectedScanIds: string[]) => void;
@@ -136,7 +136,7 @@ interface ScanContextType {
 
 const ScanContext = createContext<ScanContextType | undefined>(undefined);
 
-// Initial mock patients data
+// Initial mock patients data with real eye scan images
 const initialPatients: Patient[] = [
   {
     id: '1',
@@ -146,11 +146,12 @@ const initialPatients: Patient[] = [
     scans: [
       {
         id: 's1',
-        name: 'Left Eye',
-        imageUrl: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400',
+        name: 'Fundus Scan (Left)',
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Fundus_photograph_of_normal_left_eye.jpg/640px-Fundus_photograph_of_normal_left_eye.jpg',
         uploadedAt: new Date('2024-01-10'),
         type: 'fundus',
-        linkedOctUrl: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400',
+        eyeSide: 'left',
+        linkedOctUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/SD-OCT_Macula_Cross-Section.png/640px-SD-OCT_Macula_Cross-Section.png',
         linkedOctName: 'Left Eye OCT',
         diseases: [
           { name: 'Diabetic Macular Edema', probability: 45, severity: 'medium', description: 'Fluid accumulation detected.', detectedFrom: 'oct', justification: 'OCT reveals intraretinal fluid pockets in the macular region.', references: ['DRCR.net Protocol T, NEJM 2015'] },
@@ -168,10 +169,11 @@ const initialPatients: Patient[] = [
     scans: [
       {
         id: 's3',
-        name: 'Left Eye',
-        imageUrl: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400',
+        name: 'Fundus Scan (Left)',
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Fundus_photo_showing_scatter_laser_surgery_for_diabetic_retinopathy_EDA09.JPG/640px-Fundus_photo_showing_scatter_laser_surgery_for_diabetic_retinopathy_EDA09.JPG',
         uploadedAt: new Date('2024-01-12'),
         type: 'fundus',
+        eyeSide: 'left',
         diseases: [
           { name: 'Glaucoma', probability: 78, severity: 'high', description: 'Significant optic nerve changes detected.', detectedFrom: 'fundus', justification: 'Increased cup-to-disc ratio (0.8) with peripapillary atrophy visible in fundus.', references: ['AAO Glaucoma Guidelines, 2020'] },
         ],
@@ -187,11 +189,12 @@ const initialPatients: Patient[] = [
     scans: [
       {
         id: 's4',
-        name: 'Right Eye',
-        imageUrl: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400',
+        name: 'Fundus Scan (Right)',
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Fundus_of_patient_with_retinitis_pigmentosa%2C_mid_stage.jpg/640px-Fundus_of_patient_with_retinitis_pigmentosa%2C_mid_stage.jpg',
         uploadedAt: new Date('2024-01-15'),
         type: 'fundus',
-        linkedOctUrl: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400',
+        eyeSide: 'right',
+        linkedOctUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/SD-OCT_Macula_Cross-Section.png/640px-SD-OCT_Macula_Cross-Section.png',
         linkedOctName: 'Right Eye OCT',
         diseases: [
           { name: 'Age-Related Macular Degeneration', probability: 55, severity: 'medium', description: 'Drusen deposits visible.', detectedFrom: 'both', justification: 'Drusen visible in fundus, confirmed by OCT showing RPE irregularity.', references: ['AREDS Classification, 2001'] },
@@ -218,14 +221,16 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     }
   ]);
 
-  const addScan = useCallback(async (fundusFile: File, octFile?: File, patientId?: string) => {
+  const addScan = useCallback(async (fundusFile: File, octFile?: File, patientId?: string, eyeSide?: 'left' | 'right') => {
     const fundusUrl = await getImagePreviewUrl(fundusFile);
     const octUrl = octFile ? await getImagePreviewUrl(octFile) : undefined;
     const diseases = generateMockDiseases(!!octFile);
+    const baseName = fundusFile.name.replace(/\.[^/.]+$/, "");
+    const eyeLabel = eyeSide === 'left' ? '(Left)' : '(Right)';
     
     const newScan: ScanAnalysis = {
       id: crypto.randomUUID(),
-      name: fundusFile.name.replace(/\.[^/.]+$/, ""),
+      name: `${baseName} ${eyeLabel}`,
       imageUrl: fundusUrl,
       uploadedAt: new Date(),
       type: 'fundus',
@@ -233,6 +238,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       summary: generateSummary(diseases),
       linkedOctUrl: octUrl,
       linkedOctName: octFile ? octFile.name.replace(/\.[^/.]+$/, "") : undefined,
+      eyeSide: eyeSide || 'right',
     };
 
     setScans(prev => [...prev, newScan]);
@@ -282,13 +288,55 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     const selectedScans = scans.filter(s => selectedScanIds.includes(s.id));
     let aiResponse = "Please select at least one image to ask questions about.";
     
-    if (selectedScans.length > 0) {
+    // Check for systemic disease questions
+    const lowerContent = content.toLowerCase();
+    const isSystemicQuery = lowerContent.includes('systemic') || 
+                            lowerContent.includes('cardiovascular') || 
+                            lowerContent.includes('diabetes') ||
+                            lowerContent.includes('hypertension') ||
+                            lowerContent.includes('heart') ||
+                            lowerContent.includes('stroke') ||
+                            lowerContent.includes('alzheimer') ||
+                            lowerContent.includes('neurological') ||
+                            lowerContent.includes('kidney');
+
+    if (isSystemicQuery) {
+      // Provide scientific references for ocular-systemic disease links
+      aiResponse = `**Ocular Manifestations of Systemic Diseases - Scientific Evidence:**
+
+The retina provides a unique window to assess systemic vascular health. Here are evidence-based connections:
+
+**Diabetic Retinopathy & Systemic Complications:**
+Diabetic retinopathy severity correlates with cardiovascular disease risk and nephropathy progression.
+📚 *References:*
+• Wong TY, et al. "Retinopathy and Risk of Congestive Heart Failure." JAMA. 2005;293(1):63-69. DOI: 10.1001/jama.293.1.63
+• Cheung N, et al. "Diabetic retinopathy and systemic vascular complications." Prog Retin Eye Res. 2008;27(2):161-176.
+
+**Hypertensive Retinopathy & Cardiovascular Risk:**
+Retinal microvascular changes predict stroke, coronary heart disease, and heart failure.
+📚 *References:*
+• Wong TY, Mitchell P. "Hypertensive Retinopathy." N Engl J Med. 2004;351:2310-2317. DOI: 10.1056/NEJMra032865
+• Ong YT, et al. "Hypertensive retinopathy and risk of stroke." Hypertension. 2013;62(4):706-711.
+
+**Retinal Changes & Alzheimer's Disease:**
+Retinal nerve fiber layer thinning and vascular changes may precede cognitive decline.
+📚 *References:*
+• Cheung CY, et al. "Retinal imaging in Alzheimer's disease." J Neurol Neurosurg Psychiatry. 2021;92(9):983-994. DOI: 10.1136/jnnp-2020-325347
+• Koronyo Y, et al. "Retinal amyloid pathology and proof-of-concept imaging trial in Alzheimer's disease." JCI Insight. 2017;2(16):e93621.
+
+Would you like more specific information about any particular systemic-ocular relationship?`;
+    } else if (selectedScans.length > 0) {
       const scanNames = selectedScans.map(s => s.name).join(', ');
       const allDiseases = selectedScans.flatMap(s => s.diseases);
       const highRisk = allDiseases.filter(d => d.probability >= 50);
       
       if (highRisk.length > 0) {
-        aiResponse = `Based on the selected scans (${scanNames}), I found ${highRisk.length} conditions with elevated risk: ${highRisk.map(d => `${d.name} (${d.probability}%)`).join(', ')}. Would you like more details on any specific finding?`;
+        const diseaseDetails = highRisk.map(d => {
+          const refs = d.references ? `\n   📚 ${d.references.join('; ')}` : '';
+          return `• **${d.name}** (${d.probability}%): ${d.justification || d.description}${refs}`;
+        }).join('\n');
+        
+        aiResponse = `Based on the selected scans (${scanNames}), I found ${highRisk.length} conditions with elevated risk:\n\n${diseaseDetails}\n\nWould you like more details on any specific finding or its systemic implications?`;
       } else {
         aiResponse = `Analyzing ${scanNames}: The scans show generally healthy patterns with some minor observations. All detected conditions are within low-risk ranges. Continue regular monitoring as recommended.`;
       }
