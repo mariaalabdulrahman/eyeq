@@ -1,4 +1,4 @@
-import { ScanAnalysis, ViewMode } from "@/types/scan";
+import { ScanAnalysis, ViewMode, Patient } from "@/types/scan";
 import { TextualAnalysis } from "./analysis/TextualAnalysis";
 import { VisualAnalysis } from "./analysis/VisualAnalysis";
 import { ComparisonView } from "./analysis/ComparisonView";
@@ -9,9 +9,10 @@ interface AnalysisPanelProps {
   viewMode: ViewMode;
   allScans: ScanAnalysis[];
   onUploadClick: () => void;
+  patient?: Patient;
 }
 
-export function AnalysisPanel({ scan, viewMode, allScans, onUploadClick }: AnalysisPanelProps) {
+export function AnalysisPanel({ scan, viewMode, allScans, onUploadClick, patient }: AnalysisPanelProps) {
   if (!scan) {
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' }}>
@@ -29,8 +30,8 @@ export function AnalysisPanel({ scan, viewMode, allScans, onUploadClick }: Analy
 
   return (
     <div style={{ height: '100%', padding: '24px', overflow: 'auto', backgroundColor: '#f9fafb' }}>
-      {viewMode === 'textual' && <TextualAnalysis scan={scan} />}
-      {viewMode === 'visual' && <VisualAnalysis scan={scan} />}
+      {viewMode === 'textual' && <TextualAnalysis scan={scan} patient={patient} />}
+      {viewMode === 'visual' && <VisualAnalysis scan={scan} patient={patient} />}
       {viewMode === 'comparison' && <ComparisonView currentScan={scan} allScans={allScans} />}
       {viewMode === 'visualization' && <VisualizationView scan={scan} />}
     </div>

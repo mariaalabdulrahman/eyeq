@@ -171,6 +171,13 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
 
     let description = '';
     
+    // Check for drusen-related conditions in AMD
+    const hasDrusen = [...currentScan.diseases, ...compareScan.diseases].some(d => 
+      d.name.toLowerCase().includes('macular degeneration') || 
+      d.name.toLowerCase().includes('amd') ||
+      d.name.toLowerCase().includes('drusen')
+    );
+    
     if (compareMode === 'progression') {
       if (improvements.length > 0) {
         description += `**Improvement observed** in ${improvements.join(', ')}. `;
@@ -181,6 +188,25 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
       if (stable.length > 0 && improvements.length === 0 && worsenings.length === 0) {
         description += 'Disease markers remain stable between visits. Continue current management plan.';
       }
+      
+      // Add drusen-specific note for AMD cases
+      if (hasDrusen) {
+        description += '\n\n**Drusen Assessment:** ';
+        const amdCurrent = currentScan.diseases.find(d => d.name.toLowerCase().includes('macular') || d.name.toLowerCase().includes('amd'));
+        const amdCompare = compareScan.diseases.find(d => d.name.toLowerCase().includes('macular') || d.name.toLowerCase().includes('amd'));
+        if (amdCurrent && amdCompare) {
+          const diff = amdCurrent.probability - amdCompare.probability;
+          if (diff > 10) {
+            description += 'Drusen accumulation appears reduced compared to previous visit. Monitor for continued improvement.';
+          } else if (diff < -10) {
+            description += 'Drusen deposits may have increased. Consider OCT imaging to assess drusen volume and evaluate for progression to intermediate AMD.';
+          } else {
+            description += 'Drusen deposits appear stable. Continue AREDS supplementation if indicated and maintain regular monitoring.';
+          }
+        } else {
+          description += 'Drusen presence noted - recommend baseline drusen mapping and periodic monitoring for changes in size, number, and appearance.';
+        }
+      }
     } else {
       if (Math.abs(progressionData.reduce((sum, d) => sum + d.diff, 0)) > 20) {
         description += '**Asymmetry detected** between eyes. ';
@@ -190,6 +216,28 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
         description += 'Bilateral asymmetry may warrant further investigation.';
       } else {
         description += 'Both eyes show similar patterns. No significant bilateral asymmetry detected.';
+      }
+      
+      // Add drusen-specific note for bilateral comparison
+      if (hasDrusen) {
+        description += '\n\n**Drusen Assessment:** ';
+        const amdLeft = currentScan.eyeSide === 'left' 
+          ? currentScan.diseases.find(d => d.name.toLowerCase().includes('macular') || d.name.toLowerCase().includes('amd'))
+          : compareScan?.diseases.find(d => d.name.toLowerCase().includes('macular') || d.name.toLowerCase().includes('amd'));
+        const amdRight = currentScan.eyeSide === 'right'
+          ? currentScan.diseases.find(d => d.name.toLowerCase().includes('macular') || d.name.toLowerCase().includes('amd'))
+          : compareScan?.diseases.find(d => d.name.toLowerCase().includes('macular') || d.name.toLowerCase().includes('amd'));
+        
+        if (amdLeft && amdRight) {
+          const diff = Math.abs((amdLeft?.probability || 0) - (amdRight?.probability || 0));
+          if (diff > 15) {
+            description += 'Bilateral asymmetry in drusen distribution detected. The eye with higher drusen load should be prioritized for monitoring as fellow eye AMD risk is elevated.';
+          } else {
+            description += 'Drusen appear relatively symmetric between eyes. Both eyes should be monitored equally for progression.';
+          }
+        } else if (amdLeft || amdRight) {
+          description += 'Unilateral drusen detected - the unaffected eye has elevated risk and should be carefully monitored.';
+        }
       }
     }
     

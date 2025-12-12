@@ -8,7 +8,7 @@ interface ViewModeButtonsProps {
 
 const modes: { mode: ViewMode; icon: LucideIcon; label: string }[] = [
   { mode: 'textual', icon: FileText, label: 'Textual' },
-  { mode: 'visual', icon: BarChart3, label: 'Visual' },
+  { mode: 'visual', icon: BarChart3, label: 'Statistics' },
   { mode: 'comparison', icon: GitCompare, label: 'Compare' },
   { mode: 'visualization', icon: Microscope, label: 'Visualize' },
 ];
