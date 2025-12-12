@@ -6,8 +6,9 @@ import { AnalysisPanel } from "@/components/AnalysisPanel";
 import { UploadModal } from "@/components/UploadModal";
 import { useScanContext } from "@/contexts/ScanContext";
 import { ViewMode } from "@/types/scan";
-import { FolderOpen, FileText, BarChart3, GitCompare, Microscope, ChevronDown, User } from "lucide-react";
+import { FolderOpen, FileText, BarChart3, GitCompare, Microscope, ChevronDown, User, UserPlus } from "lucide-react";
 import Logo from "@/components/Logo";
+import { NewPatientModal } from "@/components/NewPatientModal";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const Index = () => {
   const [sidebarWidth, setSidebarWidth] = useState(320);
   const [chatHeight, setChatHeight] = useState(400);
   const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
+  const [showNewPatientModal, setShowNewPatientModal] = useState(false);
   
   const {
     patients,
@@ -29,6 +31,7 @@ const Index = () => {
     addScanToPatient,
     removeScan,
     addChatMessage,
+    addPatient,
   } = useScanContext();
 
   // Sync currentPatientId and viewMode with URL params
@@ -171,7 +174,7 @@ const Index = () => {
                   <button
                     onClick={() => {
                       setPatientDropdownOpen(false);
-                      navigate('/');
+                      setShowNewPatientModal(true);
                     }}
                     style={{
                       width: '100%',
@@ -188,7 +191,7 @@ const Index = () => {
                       fontWeight: 500,
                     }}
                   >
-                    <span style={{ fontSize: '16px' }}>+</span>
+                    <UserPlus size={16} />
                     <span style={{ fontSize: '14px' }}>Add New Patient</span>
                   </button>
                   
@@ -410,6 +413,24 @@ const Index = () => {
         onClose={() => setUploadModalOpen(false)}
         onUpload={handleUpload}
         currentPatientScansCount={patientScans.length}
+      />
+
+      {/* New Patient Modal */}
+      <NewPatientModal
+        isOpen={showNewPatientModal}
+        onClose={() => setShowNewPatientModal(false)}
+        onSubmit={(data) => {
+          // Calculate DOB from age
+          const today = new Date();
+          const birthYear = today.getFullYear() - data.age;
+          const dob = `${birthYear}-01-01`;
+          const newPatientId = addPatient(data.name, dob);
+          if (newPatientId) {
+            setCurrentPatientId(newPatientId);
+            setSearchParams({ patientId: newPatientId });
+          }
+          setShowNewPatientModal(false);
+        }}
       />
     </div>
   );
