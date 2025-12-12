@@ -178,25 +178,33 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
       questionLower.includes('risk factor');
 
     if (isSystemicQuery) {
-      // Gather all unique diseases from selected patients
-      const uniqueDiseaseNames = [...new Set(allDiseases.map(d => d.name))];
+      // Only get HIGH and MEDIUM severity diseases for systemic links
+      const significantDiseases = allDiseases.filter(d => d.probability >= 40);
+      const uniqueDiseaseNames = [...new Set(significantDiseases.map(d => d.name))];
       const matchedDiseases: string[] = [];
       const allRefs: { title: string; authors: string; journal: string; year: string; doi?: string }[] = [];
       let responseText = "";
 
       if (uniqueDiseaseNames.length === 0) {
-        responseText = "No diseases have been detected in the selected patient records. Please upload and analyze scans first.";
+        const lowRiskDiseases = allDiseases.filter(d => d.probability < 40);
+        if (lowRiskDiseases.length > 0) {
+          responseText = "The detected conditions are all low severity (<40% probability). Systemic associations are primarily relevant for moderate-to-high severity findings. Continue routine monitoring.";
+        } else {
+          responseText = "No diseases have been detected in the selected patient records. Please upload and analyze scans first.";
+        }
       } else {
-        responseText = `**Systemic Disease Associations for Detected Conditions**\n\n`;
+        responseText = `**Systemic Disease Associations**\n*Based on moderate-to-high severity findings only*\n\n`;
         
         uniqueDiseaseNames.forEach(diseaseName => {
+          const disease = significantDiseases.find(d => d.name === diseaseName);
+          const severity = disease && disease.probability >= 70 ? 'HIGH' : 'MODERATE';
           const matchKey = findDiseaseMatches(diseaseName);
           if (matchKey && DISEASE_SYSTEMIC_LINKS[matchKey]) {
             const info = DISEASE_SYSTEMIC_LINKS[matchKey];
             matchedDiseases.push(matchKey);
-            responseText += `**${matchKey}**\n`;
+            responseText += `**${matchKey}** _(${severity} severity)_\n`;
             responseText += `${info.description}\n\n`;
-            responseText += `*Associated systemic conditions:* ${info.systemicLinks.join(', ')}\n\n`;
+            responseText += `*Associated systemic conditions:* ${info.systemicLinks.join(', ')}\n\n---\n\n`;
             info.references.forEach(ref => {
               if (!allRefs.some(r => r.title === ref.title)) {
                 allRefs.push(ref);
@@ -206,7 +214,7 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
         });
 
         if (matchedDiseases.length === 0) {
-          responseText = "I found the following conditions but don't have specific systemic association data in my knowledge base: " + uniqueDiseaseNames.join(', ') + ". Please consult clinical literature for detailed systemic implications.";
+          responseText = "The moderate/high severity conditions found (" + uniqueDiseaseNames.join(', ') + ") are not in the systemic associations database. Please consult clinical literature.";
         }
       }
 
@@ -286,8 +294,9 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
       };
     }
 
-    // Default: provide summary with systemic links for detected diseases
-    const uniqueDiseaseNames = [...new Set(allDiseases.map(d => d.name))];
+    // Default: provide summary with systemic links for HIGH/MEDIUM severity diseases only
+    const significantDiseases = allDiseases.filter(d => d.probability >= 40);
+    const uniqueDiseaseNames = [...new Set(significantDiseases.map(d => d.name))];
     const allRefs: { title: string; authors: string; journal: string; year: string; doi?: string }[] = [];
     let systemicInfo = "";
 
@@ -441,7 +450,52 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
                   color: message.role === 'user' ? 'white' : '#111',
                 }}
               >
-                <p style={{ fontSize: '14px', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{message.content}</p>
+                {/* Render markdown-style formatting */}
+                <div style={{ fontSize: '14px', lineHeight: 1.6 }}>
+                  {message.content.split('\n').map((line, lineIdx) => {
+                    // Parse markdown-style formatting
+                    const renderFormattedText = (text: string) => {
+                      const parts: React.ReactNode[] = [];
+                      let remaining = text;
+                      let keyIdx = 0;
+                      
+                      while (remaining.length > 0) {
+                        // Bold: **text**
+                        const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
+                        // Italic: *text* or _text_
+                        const italicMatch = remaining.match(/(?<!\*)\*([^*]+)\*(?!\*)|_([^_]+)_/);
+                        
+                        if (boldMatch && (!italicMatch || remaining.indexOf(boldMatch[0]) <= remaining.indexOf(italicMatch[0]))) {
+                          const beforeBold = remaining.slice(0, remaining.indexOf(boldMatch[0]));
+                          if (beforeBold) parts.push(<span key={keyIdx++}>{beforeBold}</span>);
+                          parts.push(<strong key={keyIdx++} style={{ fontWeight: 600, fontSize: '15px' }}>{boldMatch[1]}</strong>);
+                          remaining = remaining.slice(remaining.indexOf(boldMatch[0]) + boldMatch[0].length);
+                        } else if (italicMatch) {
+                          const beforeItalic = remaining.slice(0, remaining.indexOf(italicMatch[0]));
+                          if (beforeItalic) parts.push(<span key={keyIdx++}>{beforeItalic}</span>);
+                          parts.push(<em key={keyIdx++} style={{ fontStyle: 'italic', color: '#6b7280' }}>{italicMatch[1] || italicMatch[2]}</em>);
+                          remaining = remaining.slice(remaining.indexOf(italicMatch[0]) + italicMatch[0].length);
+                        } else {
+                          parts.push(<span key={keyIdx++}>{remaining}</span>);
+                          remaining = '';
+                        }
+                      }
+                      return parts;
+                    };
+                    
+                    // Horizontal rule
+                    if (line.trim() === '---') {
+                      return <hr key={lineIdx} style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '12px 0' }} />;
+                    }
+                    
+                    // Empty line = paragraph break
+                    if (line.trim() === '') {
+                      return <div key={lineIdx} style={{ height: '8px' }} />;
+                    }
+                    
+                    return <div key={lineIdx}>{renderFormattedText(line)}</div>;
+                  })}
+                </div>
               </div>
               {/* Scientific References */}
               {message.references && message.references.length > 0 && (
