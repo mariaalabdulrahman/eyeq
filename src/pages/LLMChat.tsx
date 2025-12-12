@@ -317,45 +317,45 @@ const LLMChat = () => {
 
       {/* Landing View */}
       {isLandingView ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
-          <Logo size={140} />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', overflow: 'hidden' }}>
+          <Logo size={100} />
           <h1 style={{ 
-            fontSize: '48px', 
+            fontSize: '36px', 
             fontWeight: 700, 
             color: '#0891b2', 
-            marginTop: '24px',
+            marginTop: '16px',
             letterSpacing: '-1px',
           }}>
             Eye-GPT
           </h1>
           <p style={{ 
-            fontSize: '18px', 
+            fontSize: '15px', 
             color: '#6b7280', 
-            marginTop: '12px',
+            marginTop: '8px',
             textAlign: 'center',
-            maxWidth: '600px',
+            maxWidth: '500px',
           }}>
-            Your AI assistant for exploring ocular-systemic disease connections with peer-reviewed references
+            Your AI assistant for exploring ocular-systemic disease connections
           </p>
 
           {/* Sample Questions */}
-          <div style={{ marginTop: '48px', maxWidth: '800px', width: '100%' }}>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '16px', textAlign: 'center' }}>
+          <div style={{ marginTop: '24px', width: '100%', maxWidth: '1100px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '12px', textAlign: 'center' }}>
               Try asking:
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
               {SAMPLE_QUESTIONS.map((question, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleSampleQuestion(question)}
                   style={{
-                    padding: '16px 20px',
-                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    borderRadius: '10px',
                     border: '1px solid #e5e7eb',
                     backgroundColor: 'white',
                     cursor: 'pointer',
                     textAlign: 'left',
-                    fontSize: '14px',
+                    fontSize: '13px',
                     color: '#374151',
                     transition: 'all 0.2s',
                     boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
@@ -371,7 +371,7 @@ const LLMChat = () => {
                     e.currentTarget.style.color = '#374151';
                   }}
                 >
-                  <span style={{ marginRight: '8px' }}>💬</span>
+                  <span style={{ marginRight: '6px' }}>💬</span>
                   {question}
                 </button>
               ))}
