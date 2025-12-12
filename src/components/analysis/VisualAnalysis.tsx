@@ -199,7 +199,7 @@ export function VisualAnalysis({ scan, patient }: VisualAnalysisProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full overflow-y-auto scrollbar-thin p-1">
-      {/* Top Row: Clinical Indicators (left) + Risk Stratification (right) */}
+      {/* Top Row: Clinical Indicators (left) + Scan Types (right) */}
       <div className="bg-card border border-border rounded-xl p-6">
         <h3 className="font-semibold text-foreground mb-4">Key Clinical Indicators</h3>
         <div className="grid grid-cols-2 gap-4">
@@ -241,39 +241,30 @@ export function VisualAnalysis({ scan, patient }: VisualAnalysisProps) {
         )}
       </div>
 
-      {/* Risk Stratification */}
+      {/* Scan Types */}
       <div className="bg-card border border-border rounded-xl p-6">
-        <h3 className="font-semibold text-foreground mb-4">Risk Stratification</h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={severityData}
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={90}
-                paddingAngle={3}
-                dataKey="value"
-                label={({ name, value }) => `${name}: ${value}`}
-                labelLine={false}
-              >
-                {severityData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                }}
-              />
-              <Legend
-                formatter={(value) => <span style={{ color: 'hsl(var(--foreground))' }}>{value}</span>}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+        <h3 className="font-semibold text-foreground mb-4">Scan Types</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold">F</div>
+              <div>
+                <p className="font-medium text-foreground">Fundus Scan</p>
+                <p className="text-sm text-muted-foreground">Primary imaging modality</p>
+              </div>
+            </div>
+            <span className="text-2xl font-bold text-cyan-600">1</span>
+          </div>
+          <div className={`flex items-center justify-between p-4 rounded-lg ${scan.linkedOctUrl ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-800/20 border border-gray-200 dark:border-gray-700'}`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${scan.linkedOctUrl ? 'bg-blue-500' : 'bg-gray-400'}`}>O</div>
+              <div>
+                <p className="font-medium text-foreground">OCT Scan</p>
+                <p className="text-sm text-muted-foreground">{scan.linkedOctUrl ? 'Available' : 'Not available'}</p>
+              </div>
+            </div>
+            <span className={`text-2xl font-bold ${scan.linkedOctUrl ? 'text-blue-600' : 'text-gray-400'}`}>{scan.linkedOctUrl ? '1' : '0'}</span>
+          </div>
         </div>
       </div>
 
@@ -309,9 +300,7 @@ export function VisualAnalysis({ scan, patient }: VisualAnalysisProps) {
                   <p className="text-sm text-muted-foreground">Grade: {getDRGrade(disease.name, disease.probability)}</p>
                 </div>
                 <div className="text-right">
-                  <span className="font-semibold" style={{ 
-                    color: disease.probability >= 70 ? COLORS.high : disease.probability >= 40 ? COLORS.medium : COLORS.low 
-                  }}>
+                  <span className="font-semibold px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-foreground">
                     {confidence}% confidence
                   </span>
                 </div>

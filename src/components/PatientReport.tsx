@@ -164,12 +164,12 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
     }
 
     // Diseases Table
-    const tableStartY = patient.relevantInfo ? 105 : 95;
+    let tableStartY = patient.relevantInfo ? 105 : 95;
     if (diseases.length > 0) {
       doc.setFontSize(14);
       doc.text(reportType === 'doctor' ? "Clinical Findings" : "Health Findings", 20, tableStartY - 5);
 
-                const getGradeFromProbability = (name: string, prob: number) => {
+      const getGradeFromProbability = (name: string, prob: number) => {
         if (name.toLowerCase().includes('diabetic retinopathy') || name.toLowerCase().includes('dr')) {
           if (prob >= 85) return 'Proliferative DR';
           if (prob >= 70) return 'Severe NPDR';
@@ -212,8 +212,68 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
       });
     }
 
+    // Systemic Disease Associations
+    let finalY = (doc as any).lastAutoTable?.finalY || 120;
+    const systemicAssociations = getSystemicAssociations(diseases);
+    if (systemicAssociations.length > 0) {
+      if (finalY > 200) {
+        doc.addPage();
+        finalY = 20;
+      }
+      doc.setFontSize(14);
+      doc.text("Systemic Disease Associations", 20, finalY + 15);
+
+      const systemicTableData = systemicAssociations.slice(0, 8).map(assoc => [
+        assoc.systemicDisease,
+        assoc.percentage >= 40 ? 'High Risk' : 'Low Risk',
+        assoc.linkedOcularDisease,
+        assoc.ocularLink.substring(0, 50) + (assoc.ocularLink.length > 50 ? '...' : ''),
+      ]);
+
+      autoTable(doc, {
+        startY: finalY + 20,
+        head: [['Systemic Condition', 'Risk Level', 'Linked Ocular Finding', 'Description']],
+        body: systemicTableData,
+        theme: 'striped',
+        headStyles: { fillColor: [239, 68, 68] },
+        styles: { fontSize: 8 },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 25 },
+          2: { cellWidth: 40 },
+          3: { cellWidth: 'auto' },
+        },
+      });
+
+      finalY = (doc as any).lastAutoTable?.finalY || finalY + 60;
+    }
+
+    // Imaging Studies for Doctor Report
+    if (reportType === 'doctor' && patient.scans.length > 0) {
+      if (finalY > 200) {
+        doc.addPage();
+        finalY = 20;
+      }
+      doc.setFontSize(14);
+      doc.text("Imaging Studies", 20, finalY + 15);
+      doc.setFontSize(10);
+      doc.text(`Total Scans: ${patient.scans.length} (Fundus${patient.scans.some(s => s.linkedOctUrl) ? ' + OCT' : ''})`, 20, finalY + 25);
+      
+      patient.scans.slice(0, 4).forEach((scan, idx) => {
+        const yPos = finalY + 35 + (idx * 15);
+        if (yPos < 270) {
+          doc.text(`- ${scan.name} (${scan.eyeSide || 'N/A'} Eye, Visit ${scan.visitNumber || 1})${scan.linkedOctUrl ? ' [OCT Available]' : ''}`, 25, yPos);
+        }
+      });
+      
+      finalY = finalY + 35 + (Math.min(patient.scans.length, 4) * 15);
+    }
+
     // Recommendations
-    const finalY = (doc as any).lastAutoTable?.finalY || 120;
+    if (finalY > 250) {
+      doc.addPage();
+      finalY = 20;
+    }
     doc.setFontSize(12);
     doc.text("Recommendations", 20, finalY + 15);
     doc.setFontSize(10);

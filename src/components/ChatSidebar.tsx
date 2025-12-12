@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ChatMessage, ScanAnalysis } from "@/types/scan";
 import { Maximize2, Minimize2, X, ChevronDown, Check } from "lucide-react";
-import Logo from "@/components/Logo";
 
 interface ChatSidebarProps {
   scans: ScanAnalysis[];
@@ -226,8 +225,7 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
         }}>
           {/* Header */}
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Logo size={32} showText={false} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <h3 style={{ fontWeight: 600, color: '#111', fontSize: '18px' }}>AI Assistant</h3>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -300,7 +298,7 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
                     flexShrink: 0,
                   }}
                 >
-                  {message.role === 'user' ? '👤' : <Logo size={24} showText={false} />}
+                  {message.role === 'user' ? '👤' : '🤖'}
                 </div>
                 <div
                   style={{
@@ -375,7 +373,6 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
       {/* Header */}
       <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Logo size={28} showText={false} />
           <div>
             <h3 style={{ fontWeight: 600, color: '#111', fontSize: '14px' }}>AI Assistant</h3>
             <p style={{ fontSize: '11px', color: '#6b7280' }}>
@@ -435,7 +432,7 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
                 flexShrink: 0,
               }}
             >
-              {message.role === 'user' ? '👤' : <Logo size={20} showText={false} />}
+              {message.role === 'user' ? '👤' : '🤖'}
             </div>
             <div
               style={{
