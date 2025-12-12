@@ -195,7 +195,7 @@ const initialPatients: Patient[] = [
       // Visit 1 - January 2024
       {
         id: 's1a',
-        name: 'DR Fundus (Left)',
+        name: 'First Scan (Left)',
         imageUrl: fundus_lefteye1,
         uploadedAt: new Date('2024-01-10'),
         type: 'fundus',
@@ -203,16 +203,15 @@ const initialPatients: Patient[] = [
         visitNumber: 1,
         visitDate: new Date('2024-01-10'),
         linkedOctUrl: oct_lefteye1,
-        linkedOctName: 'OCT Scan Left Eye V1',
+        linkedOctName: 'OCT',
         diseases: [
-          { name: 'Diabetic Retinopathy', probability: 72, severity: 'high', description: 'Moderate non-proliferative diabetic retinopathy with microaneurysms and hemorrhages.', detectedFrom: 'fundus', justification: 'Multiple microaneurysms, dot-blot hemorrhages, and hard exudates detected in the posterior pole. The pattern is consistent with moderate NPDR.', references: ['ETDRS Study, 1991', 'AAO Preferred Practice Pattern: Diabetic Retinopathy, 2019'] },
-          { name: 'Diabetic Macular Edema', probability: 58, severity: 'medium', description: 'Center-involving macular edema confirmed on OCT.', detectedFrom: 'both', justification: 'Fundus reveals hard exudates approaching fovea; OCT confirms intraretinal fluid pockets with central subfield thickness of 340μm.', references: ['DRCR.net Protocol T, NEJM 2015'] },
+          { name: 'Hypertensive Retinopathy', probability: 72, severity: 'high', description: 'Moderate hypertensive retinopathy with arteriovenous nicking and vessel wall changes.', detectedFrom: 'fundus', justification: 'Arteriovenous nicking at multiple crossing points and focal arteriolar narrowing visible. Copper-wiring appearance of arterioles detected.', references: ['Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004', 'Keith-Wagener-Barker Classification'] },
         ],
-        summary: 'Moderate NPDR with center-involving DME detected. Anti-VEGF treatment recommended.',
+        summary: 'Moderate hypertensive retinopathy detected. Blood pressure control recommended.',
       },
       {
         id: 's1b',
-        name: 'DR Fundus (Right)',
+        name: 'First Scan (Right)',
         imageUrl: fundus_righteye1,
         uploadedAt: new Date('2024-01-10'),
         type: 'fundus',
@@ -220,12 +219,12 @@ const initialPatients: Patient[] = [
         visitNumber: 1,
         visitDate: new Date('2024-01-10'),
         linkedOctUrl: oct_righteye1,
-        linkedOctName: 'OCT Scan Right Eye V1',
+        linkedOctName: 'OCT',
         diseases: [
-          { name: 'Diabetic Retinopathy', probability: 65, severity: 'medium', description: 'Mild to moderate NPDR with scattered microaneurysms.', detectedFrom: 'fundus', justification: 'Scattered microaneurysms and few dot hemorrhages visible. Less severe than left eye.', references: ['ETDRS Study, 1991'] },
-          { name: 'Hard Exudates', probability: 48, severity: 'medium', description: 'Lipid deposits in outer retinal layers.', detectedFrom: 'both', justification: 'Yellow-white deposits visible temporal to macula consistent with lipid exudation from leaky microaneurysms.', references: ['AAO Preferred Practice Pattern: Diabetic Retinopathy, 2019'] },
+          { name: 'Hypertensive Retinopathy', probability: 65, severity: 'medium', description: 'Mild to moderate hypertensive changes with scattered vessel abnormalities.', detectedFrom: 'fundus', justification: 'Arteriovenous nicking and mild arteriolar narrowing visible. Less severe than left eye.', references: ['Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004'] },
+          { name: 'Hard Exudates', probability: 48, severity: 'medium', description: 'Lipid deposits in outer retinal layers.', detectedFrom: 'both', justification: 'Yellow-white deposits visible temporal to macula consistent with lipid exudation.', references: ['AAO Preferred Practice Pattern, 2019'] },
         ],
-        summary: 'Mild-moderate NPDR in right eye. Monitor closely and optimize glycemic control.',
+        summary: 'Mild-moderate hypertensive retinopathy in right eye. Monitor closely and optimize blood pressure control.',
       },
       // Visit 2 - April 2024
       {
@@ -238,12 +237,11 @@ const initialPatients: Patient[] = [
         visitNumber: 2,
         visitDate: new Date('2024-04-15'),
         linkedOctUrl: oct_lefteye2,
-        linkedOctName: 'OCT Follow-up Left V2',
+        linkedOctName: 'OCT',
         diseases: [
-          { name: 'Diabetic Retinopathy', probability: 68, severity: 'medium', description: 'Stable NPDR following treatment.', detectedFrom: 'fundus', justification: 'Microaneurysms stable, no new hemorrhages. Partial resolution of hard exudates after anti-VEGF.', references: ['DRCR.net Protocol T, NEJM 2015'] },
-          { name: 'Diabetic Macular Edema', probability: 42, severity: 'medium', description: 'Reduced macular edema.', detectedFrom: 'both', justification: 'OCT shows reduced central subfield thickness to 285μm. Intraretinal fluid decreased.', references: ['DRCR.net Protocol T, NEJM 2015'] },
+          { name: 'Hypertensive Retinopathy', probability: 68, severity: 'medium', description: 'Stable hypertensive changes following treatment.', detectedFrom: 'fundus', justification: 'Arteriovenous nicking stable, no new hemorrhages. Some resolution of arteriolar narrowing with blood pressure control.', references: ['Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004'] },
         ],
-        summary: 'Improvement in DME following anti-VEGF therapy. Continue treatment.',
+        summary: 'Stable hypertensive retinopathy following blood pressure management. Continue current therapy.',
       },
       {
         id: 's1d',
@@ -255,12 +253,11 @@ const initialPatients: Patient[] = [
         visitNumber: 2,
         visitDate: new Date('2024-04-15'),
         linkedOctUrl: oct_righteye2,
-        linkedOctName: 'OCT Follow-up Right V2',
+        linkedOctName: 'OCT',
         diseases: [
-          { name: 'Diabetic Retinopathy', probability: 70, severity: 'high', description: 'Progression to moderate NPDR with new hemorrhages.', detectedFrom: 'fundus', justification: 'New intraretinal hemorrhages noted. Microaneurysms increased in number.', references: ['ETDRS Study, 1991'] },
-          { name: 'Diabetic Macular Edema', probability: 52, severity: 'medium', description: 'New onset macular edema in right eye.', detectedFrom: 'both', justification: 'OCT reveals new intraretinal cysts near fovea. Central thickness 310μm.', references: ['DRCR.net Protocol T, NEJM 2015'] },
+          { name: 'Hypertensive Retinopathy', probability: 70, severity: 'high', description: 'Progression of hypertensive changes with new vessel abnormalities.', detectedFrom: 'fundus', justification: 'New cotton wool spots noted. Arteriovenous nicking more pronounced.', references: ['Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004'] },
         ],
-        summary: 'DR progression in right eye with new DME. Initiate anti-VEGF treatment.',
+        summary: 'Hypertensive retinopathy progression in right eye. Intensify blood pressure management.',
       },
     ],
   },

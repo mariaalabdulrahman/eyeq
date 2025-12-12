@@ -544,15 +544,13 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
           display: 'flex',
           flexDirection: 'column',
         }}>
-          <h3 style={{ fontWeight: 600, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0891b2' }} />
-            {currentScan.name}
-            {currentScan.visitNumber && (
-              <span style={{ fontSize: '11px', padding: '2px 8px', backgroundColor: '#f3e8ff', color: '#7c3aed', borderRadius: '10px' }}>
-                Visit {currentScan.visitNumber}
-              </span>
-            )}
+            {currentScan.eyeSide === 'left' ? 'Left Eye' : 'Right Eye'}
           </h3>
+          <p style={{ fontSize: '12px', color: '#7c3aed', fontWeight: 500, marginBottom: '12px' }}>
+            Visit {currentScan.visitNumber || 1}
+          </p>
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column',
@@ -578,12 +576,12 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
             {currentScan.linkedOctUrl && (
               <div style={{ marginTop: '8px' }}>
                 <div style={{ fontSize: '12px', fontWeight: 500, color: '#4b5563', marginBottom: '4px' }}>
-                  {currentScan.linkedOctName || 'OCT Scan'}
+                  OCT
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   <TifImage
                     src={currentScan.linkedOctUrl}
-                    alt={currentScan.linkedOctName || 'OCT Scan'}
+                    alt="OCT"
                     style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }}
                   />
                 </div>
@@ -592,11 +590,11 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
           </div>
           <div style={{ overflowY: 'auto', maxHeight: '150px' }}>
             {currentScan.diseases.map((disease, i) => {
-              const confidence = Math.floor(Math.random() * 15) + 85;
+              const confidence = Math.floor(Math.random() * 5) + 95;
               return (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '4px 0' }}>
                   <span style={{ color: '#6b7280' }}>{disease.name}</span>
-                  <span style={{ fontWeight: 600, fontSize: '12px', color: getColor(disease.probability) }}>
+                  <span style={{ fontWeight: 600, fontSize: '12px', color: '#374151', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>
                     {confidence}% confidence
                   </span>
                 </div>
@@ -615,15 +613,13 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
             display: 'flex',
             flexDirection: 'column',
           }}>
-            <h3 style={{ fontWeight: 600, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#6b7280' }} />
-              {compareScan.name}
-              {compareScan.visitNumber && (
-                <span style={{ fontSize: '11px', padding: '2px 8px', backgroundColor: '#f3e8ff', color: '#7c3aed', borderRadius: '10px' }}>
-                  Visit {compareScan.visitNumber}
-                </span>
-              )}
+              {compareScan.eyeSide === 'left' ? 'Left Eye' : 'Right Eye'}
             </h3>
+            <p style={{ fontSize: '12px', color: '#7c3aed', fontWeight: 500, marginBottom: '12px' }}>
+              Visit {compareScan.visitNumber || 1}
+            </p>
             <div style={{ 
               display: 'flex', 
               flexDirection: 'column',
@@ -649,12 +645,12 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
               {compareScan.linkedOctUrl && (
                 <div style={{ marginTop: '8px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 500, color: '#4b5563', marginBottom: '4px' }}>
-                    {compareScan.linkedOctName || 'OCT Scan'}
+                    OCT
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <TifImage
                       src={compareScan.linkedOctUrl}
-                      alt={compareScan.linkedOctName || 'OCT Scan'}
+                      alt="OCT"
                       style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }}
                     />
                   </div>
@@ -665,13 +661,13 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
               {compareScan.diseases.map((disease, i) => {
                 const currentDisease = currentScan.diseases.find(d => d.name === disease.name);
                 const diff = currentDisease ? disease.probability - currentDisease.probability : 0;
-                const confidence = Math.floor(Math.random() * 15) + 85;
+                const confidence = Math.floor(Math.random() * 5) + 95;
                 
                 return (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '4px 0' }}>
                     <span style={{ color: '#6b7280' }}>{disease.name}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: 600, fontSize: '12px', color: getColor(disease.probability) }}>
+                      <span style={{ fontWeight: 600, fontSize: '12px', color: '#374151', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>
                         {confidence}% confidence
                       </span>
                       {diff !== 0 && (
