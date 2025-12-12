@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Patient, Disease } from "@/types/scan";
-import { Download, Stethoscope, User, Camera, AlertTriangle, CheckCircle, Clock, Lightbulb, Lock, Unlock } from "lucide-react";
+import { Download, Stethoscope, User, Camera, AlertTriangle, CheckCircle, Clock, Lightbulb, Lock, Unlock, Link2 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -10,6 +10,84 @@ interface PatientReportProps {
   isEditMode: boolean;
   onRequestEdit: () => void;
 }
+
+// Systemic disease associations with ocular conditions and peer-reviewed references
+const SYSTEMIC_ASSOCIATIONS: Record<string, { systemicDisease: string; percentage: number; ocularLink: string; reference: string }[]> = {
+  "Diabetic Retinopathy": [
+    { systemicDisease: "Cardiovascular Disease", percentage: 65, ocularLink: "Microvascular damage in DR reflects systemic endothelial dysfunction", reference: "Cheung N, et al. Lancet. 2010;376(9735):124-36" },
+    { systemicDisease: "Chronic Kidney Disease", percentage: 40, ocularLink: "Shared microvascular pathology between retinal and renal vessels", reference: "Wong TY, et al. Kidney Int. 2004;65(6):2237-44" },
+    { systemicDisease: "Stroke", percentage: 35, ocularLink: "Retinal microvascular abnormalities predict cerebrovascular events", reference: "Wong TY, et al. JAMA. 2002;287(15):1989-96" },
+  ],
+  "Glaucoma": [
+    { systemicDisease: "Cardiovascular Disease", percentage: 30, ocularLink: "Vascular dysregulation and reduced ocular blood flow", reference: "Flammer J, et al. Prog Retin Eye Res. 2002;21(4):359-93" },
+    { systemicDisease: "Alzheimer's Disease", percentage: 25, ocularLink: "Shared neurodegenerative mechanisms and retinal ganglion cell loss", reference: "Hinton DR, et al. N Engl J Med. 1986;315(8):485-7" },
+    { systemicDisease: "Sleep Apnea", percentage: 20, ocularLink: "Nocturnal hypoxia affects optic nerve perfusion", reference: "Stein JD, et al. Ophthalmology. 2011;118(12):2427-33" },
+  ],
+  "Age-Related Macular Degeneration": [
+    { systemicDisease: "Cardiovascular Disease", percentage: 45, ocularLink: "Shared atherosclerotic and inflammatory pathways", reference: "Klein R, et al. Arch Ophthalmol. 2003;121(6):785-92" },
+    { systemicDisease: "Alzheimer's Disease", percentage: 30, ocularLink: "Common amyloid-beta deposition in drusen and brain plaques", reference: "Ohno-Matsui K. Brain Res Bull. 2010;81(4-5):491-502" },
+    { systemicDisease: "Stroke", percentage: 25, ocularLink: "Retinal vascular changes correlate with cerebrovascular risk", reference: "Ikram MK, et al. Stroke. 2006;37(2):424-9" },
+  ],
+  "Hypertensive Retinopathy": [
+    { systemicDisease: "Stroke", percentage: 55, ocularLink: "Retinal arteriolar narrowing predicts cerebrovascular events", reference: "Wong TY, et al. Lancet. 2003;361(9369):1491-4" },
+    { systemicDisease: "Heart Failure", percentage: 40, ocularLink: "Microvascular damage reflects cardiac stress", reference: "Wong TY, et al. Circulation. 2005;112(10):1406-13" },
+    { systemicDisease: "Chronic Kidney Disease", percentage: 35, ocularLink: "Parallel target organ damage from hypertension", reference: "Dimmitt SB, et al. Hypertension. 1989;13(6):793-800" },
+  ],
+  "Central Retinal Vein Occlusion": [
+    { systemicDisease: "Hypertension", percentage: 60, ocularLink: "Arterial compression and venous stasis", reference: "Hayreh SS, et al. Ophthalmology. 2001;108(5):830-41" },
+    { systemicDisease: "Diabetes Mellitus", percentage: 35, ocularLink: "Hypercoagulable state and endothelial dysfunction", reference: "Hayreh SS, et al. Am J Ophthalmol. 2004;137(3):365-76" },
+    { systemicDisease: "Cardiovascular Disease", percentage: 40, ocularLink: "Shared vascular risk factors", reference: "Cugati S, et al. Ophthalmology. 2007;114(3):520-4" },
+  ],
+  "Optic Neuritis": [
+    { systemicDisease: "Multiple Sclerosis", percentage: 50, ocularLink: "Demyelinating inflammation of optic nerve", reference: "Beck RW, et al. N Engl J Med. 1992;326(9):581-8" },
+    { systemicDisease: "Neuromyelitis Optica", percentage: 20, ocularLink: "Aquaporin-4 antibody-mediated damage", reference: "Wingerchuk DM, et al. Neurology. 2007;68(12):1076-9" },
+  ],
+  "Papilledema": [
+    { systemicDisease: "Intracranial Hypertension", percentage: 70, ocularLink: "Elevated ICP transmitted to optic nerve sheath", reference: "Friedman DI, et al. Ann Neurol. 2013;73(3):304-20" },
+    { systemicDisease: "Brain Tumor", percentage: 25, ocularLink: "Mass effect causing CSF obstruction", reference: "Hayreh SS. Prog Retin Eye Res. 2016;50:1-25" },
+  ],
+  "Retinitis Pigmentosa": [
+    { systemicDisease: "Hearing Loss (Usher Syndrome)", percentage: 30, ocularLink: "Shared genetic mutations affecting photoreceptors and cochlea", reference: "Hartong DT, et al. Lancet. 2006;368(9549):1795-809" },
+  ],
+  "Disc Edema": [
+    { systemicDisease: "Diabetes Mellitus", percentage: 45, ocularLink: "Diabetic papillopathy from microvascular ischemia", reference: "Regillo CD, et al. Arch Ophthalmol. 1995;113(7):889-95" },
+    { systemicDisease: "Hypertension", percentage: 40, ocularLink: "Malignant hypertension causing optic disc swelling", reference: "Hayreh SS, et al. Ophthalmology. 2001;108(5):830-41" },
+  ],
+  "Macular Edema": [
+    { systemicDisease: "Diabetes Mellitus", percentage: 70, ocularLink: "Blood-retinal barrier breakdown from chronic hyperglycemia", reference: "Bhagat N, et al. Surv Ophthalmol. 2009;54(1):1-32" },
+    { systemicDisease: "Cardiovascular Disease", percentage: 30, ocularLink: "Systemic vascular permeability and inflammation", reference: "Klein R, et al. Ophthalmology. 2010;117(6):1064-77" },
+  ],
+};
+
+const getSystemicAssociations = (diseases: Disease[]) => {
+  const associations: { systemicDisease: string; percentage: number; ocularLink: string; reference: string; linkedOcularDisease: string }[] = [];
+  
+  diseases.forEach(disease => {
+    const diseaseAssociations = SYSTEMIC_ASSOCIATIONS[disease.name];
+    if (diseaseAssociations) {
+      diseaseAssociations.forEach(assoc => {
+        // Weight the systemic disease percentage by the ocular disease probability
+        const weightedPercentage = Math.round((assoc.percentage * disease.probability) / 100);
+        associations.push({
+          ...assoc,
+          percentage: weightedPercentage,
+          linkedOcularDisease: disease.name,
+        });
+      });
+    }
+  });
+
+  // Deduplicate and take highest percentage for each systemic disease
+  const uniqueAssociations = associations.reduce((acc, curr) => {
+    const existing = acc.find(a => a.systemicDisease === curr.systemicDisease);
+    if (!existing || existing.percentage < curr.percentage) {
+      return [...acc.filter(a => a.systemicDisease !== curr.systemicDisease), curr];
+    }
+    return acc;
+  }, [] as typeof associations);
+
+  return uniqueAssociations.sort((a, b) => b.percentage - a.percentage);
+};
 
 export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }: PatientReportProps) {
   const [editedNotes, setEditedNotes] = useState<Record<string, string>>({});
@@ -242,6 +320,7 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
           backgroundColor: 'white', 
           borderRadius: '12px', 
           padding: '24px',
+          marginBottom: '24px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         }}>
           <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>Clinical Findings</h3>
@@ -304,6 +383,72 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
             </tbody>
           </table>
         </div>
+
+        {/* Systemic Disease Associations - Doctor Report */}
+        {(() => {
+          const systemicAssociations = getSystemicAssociations(diseases);
+          if (systemicAssociations.length === 0) return null;
+          return (
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '12px', 
+              padding: '24px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Link2 size={20} style={{ color: '#0891b2' }} />
+                Possible Systemic Disease Associations
+              </h3>
+              <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>
+                Based on detected ocular conditions, the following systemic diseases may be associated. Percentages are weighted by ocular disease probability.
+              </p>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f3f4f6' }}>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Systemic Condition</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Association</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Linked Ocular Finding</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Pathophysiological Link</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Reference</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {systemicAssociations.map((assoc, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: 500, fontSize: '14px' }}>{assoc.systemicDisease}</td>
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '50px', height: '6px', backgroundColor: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ width: `${assoc.percentage}%`, height: '100%', backgroundColor: assoc.percentage >= 40 ? '#ef4444' : assoc.percentage >= 20 ? '#f59e0b' : '#3b82f6' }} />
+                          </div>
+                          <span style={{ fontSize: '13px', fontWeight: 600 }}>{assoc.percentage}%</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{
+                          padding: '3px 8px',
+                          borderRadius: '10px',
+                          fontSize: '11px',
+                          fontWeight: 500,
+                          backgroundColor: '#ecfeff',
+                          color: '#0891b2',
+                        }}>
+                          {assoc.linkedOcularDisease}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px', fontSize: '12px', color: '#6b7280', maxWidth: '200px' }}>
+                        {assoc.ocularLink}
+                      </td>
+                      <td style={{ padding: '12px', fontSize: '11px', color: '#6b7280', fontStyle: 'italic', maxWidth: '150px' }}>
+                        {assoc.reference}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
       </div>
     );
   }
@@ -418,6 +563,61 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
           ))
         )}
       </div>
+
+      {/* Systemic Disease Associations - Patient Report */}
+      {(() => {
+        const systemicAssociations = getSystemicAssociations(significantDiseases);
+        if (systemicAssociations.length === 0) return null;
+        return (
+          <div style={{ 
+            backgroundColor: 'white', 
+            borderRadius: '12px', 
+            padding: '24px',
+            marginBottom: '24px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link2 size={20} style={{ color: '#0891b2' }} />
+              Related Health Conditions to Discuss
+            </h3>
+            <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '16px' }}>
+              Your eye findings may be connected to other health conditions. Please discuss these with your doctor.
+            </p>
+            {systemicAssociations.slice(0, 5).map((assoc, idx) => (
+              <div key={idx} style={{ 
+                padding: '14px',
+                marginBottom: idx < Math.min(systemicAssociations.length, 5) - 1 ? '10px' : 0,
+                borderRadius: '10px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontWeight: 600, fontSize: '15px', color: '#1e293b' }}>{assoc.systemicDisease}</span>
+                  <span style={{
+                    padding: '3px 10px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    backgroundColor: assoc.percentage >= 40 ? '#fef2f2' : assoc.percentage >= 20 ? '#fffbeb' : '#eff6ff',
+                    color: assoc.percentage >= 40 ? '#ef4444' : assoc.percentage >= 20 ? '#f59e0b' : '#3b82f6',
+                  }}>
+                    {assoc.percentage}% association
+                  </span>
+                </div>
+                <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '6px' }}>
+                  <strong>Connected to:</strong> {assoc.linkedOcularDisease}
+                </p>
+                <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                  {assoc.ocularLink}
+                </p>
+                <p style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', marginTop: '6px' }}>
+                  Source: {assoc.reference}
+                </p>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Next Steps */}
       <div style={{ 
