@@ -141,6 +141,7 @@ interface ScanContextType {
   addScan: (fundusFile: File, octFile?: File, patientId?: string, eyeSide?: 'left' | 'right') => void;
   removeScan: (id: string) => void;
   addPatient: (name: string, dateOfBirth: string, age?: number, gender?: 'male' | 'female' | 'other', relevantInfo?: string) => string;
+  updatePatient: (patientId: string, updates: Partial<Pick<Patient, 'name' | 'dateOfBirth' | 'age' | 'gender' | 'relevantInfo'>>) => void;
   addChatMessage: (content: string, selectedScanIds: string[]) => void;
   assignScansToPatient: (patientId: string, scanIds: string[]) => void;
 }
@@ -258,19 +259,52 @@ const initialPatients: Patient[] = [
   },
 ];
 
+// Map of fundus image keys to actual imports for restoring from localStorage
+const fundusImageMap: Record<string, string> = {
+  'fundus_DR165': fundus_DR165,
+  'fundus_Glaucoma117': fundus_Glaucoma117,
+  'fundus_Myopia12': fundus_Myopia12,
+  'fundus_Retinitis': fundus_Retinitis,
+  'fundus_CSCR99': fundus_CSCR99,
+  'fundus_MacularScar': fundus_MacularScar,
+};
+
+// Helper to restore image URLs from localStorage
+const restoreImageUrl = (url: string): string => {
+  // If it's a key for a known fundus image, return the actual import
+  if (url in fundusImageMap) {
+    return fundusImageMap[url];
+  }
+  // Check if it matches one of our imported image paths (vite adds hash)
+  for (const [key, importedUrl] of Object.entries(fundusImageMap)) {
+    if (url === importedUrl) return importedUrl;
+  }
+  return url;
+};
+
+// Helper to get storage key for an image
+const getStorageKey = (url: string): string => {
+  for (const [key, importedUrl] of Object.entries(fundusImageMap)) {
+    if (url === importedUrl) return key;
+  }
+  return url;
+};
+
 // Load patients from localStorage or use initial data
 const loadPatientsFromStorage = (): Patient[] => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // Convert date strings back to Date objects
+      // Convert date strings back to Date objects and restore image URLs
       return parsed.map((p: any) => ({
         ...p,
         createdAt: new Date(p.createdAt),
         scans: p.scans.map((s: any) => ({
           ...s,
           uploadedAt: new Date(s.uploadedAt),
+          imageUrl: restoreImageUrl(s.imageUrl),
+          linkedOctUrl: s.linkedOctUrl ? restoreImageUrl(s.linkedOctUrl) : undefined,
         })),
       }));
     }
@@ -314,7 +348,16 @@ export function ScanProvider({ children }: { children: ReactNode }) {
   // Persist patients to localStorage whenever they change
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
+      // Convert image URLs to storage keys before saving
+      const patientsToStore = patients.map(p => ({
+        ...p,
+        scans: p.scans.map(s => ({
+          ...s,
+          imageUrl: getStorageKey(s.imageUrl),
+          linkedOctUrl: s.linkedOctUrl ? getStorageKey(s.linkedOctUrl) : undefined,
+        })),
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(patientsToStore));
     } catch (e) {
       console.error('Error saving patients to storage:', e);
     }
@@ -385,6 +428,12 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     };
     setPatients(prev => [...prev, newPatient]);
     return newPatient.id;
+  }, []);
+
+  const updatePatient = useCallback((patientId: string, updates: Partial<Pick<Patient, 'name' | 'dateOfBirth' | 'age' | 'gender' | 'relevantInfo'>>) => {
+    setPatients(prev => prev.map(p => 
+      p.id === patientId ? { ...p, ...updates } : p
+    ));
   }, []);
 
   const addChatMessage = useCallback((content: string, selectedScanIds: string[]) => {
@@ -488,6 +537,7 @@ Would you like more specific information about any particular systemic-ocular re
       addScan,
       removeScan,
       addPatient,
+      updatePatient,
       addChatMessage,
       assignScansToPatient,
     }}>

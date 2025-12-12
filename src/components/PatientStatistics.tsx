@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Patient } from "@/types/scan";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
-import { Filter, Users, Activity, AlertTriangle, TrendingUp } from "lucide-react";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Filter, Users, Activity, AlertTriangle, TrendingUp, X } from "lucide-react";
 
 interface PatientStatisticsProps {
   patients: Patient[];
@@ -12,6 +12,7 @@ const COLORS = ['#0891b2', '#06b6d4', '#22d3ee', '#ef4444', '#f59e0b', '#22c55e'
 export function PatientStatistics({ patients }: PatientStatisticsProps) {
   const [ageFilter, setAgeFilter] = useState<string>('all');
   const [diseaseFilter, setDiseaseFilter] = useState<string>('all');
+  const [selectedPatientIds, setSelectedPatientIds] = useState<string[]>([]);
 
   // Calculate age from DOB
   const getAge = (dob: string) => {
@@ -30,8 +31,32 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
     patients.flatMap(p => p.scans.flatMap(s => s.diseases.map(d => d.name)))
   ));
 
+  // Toggle patient selection
+  const togglePatient = (patientId: string) => {
+    setSelectedPatientIds(prev => 
+      prev.includes(patientId) 
+        ? prev.filter(id => id !== patientId)
+        : [...prev, patientId]
+    );
+  };
+
+  // Select all patients
+  const selectAllPatients = () => {
+    setSelectedPatientIds(patients.map(p => p.id));
+  };
+
+  // Clear patient selection
+  const clearPatientSelection = () => {
+    setSelectedPatientIds([]);
+  };
+
   // Filter patients
   const filteredPatients = patients.filter(p => {
+    // Patient name filter
+    if (selectedPatientIds.length > 0 && !selectedPatientIds.includes(p.id)) {
+      return false;
+    }
+
     const age = getAge(p.dateOfBirth);
     const patientDiseases = p.scans.flatMap(s => s.diseases.map(d => d.name));
     
@@ -105,7 +130,77 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
           <Filter size={20} style={{ color: '#0891b2' }} />
           <h3 style={{ fontSize: '16px', fontWeight: 600 }}>Filters</h3>
         </div>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          {/* Patient Name Filter */}
+          <div style={{ minWidth: '250px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '6px', color: '#6b7280' }}>
+              Patients ({selectedPatientIds.length > 0 ? `${selectedPatientIds.length} selected` : 'All'})
+            </label>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+              <button
+                onClick={selectAllPatients}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid #e5e7eb',
+                  backgroundColor: selectedPatientIds.length === patients.length ? '#0891b2' : 'white',
+                  color: selectedPatientIds.length === patients.length ? 'white' : '#374151',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                Select All
+              </button>
+              <button
+                onClick={clearPatientSelection}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid #e5e7eb',
+                  backgroundColor: 'white',
+                  color: '#374151',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                Clear
+              </button>
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: '6px',
+              maxHeight: '100px',
+              overflowY: 'auto',
+              padding: '8px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              backgroundColor: '#f9fafb',
+            }}>
+              {patients.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => togglePatient(p.id)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '20px',
+                    border: selectedPatientIds.includes(p.id) ? '2px solid #0891b2' : '1px solid #e5e7eb',
+                    backgroundColor: selectedPatientIds.includes(p.id) ? '#ecfeff' : 'white',
+                    color: selectedPatientIds.includes(p.id) ? '#0891b2' : '#374151',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  {p.name}
+                  {selectedPatientIds.includes(p.id) && <X size={12} />}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '6px', color: '#6b7280' }}>Age Range</label>
             <select
