@@ -1,15 +1,27 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Patient, Disease } from "@/types/scan";
-import { ArrowLeft, UserPlus, Camera, Stethoscope, User, Lightbulb, FileText } from "lucide-react";
+import { Patient } from "@/types/scan";
+import { ArrowLeft, UserPlus, Home, Stethoscope, User, BarChart3, Lock, X } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useScanContext } from "@/contexts/ScanContext";
+import { PatientChatSidebar } from "@/components/PatientChatSidebar";
+import { PatientReport } from "@/components/PatientReport";
+import { PatientStatistics } from "@/components/PatientStatistics";
+
+type RecordsViewMode = 'home' | 'doctor-report' | 'patient-report' | 'statistics';
 
 const PatientRecords = () => {
   const navigate = useNavigate();
-  const { patients } = useScanContext();
-  const [selectedPatient, setSelectedPatient] = useState<typeof patients[0] | null>(null);
+  const { patients, addPatient } = useScanContext();
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
+  const [viewMode, setViewMode] = useState<RecordsViewMode>('home');
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [newPatientName, setNewPatientName] = useState("");
+  const [newPatientDob, setNewPatientDob] = useState("");
 
   const calculateOverallRisk = (patient: Patient): { level: string; color: string } => {
     const allDiseases = patient.scans.flatMap(s => s.diseases);
@@ -19,18 +31,40 @@ const PatientRecords = () => {
     return { level: 'Low Risk', color: '#22c55e' };
   };
 
-  const generateComprehensiveReport = (patient: Patient, forDoctor: boolean) => {
-    const allDiseases = patient.scans.flatMap(s => s.diseases);
-    const uniqueDiseases = allDiseases.reduce((acc, d) => {
-      const existing = acc.find(e => e.name === d.name);
-      if (!existing || existing.probability < d.probability) {
-        return [...acc.filter(e => e.name !== d.name), d];
-      }
-      return acc;
-    }, [] as Disease[]);
-
-    return uniqueDiseases.sort((a, b) => b.probability - a.probability);
+  const handleRequestEdit = () => {
+    if (isEditMode) {
+      setIsEditMode(false);
+    } else {
+      setShowPasswordModal(true);
+    }
   };
+
+  const handlePasswordSubmit = () => {
+    if (passwordInput === "eyeq") {
+      setIsEditMode(true);
+      setShowPasswordModal(false);
+      setPasswordInput("");
+      setPasswordError("");
+    } else {
+      setPasswordError("Incorrect password");
+    }
+  };
+
+  const handleCreatePatient = () => {
+    if (newPatientName.trim() && newPatientDob) {
+      addPatient(newPatientName.trim(), newPatientDob);
+      setNewPatientName("");
+      setNewPatientDob("");
+      setShowNewPatientModal(false);
+    }
+  };
+
+  const viewModes = [
+    { mode: 'home' as RecordsViewMode, icon: Home, label: 'Overview' },
+    { mode: 'doctor-report' as RecordsViewMode, icon: Stethoscope, label: 'Doctor Report' },
+    { mode: 'patient-report' as RecordsViewMode, icon: User, label: 'Patient Report' },
+    { mode: 'statistics' as RecordsViewMode, icon: BarChart3, label: 'Statistics' },
+  ];
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
@@ -38,17 +72,41 @@ const PatientRecords = () => {
       <header style={{ 
         backgroundColor: 'white', 
         borderBottom: '1px solid #e5e7eb', 
-        padding: '16px 24px',
+        padding: '12px 24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-        <div
-          onClick={() => navigate('/')}
-          style={{ cursor: 'pointer' }}
-        >
+        <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
           <Logo size={40} />
         </div>
+        
+        {/* View Mode Buttons */}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {viewModes.map(({ mode, icon: Icon, label }) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: viewMode === mode ? '2px solid #0891b2' : '1px solid #e5e7eb',
+                backgroundColor: viewMode === mode ? '#ecfeff' : 'white',
+                color: viewMode === mode ? '#0891b2' : '#374151',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <Icon size={16} />
+              {label}
+            </button>
+          ))}
+        </div>
+
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
             onClick={() => navigate('/dashboard')}
@@ -86,262 +144,300 @@ const PatientRecords = () => {
         </div>
       </header>
 
-      <div style={{ display: 'flex', height: 'calc(100vh - 73px)' }}>
-        {/* Patient List */}
+      <div style={{ display: 'flex', height: 'calc(100vh - 65px)' }}>
+        {/* Left Sidebar - Chat + Patient List */}
         <div style={{ 
           width: '350px', 
           backgroundColor: 'white', 
           borderRight: '1px solid #e5e7eb',
-          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
         }}>
-          <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#111' }}>Patient Records</h2>
-            <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>{patients.length} patients</p>
+          {/* Chat Section */}
+          <div style={{ height: '50%', borderBottom: '1px solid #e5e7eb', overflow: 'hidden' }}>
+            <PatientChatSidebar 
+              patients={patients} 
+              onPatientSelect={(id) => {
+                const p = patients.find(p => p.id === id);
+                if (p) setSelectedPatient(p);
+              }}
+            />
           </div>
-          {patients.map((patient) => {
-            const risk = calculateOverallRisk(patient);
-            return (
-              <div
-                key={patient.id}
-                onClick={() => setSelectedPatient(patient)}
-                style={{
-                  padding: '16px 20px',
-                  borderBottom: '1px solid #e5e7eb',
-                  cursor: 'pointer',
-                  backgroundColor: selectedPatient?.id === patient.id ? '#ecfeff' : 'transparent',
-                  transition: 'background-color 0.2s',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <h3 style={{ fontWeight: 600, color: '#111' }}>{patient.name}</h3>
-                    <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px' }}>
-                      DOB: {new Date(patient.dateOfBirth).toLocaleDateString()}
-                    </p>
-                    <p style={{ fontSize: '13px', color: '#6b7280' }}>
-                      {patient.scans.length} scan(s)
-                    </p>
+
+          {/* Patient List */}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#111' }}>Patients ({patients.length})</h3>
+            </div>
+            {patients.map((patient) => {
+              const risk = calculateOverallRisk(patient);
+              return (
+                <div
+                  key={patient.id}
+                  onClick={() => setSelectedPatient(patient)}
+                  style={{
+                    padding: '14px 16px',
+                    borderBottom: '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    backgroundColor: selectedPatient?.id === patient.id ? '#ecfeff' : 'transparent',
+                    transition: 'background-color 0.2s',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h4 style={{ fontWeight: 600, color: '#111', fontSize: '14px' }}>{patient.name}</h4>
+                      <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                        {patient.scans.length} scan(s)
+                      </p>
+                    </div>
+                    <span style={{
+                      fontSize: '10px',
+                      fontWeight: 600,
+                      padding: '3px 6px',
+                      borderRadius: '10px',
+                      backgroundColor: risk.color + '20',
+                      color: risk.color,
+                    }}>
+                      {risk.level}
+                    </span>
                   </div>
-                  <span style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    padding: '4px 8px',
-                    borderRadius: '12px',
-                    backgroundColor: risk.color + '20',
-                    color: risk.color,
-                  }}>
-                    {risk.level}
-                  </span>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
-        {/* Patient Detail */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
-          {selectedPatient ? (
-            <>
-              {/* Patient Header */}
-              <div style={{ 
-                backgroundColor: 'white', 
-                borderRadius: '12px', 
-                padding: '24px',
-                marginBottom: '24px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <h2 style={{ fontSize: '28px', fontWeight: 700, color: '#111' }}>{selectedPatient.name}</h2>
-                    <p style={{ color: '#6b7280', marginTop: '4px' }}>
-                      Date of Birth: {new Date(selectedPatient.dateOfBirth).toLocaleDateString()} | 
-                      Patient since: {selectedPatient.createdAt.toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div style={{
-                    padding: '8px 16px',
-                    borderRadius: '20px',
-                    backgroundColor: calculateOverallRisk(selectedPatient).color + '20',
-                    color: calculateOverallRisk(selectedPatient).color,
-                    fontWeight: 600,
-                  }}>
-                    {calculateOverallRisk(selectedPatient).level}
-                  </div>
-                </div>
-              </div>
-
-              {/* Scans Grid */}
-              <div style={{ 
-                backgroundColor: 'white', 
-                borderRadius: '12px', 
-                padding: '24px',
-                marginBottom: '24px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={20} /> All Scans ({selectedPatient.scans.length})</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
-                  {selectedPatient.scans.map((scan) => (
-                    <div key={scan.id} style={{ 
-                      border: '1px solid #e5e7eb', 
-                      borderRadius: '8px', 
-                      overflow: 'hidden',
-                      backgroundColor: '#f9fafb',
-                    }}>
-                      <img 
-                        src={scan.imageUrl} 
-                        alt={scan.name}
-                        style={{ width: '100%', height: '150px', objectFit: 'cover' }}
-                      />
-                      <div style={{ padding: '12px' }}>
-                        <p style={{ fontWeight: 600, fontSize: '14px' }}>{scan.name}</p>
-                        <p style={{ fontSize: '12px', color: '#6b7280' }}>
-                          {scan.type.toUpperCase()} • {scan.uploadedAt.toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Doctor Report */}
-              <div style={{ 
-                backgroundColor: 'white', 
-                borderRadius: '12px', 
-                padding: '24px',
-                marginBottom: '24px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}><Stethoscope size={20} /> Doctor's Comprehensive Report</h3>
-                <div style={{ backgroundColor: '#f8fafc', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
-                  <p style={{ fontWeight: 600, marginBottom: '8px' }}>Clinical Summary</p>
-                  <p style={{ color: '#374151', lineHeight: 1.6 }}>
-                    Patient presents with {selectedPatient.scans.length} documented scan(s). 
-                    Analysis indicates {calculateOverallRisk(selectedPatient).level.toLowerCase()} findings 
-                    requiring {calculateOverallRisk(selectedPatient).level === 'High Risk' ? 'immediate specialist consultation' : 
-                    calculateOverallRisk(selectedPatient).level === 'Moderate Risk' ? 'follow-up within 3-6 months' : 'routine monitoring'}.
-                  </p>
-                </div>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#f3f4f6' }}>
-                      <th style={{ padding: '12px', textAlign: 'left', fontSize: '14px' }}>Condition</th>
-                      <th style={{ padding: '12px', textAlign: 'left', fontSize: '14px' }}>Probability</th>
-                      <th style={{ padding: '12px', textAlign: 'left', fontSize: '14px' }}>Severity</th>
-                      <th style={{ padding: '12px', textAlign: 'left', fontSize: '14px' }}>Clinical Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {generateComprehensiveReport(selectedPatient, true).map((disease, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                        <td style={{ padding: '12px', fontWeight: 500 }}>{disease.name}</td>
-                        <td style={{ padding: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ 
-                              width: '60px', 
-                              height: '8px', 
-                              backgroundColor: '#e5e7eb', 
-                              borderRadius: '4px',
-                              overflow: 'hidden',
-                            }}>
-                              <div style={{ 
-                                width: `${disease.probability}%`, 
-                                height: '100%', 
-                                backgroundColor: disease.probability >= 70 ? '#ef4444' : disease.probability >= 40 ? '#f59e0b' : '#22c55e',
-                              }} />
-                            </div>
-                            <span style={{ fontSize: '14px', fontWeight: 600 }}>{disease.probability}%</span>
-                          </div>
-                        </td>
-                        <td style={{ padding: '12px' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '12px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            backgroundColor: disease.severity === 'high' ? '#fef2f2' : disease.severity === 'medium' ? '#fffbeb' : '#f0fdf4',
-                            color: disease.severity === 'high' ? '#ef4444' : disease.severity === 'medium' ? '#f59e0b' : '#22c55e',
-                          }}>
-                            {disease.severity.toUpperCase()}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px', fontSize: '14px', color: '#6b7280' }}>{disease.description}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Patient Report */}
-              <div style={{ 
-                backgroundColor: 'white', 
-                borderRadius: '12px', 
-                padding: '24px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}><User size={20} /> Patient-Friendly Summary</h3>
-                <div style={{ backgroundColor: '#ecfeff', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
-                  <p style={{ fontWeight: 600, color: '#0891b2', marginBottom: '8px' }}>Your Eye Health Overview</p>
-                  <p style={{ color: '#374151', lineHeight: 1.6 }}>
-                    Based on your {selectedPatient.scans.length} eye scan(s), our AI has analyzed your eye health. 
-                    Here's what we found in simple terms:
-                  </p>
-                </div>
-                {generateComprehensiveReport(selectedPatient, false).map((disease, idx) => (
-                  <div key={idx} style={{ 
-                    padding: '16px', 
-                    borderBottom: idx < generateComprehensiveReport(selectedPatient, false).length - 1 ? '1px solid #e5e7eb' : 'none',
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 600 }}>{disease.name}</span>
-                      <span style={{
-                        padding: '4px 12px',
-                        borderRadius: '20px',
-                        fontSize: '13px',
-                        fontWeight: 500,
-                        backgroundColor: disease.probability >= 70 ? '#fef2f2' : disease.probability >= 40 ? '#fffbeb' : '#f0fdf4',
-                        color: disease.probability >= 70 ? '#ef4444' : disease.probability >= 40 ? '#f59e0b' : '#22c55e',
-                      }}>
-                        {disease.probability >= 70 ? 'Needs Attention' : disease.probability >= 40 ? 'Monitor' : 'Looking Good'}
-                      </span>
-                    </div>
-                    <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.5 }}>
-                      {disease.description} {disease.probability >= 40 ? 'We recommend discussing this with your eye doctor.' : 'No immediate action needed.'}
-                    </p>
-                  </div>
-                ))}
-                <div style={{ 
-                  marginTop: '16px', 
-                  padding: '16px', 
-                  backgroundColor: '#f0fdf4', 
-                  borderRadius: '8px',
-                  borderLeft: '4px solid #22c55e',
-                }}>
-                  <p style={{ fontWeight: 600, color: '#166534', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}><Lightbulb size={16} /> Next Steps</p>
-                  <p style={{ fontSize: '14px', color: '#374151' }}>
-                    {calculateOverallRisk(selectedPatient).level === 'High Risk' 
-                      ? 'Please schedule an appointment with an eye specialist as soon as possible.'
-                      : calculateOverallRisk(selectedPatient).level === 'Moderate Risk'
-                      ? 'Consider scheduling a follow-up appointment within the next few months.'
-                      : 'Continue with regular eye check-ups as recommended by your doctor.'}
-                  </p>
-                </div>
-              </div>
-            </>
+        {/* Main Content */}
+        <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#f8fafc' }}>
+          {viewMode === 'statistics' ? (
+            <PatientStatistics patients={patients} />
+          ) : viewMode === 'doctor-report' ? (
+            <PatientReport 
+              patient={selectedPatient} 
+              reportType="doctor" 
+              isEditMode={isEditMode}
+              onRequestEdit={handleRequestEdit}
+            />
+          ) : viewMode === 'patient-report' ? (
+            <PatientReport 
+              patient={selectedPatient} 
+              reportType="patient"
+              isEditMode={false}
+              onRequestEdit={() => {}}
+            />
           ) : (
-            <div style={{ 
-              height: '100%', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              flexDirection: 'column',
-              color: '#6b7280',
-            }}>
-              <FileText size={48} style={{ marginBottom: '16px', color: '#9ca3af' }} />
-              <p style={{ fontSize: '18px' }}>Select a patient to view their records</p>
-            </div>
+            // Home/Overview Mode - Original content
+            selectedPatient ? (
+              <div style={{ padding: '24px' }}>
+                {/* Patient Header */}
+                <div style={{ 
+                  backgroundColor: 'white', 
+                  borderRadius: '12px', 
+                  padding: '24px',
+                  marginBottom: '24px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h2 style={{ fontSize: '28px', fontWeight: 700, color: '#111' }}>{selectedPatient.name}</h2>
+                      <p style={{ color: '#6b7280', marginTop: '4px' }}>
+                        Date of Birth: {new Date(selectedPatient.dateOfBirth).toLocaleDateString()} | 
+                        Patient since: {selectedPatient.createdAt.toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div style={{
+                      padding: '8px 16px',
+                      borderRadius: '20px',
+                      backgroundColor: calculateOverallRisk(selectedPatient).color + '20',
+                      color: calculateOverallRisk(selectedPatient).color,
+                      fontWeight: 600,
+                    }}>
+                      {calculateOverallRisk(selectedPatient).level}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+                  <button
+                    onClick={() => setViewMode('doctor-report')}
+                    style={{
+                      padding: '20px',
+                      backgroundColor: 'white',
+                      borderRadius: '12px',
+                      border: '1px solid #e5e7eb',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <Stethoscope size={24} style={{ color: '#0891b2', marginBottom: '12px' }} />
+                    <p style={{ fontWeight: 600, color: '#111' }}>Doctor Report</p>
+                    <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Clinical findings & analysis</p>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('patient-report')}
+                    style={{
+                      padding: '20px',
+                      backgroundColor: 'white',
+                      borderRadius: '12px',
+                      border: '1px solid #e5e7eb',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <User size={24} style={{ color: '#0891b2', marginBottom: '12px' }} />
+                    <p style={{ fontWeight: 600, color: '#111' }}>Patient Summary</p>
+                    <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Easy-to-read health overview</p>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('statistics')}
+                    style={{
+                      padding: '20px',
+                      backgroundColor: 'white',
+                      borderRadius: '12px',
+                      border: '1px solid #e5e7eb',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <BarChart3 size={24} style={{ color: '#0891b2', marginBottom: '12px' }} />
+                    <p style={{ fontWeight: 600, color: '#111' }}>Analytics</p>
+                    <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Statistics & visualizations</p>
+                  </button>
+                </div>
+
+                {/* Scans Grid */}
+                <div style={{ 
+                  backgroundColor: 'white', 
+                  borderRadius: '12px', 
+                  padding: '24px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>All Scans ({selectedPatient.scans.length})</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                    {selectedPatient.scans.map((scan) => (
+                      <div key={scan.id} style={{ 
+                        border: '1px solid #e5e7eb', 
+                        borderRadius: '8px', 
+                        overflow: 'hidden',
+                        backgroundColor: '#f9fafb',
+                      }}>
+                        <img 
+                          src={scan.imageUrl} 
+                          alt={scan.name}
+                          style={{ width: '100%', height: '150px', objectFit: 'cover' }}
+                        />
+                        <div style={{ padding: '12px' }}>
+                          <p style={{ fontWeight: 600, fontSize: '14px' }}>{scan.name}</p>
+                          <p style={{ fontSize: '12px', color: '#6b7280' }}>
+                            {scan.type.toUpperCase()} • {scan.uploadedAt.toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ 
+                height: '100%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                flexDirection: 'column',
+                color: '#6b7280',
+              }}>
+                <User size={48} style={{ marginBottom: '16px', color: '#9ca3af' }} />
+                <p style={{ fontSize: '18px' }}>Select a patient to view their records</p>
+              </div>
+            )
           )}
         </div>
       </div>
+
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div 
+            onClick={() => { setShowPasswordModal(false); setPasswordError(""); setPasswordInput(""); }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+            }}
+          />
+          <div style={{
+            position: 'relative',
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            width: '360px',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+          }}>
+            <button
+              onClick={() => { setShowPasswordModal(false); setPasswordError(""); setPasswordInput(""); }}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={20} style={{ color: '#6b7280' }} />
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+              <Lock size={24} style={{ color: '#0891b2' }} />
+              <h2 style={{ fontSize: '18px', fontWeight: 600 }}>Enter Edit Password</h2>
+            </div>
+            <input 
+              type="password"
+              value={passwordInput}
+              onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(""); }}
+              placeholder="Enter password"
+              onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: passwordError ? '2px solid #ef4444' : '1px solid #e5e7eb',
+                fontSize: '14px',
+                marginBottom: '8px',
+              }}
+            />
+            {passwordError && (
+              <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '12px' }}>{passwordError}</p>
+            )}
+            <button
+              onClick={handlePasswordSubmit}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: '#0891b2',
+                color: 'white',
+                fontWeight: 600,
+                cursor: 'pointer',
+                marginTop: '8px',
+              }}
+            >
+              Unlock Edit Mode
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* New Patient Modal */}
       {showNewPatientModal && (
@@ -374,6 +470,8 @@ const PatientRecords = () => {
               <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '6px' }}>Full Name</label>
               <input 
                 type="text" 
+                value={newPatientName}
+                onChange={(e) => setNewPatientName(e.target.value)}
                 placeholder="Enter patient name"
                 style={{
                   width: '100%',
@@ -388,6 +486,8 @@ const PatientRecords = () => {
               <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '6px' }}>Date of Birth</label>
               <input 
                 type="date"
+                value={newPatientDob}
+                onChange={(e) => setNewPatientDob(e.target.value)}
                 style={{
                   width: '100%',
                   padding: '10px 12px',
@@ -412,7 +512,7 @@ const PatientRecords = () => {
                 Cancel
               </button>
               <button
-                onClick={() => setShowNewPatientModal(false)}
+                onClick={handleCreatePatient}
                 style={{
                   flex: 1,
                   padding: '10px',

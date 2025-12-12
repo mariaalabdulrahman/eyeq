@@ -2,12 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImageTabs } from "@/components/ImageTabs";
 import { ChatSidebar } from "@/components/ChatSidebar";
-import { ViewModeButtons } from "@/components/ViewModeButtons";
 import { AnalysisPanel } from "@/components/AnalysisPanel";
 import { UploadModal } from "@/components/UploadModal";
 import { useScanContext } from "@/contexts/ScanContext";
 import { ViewMode } from "@/types/scan";
-import { FolderOpen } from "lucide-react";
+import { FolderOpen, FileText, BarChart3, GitCompare, Microscope } from "lucide-react";
 import Logo from "@/components/Logo";
 
 const Index = () => {
@@ -15,7 +14,6 @@ const Index = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('textual');
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(320);
-  const [chatHeight, setChatHeight] = useState(60); // percentage
   
   const {
     scans,
@@ -33,7 +31,6 @@ const Index = () => {
   const handleUpload = (file: File, type: 'oct' | 'fundus', patientId?: string, newPatientName?: string) => {
     let assignPatientId = patientId;
     
-    // If creating a new patient, do that first
     if (newPatientName) {
       assignPatientId = addPatient(newPatientName, '');
     }
@@ -44,6 +41,13 @@ const Index = () => {
   const handleSendMessage = (message: string, selectedScanIds: string[]) => {
     addChatMessage(message, selectedScanIds);
   };
+
+  const viewModes = [
+    { mode: 'textual' as ViewMode, icon: FileText, label: 'Textual' },
+    { mode: 'visual' as ViewMode, icon: BarChart3, label: 'Visual' },
+    { mode: 'comparison' as ViewMode, icon: GitCompare, label: 'Compare' },
+    { mode: 'visualization' as ViewMode, icon: Microscope, label: 'Visualize' },
+  ];
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc' }}>
@@ -62,32 +66,53 @@ const Index = () => {
         >
           <Logo size={40} />
         </div>
-        <button
-          onClick={() => navigate('/records')}
-          style={{
-            padding: '10px 20px',
-            borderRadius: '8px',
-            border: '1px solid #e5e7eb',
-            backgroundColor: 'white',
-            cursor: 'pointer',
-            fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <FolderOpen size={18} /> Patient Records
-        </button>
+        
+        {/* View Mode Buttons + Patient Records */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {viewModes.map(({ mode, icon: Icon, label }) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: viewMode === mode ? '2px solid #0891b2' : '1px solid #e5e7eb',
+                backgroundColor: viewMode === mode ? '#ecfeff' : 'white',
+                color: viewMode === mode ? '#0891b2' : '#374151',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <Icon size={16} />
+              {label}
+            </button>
+          ))}
+          
+          <div style={{ width: '1px', height: '24px', backgroundColor: '#e5e7eb', margin: '0 8px' }} />
+          
+          <button
+            onClick={() => navigate('/records')}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb',
+              backgroundColor: 'white',
+              cursor: 'pointer',
+              fontWeight: 500,
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <FolderOpen size={16} /> Patient Records
+          </button>
+        </div>
       </header>
-
-      {/* Tabs */}
-      <ImageTabs
-        scans={scans}
-        activeTab={activeTabId}
-        onTabChange={setActiveTabId}
-        onAddNew={() => setUploadModalOpen(true)}
-        onRemoveTab={removeScan}
-      />
 
       {/* Main Content */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -103,7 +128,7 @@ const Index = () => {
           position: 'relative',
         }}>
           {/* Chat Section */}
-          <div style={{ height: `${chatHeight}%`, overflow: 'hidden', borderBottom: '1px solid #e5e7eb' }}>
+          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <ChatSidebar
               scans={scans}
               chatHistory={chatHistory}
@@ -111,47 +136,15 @@ const Index = () => {
             />
           </div>
           
-          {/* Resize Handle */}
-          <div 
-            style={{
-              height: '8px',
-              backgroundColor: '#f3f4f6',
-              cursor: 'row-resize',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              const startY = e.clientY;
-              const startHeight = chatHeight;
-              const sidebar = e.currentTarget.parentElement;
-              if (!sidebar) return;
-              
-              const onMouseMove = (e: MouseEvent) => {
-                const deltaY = e.clientY - startY;
-                const sidebarHeight = sidebar.clientHeight;
-                const newHeight = startHeight + (deltaY / sidebarHeight) * 100;
-                setChatHeight(Math.min(80, Math.max(30, newHeight)));
-              };
-              
-              const onMouseUp = () => {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-              };
-              
-              document.addEventListener('mousemove', onMouseMove);
-              document.addEventListener('mouseup', onMouseUp);
-            }}
-          >
-            <div style={{ width: '40px', height: '4px', backgroundColor: '#d1d5db', borderRadius: '2px' }} />
-          </div>
-          
-          {/* View Mode Section */}
-          <div style={{ flex: 1, overflow: 'auto' }}>
-            <ViewModeButtons
-              activeMode={viewMode}
-              onModeChange={setViewMode}
+          {/* Image Library Below Chat */}
+          <div style={{ borderTop: '1px solid #e5e7eb', maxHeight: '200px', overflowY: 'auto' }}>
+            <ImageTabs
+              scans={scans}
+              activeTab={activeTabId}
+              onTabChange={setActiveTabId}
+              onAddNew={() => setUploadModalOpen(true)}
+              onRemoveTab={removeScan}
+              compact
             />
           </div>
           
