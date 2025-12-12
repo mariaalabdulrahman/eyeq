@@ -12,7 +12,7 @@ import eyeScanImg from "@/assets/eye-scan.png";
 import dnaDataImg from "@/assets/dna-data.png";
 import mlNetworkImg from "@/assets/ml-network.png";
 
-type ModalType = 'analyze' | 'upload' | 'compare' | 'textual' | null;
+type ModalType = "analyze" | "upload" | "compare" | "textual" | null;
 
 const Home = () => {
   const navigate = useNavigate();
@@ -43,10 +43,10 @@ const Home = () => {
   }, []);
 
   const features = [
-    { icon: Upload, label: "Upload Image", angle: -140, action: () => setActiveModal('upload') },
-    { icon: ScanLine, label: "Scan Analysis", angle: -180, action: () => setActiveModal('textual') },
+    { icon: Upload, label: "Upload Image", angle: -140, action: () => setActiveModal("upload") },
+    { icon: ScanLine, label: "Scan Analysis", angle: -180, action: () => setActiveModal("textual") },
     { icon: FolderOpen, label: "Patient Records", angle: -220, action: () => navigate("/records") },
-    { icon: GitCompare, label: "Compare Scans", angle: -40, action: () => setActiveModal('compare') },
+    { icon: GitCompare, label: "Compare Scans", angle: -40, action: () => setActiveModal("compare") },
     { icon: BarChart3, label: "Visual Reports", angle: 0, action: () => navigate("/records?view=statistics") },
     { icon: MessageCircle, label: "Talk to LLM", angle: 40, action: () => navigate("/llm-chat") },
   ];
@@ -73,14 +73,19 @@ const Home = () => {
     navigate(`/dashboard?patientId=${patientId}&view=textual`);
   };
 
-  const handleCreateNewPatient = (data: { name: string; age: number; gender: 'male' | 'female' | 'other'; medicalTags: string[] }) => {
+  const handleCreateNewPatient = (data: {
+    name: string;
+    age: number;
+    gender: "male" | "female" | "other";
+    medicalTags: string[];
+  }) => {
     const today = new Date();
     const birthYear = today.getFullYear() - data.age;
     const dateOfBirth = `${birthYear}-01-01`;
-    
+
     // Convert medicalTags array to comma-separated string for relevantInfo
-    const relevantInfo = data.medicalTags.length > 0 ? data.medicalTags.join(', ') : undefined;
-    
+    const relevantInfo = data.medicalTags.length > 0 ? data.medicalTags.join(", ") : undefined;
+
     const patientId = addPatient(data.name, dateOfBirth, data.age, data.gender, relevantInfo, data.medicalTags);
     setCurrentPatientId(patientId);
     navigate(`/dashboard?patientId=${patientId}`);
@@ -185,13 +190,22 @@ const Home = () => {
       />
 
       {/* Header */}
-      <header style={{ padding: "16px 24px", position: "relative", zIndex: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <header
+        style={{
+          padding: "16px 24px",
+          position: "relative",
+          zIndex: 10,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <div onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           <Logo size={36} />
         </div>
-        <img 
-          src={kkeshLogo} 
-          alt="King Khaled Eye Specialist Hospital" 
+        <img
+          src={kkeshLogo}
+          alt="King Khaled Eye Specialist Hospital"
           style={{ height: "80px", objectFit: "contain" }}
         />
       </header>
@@ -205,7 +219,7 @@ const Home = () => {
           alignItems: "center",
           justifyContent: "center",
           padding: "0 24px",
-          marginTop: "-20px",
+          marginTop: "-70px",
           position: "relative",
           zIndex: 10,
         }}
@@ -257,12 +271,15 @@ const Home = () => {
             }}
           >
             {/* Subtle sclera texture */}
-            <div style={{
-              position: "absolute",
-              inset: 0,
-              background: "radial-gradient(ellipse at 30% 20%, rgba(255,220,200,0.04) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(200,180,160,0.03) 0%, transparent 50%)",
-            }} />
-            
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "radial-gradient(ellipse at 30% 20%, rgba(255,220,200,0.04) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(200,180,160,0.03) 0%, transparent 50%)",
+              }}
+            />
+
             {/* Blood Vessels - More detailed and realistic */}
             <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.12 }}>
               {/* Main vessels */}
@@ -287,8 +304,10 @@ const Home = () => {
                 width: "190px",
                 height: "190px",
                 borderRadius: "50%",
-                background: "radial-gradient(circle at 35% 35%, #93c5fd 0%, #60a5fa 12%, #3b82f6 25%, #2563eb 45%, #1d4ed8 70%, #1e40af 100%)",
-                boxShadow: "inset 0 0 50px rgba(0,0,0,0.5), inset 0 0 15px rgba(59,130,246,0.3), 0 0 20px rgba(8, 145, 178, 0.25)",
+                background:
+                  "radial-gradient(circle at 35% 35%, #93c5fd 0%, #60a5fa 12%, #3b82f6 25%, #2563eb 45%, #1d4ed8 70%, #1e40af 100%)",
+                boxShadow:
+                  "inset 0 0 50px rgba(0,0,0,0.5), inset 0 0 15px rgba(59,130,246,0.3), 0 0 20px rgba(8, 145, 178, 0.25)",
                 transform: `translate(calc(-50% + ${pupilPosition.x}px), calc(-50% + ${pupilPosition.y}px))`,
                 transition: "transform 0.08s ease-out",
               }}
@@ -304,7 +323,7 @@ const Home = () => {
                     width: i % 2 === 0 ? "1.5px" : "1px",
                     height: "50%",
                     background:
-                      i % 3 === 0 
+                      i % 3 === 0
                         ? "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.25) 25%, rgba(147,197,253,0.4) 50%, rgba(37,99,235,0.2) 75%, transparent 100%)"
                         : "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.15) 30%, rgba(96,165,250,0.25) 60%, transparent 100%)",
                     transformOrigin: "top",
@@ -312,14 +331,17 @@ const Home = () => {
                   }}
                 />
               ))}
-              
+
               {/* Iris color variations - corona effect */}
-              <div style={{
-                position: "absolute",
-                inset: "20%",
-                borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(251,191,36,0.15) 0%, rgba(251,191,36,0.08) 30%, transparent 60%)",
-              }} />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: "20%",
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle, rgba(251,191,36,0.15) 0%, rgba(251,191,36,0.08) 30%, transparent 60%)",
+                }}
+              />
 
               {/* Limbal Ring - darker edge */}
               <div
@@ -331,7 +353,7 @@ const Home = () => {
                   boxShadow: "inset 0 0 10px rgba(0,0,0,0.3)",
                 }}
               />
-              
+
               {/* Collarette ring */}
               <div
                 style={{
@@ -369,7 +391,8 @@ const Home = () => {
                     width: "12px",
                     height: "10px",
                     borderRadius: "50%",
-                    background: "radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.7) 60%, transparent 100%)",
+                    background:
+                      "radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.7) 60%, transparent 100%)",
                   }}
                 />
                 <div
@@ -441,7 +464,8 @@ const Home = () => {
                   backgroundColor: "rgba(255, 255, 255, 0.95)",
                   cursor: "pointer",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.08), 0 0 20px rgba(8, 145, 178, 0.05)",
-                  transition: "background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease",
+                  transition:
+                    "background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease",
                   fontWeight: 500,
                   fontSize: "14px",
                   color: "#374151",
@@ -472,7 +496,7 @@ const Home = () => {
 
         {/* CTA Button */}
         <button
-          onClick={() => setActiveModal('analyze')}
+          onClick={() => setActiveModal("analyze")}
           style={{
             marginTop: "50px",
             padding: "14px 36px",
@@ -503,7 +527,7 @@ const Home = () => {
 
       {/* Analyze Patient Modal (for Analyze and Upload) */}
       <AnalyzePatientModal
-        isOpen={activeModal === 'analyze' || activeModal === 'upload'}
+        isOpen={activeModal === "analyze" || activeModal === "upload"}
         onClose={() => setActiveModal(null)}
         onSelectExisting={handleSelectExistingPatient}
         onCreateNew={handleCreateNewPatient}
@@ -512,13 +536,24 @@ const Home = () => {
 
       {/* Compare Scans Modal */}
       <PatientSelectModal
-        isOpen={activeModal === 'compare'}
+        isOpen={activeModal === "compare"}
         onClose={() => setActiveModal(null)}
         onSelect={handleSelectForCompare}
         onCreatePatient={(data) => {
           const today = new Date();
-          const birthYear = today.getFullYear() - (new Date(data.dateOfBirth).getFullYear() ? today.getFullYear() - new Date(data.dateOfBirth).getFullYear() : 0);
-          const patientId = addPatient(data.name, data.dateOfBirth, undefined, data.gender, undefined, data.medicalTags);
+          const birthYear =
+            today.getFullYear() -
+            (new Date(data.dateOfBirth).getFullYear()
+              ? today.getFullYear() - new Date(data.dateOfBirth).getFullYear()
+              : 0);
+          const patientId = addPatient(
+            data.name,
+            data.dateOfBirth,
+            undefined,
+            data.gender,
+            undefined,
+            data.medicalTags,
+          );
           return patientId;
         }}
         patients={patients}
@@ -529,11 +564,18 @@ const Home = () => {
 
       {/* Textual Analysis Modal */}
       <PatientSelectModal
-        isOpen={activeModal === 'textual'}
+        isOpen={activeModal === "textual"}
         onClose={() => setActiveModal(null)}
         onSelect={handleSelectForTextual}
         onCreatePatient={(data) => {
-          const patientId = addPatient(data.name, data.dateOfBirth, undefined, data.gender, undefined, data.medicalTags);
+          const patientId = addPatient(
+            data.name,
+            data.dateOfBirth,
+            undefined,
+            data.gender,
+            undefined,
+            data.medicalTags,
+          );
           return patientId;
         }}
         patients={patients}
