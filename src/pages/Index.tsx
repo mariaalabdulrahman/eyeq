@@ -93,7 +93,7 @@ const Index = () => {
 
   const viewModes = [
     { mode: 'textual' as ViewMode, icon: FileText, label: 'Textual' },
-    { mode: 'visual' as ViewMode, icon: BarChart3, label: 'Visual' },
+    { mode: 'visual' as ViewMode, icon: BarChart3, label: 'Statistics' },
     { mode: 'comparison' as ViewMode, icon: GitCompare, label: 'Compare' },
     { mode: 'visualization' as ViewMode, icon: Microscope, label: 'Visualize' },
   ];
@@ -392,6 +392,7 @@ const Index = () => {
             viewMode={viewMode}
             allScans={patientScans}
             onUploadClick={() => setUploadModalOpen(true)}
+            patient={currentPatient}
           />
         </main>
       </div>

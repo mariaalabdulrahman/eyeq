@@ -1,11 +1,55 @@
-import { ScanAnalysis } from "@/types/scan";
-import { Eye, Microscope, BookOpen, ExternalLink } from "lucide-react";
+import { ScanAnalysis, Patient } from "@/types/scan";
+import { Eye, Microscope, BookOpen, ExternalLink, User, AlertCircle } from "lucide-react";
 
 interface TextualAnalysisProps {
   scan: ScanAnalysis;
+  patient?: Patient;
 }
 
-export function TextualAnalysis({ scan }: TextualAnalysisProps) {
+// Check if medical history contains relevant conditions
+const checkMedicalHistoryRelevance = (medicalTags: string[], diseaseName: string): string | null => {
+  const lowerDisease = diseaseName.toLowerCase();
+  const lowerTags = medicalTags.map(t => t.toLowerCase());
+  
+  // Diabetes-related
+  if (lowerDisease.includes('diabetic') || lowerDisease.includes('macular edema')) {
+    if (lowerTags.some(t => t.includes('diabetes') || t.includes('diabetic'))) {
+      return 'Patient has documented diabetes in medical history, which is a primary risk factor for this condition.';
+    }
+  }
+  
+  // Hypertension-related
+  if (lowerDisease.includes('hypertensive') || lowerDisease.includes('vein occlusion')) {
+    if (lowerTags.some(t => t.includes('hypertension') || t.includes('blood pressure'))) {
+      return 'Patient has documented hypertension, directly correlating with this finding.';
+    }
+  }
+  
+  // Glaucoma-related
+  if (lowerDisease.includes('glaucoma')) {
+    if (lowerTags.some(t => t.includes('glaucoma family') || t.includes('intraocular pressure'))) {
+      return 'Patient has glaucoma-related risk factors in their medical history.';
+    }
+  }
+  
+  // Cardiovascular-related
+  if (lowerDisease.includes('retinopathy') || lowerDisease.includes('vascular')) {
+    if (lowerTags.some(t => t.includes('cardiovascular') || t.includes('heart') || t.includes('coronary') || t.includes('stroke'))) {
+      return 'Patient has cardiovascular history which may contribute to retinal vascular changes.';
+    }
+  }
+  
+  // Neurological-related
+  if (lowerDisease.includes('papilledema') || lowerDisease.includes('disc edema') || lowerDisease.includes('optic')) {
+    if (lowerTags.some(t => t.includes('neurological') || t.includes('intracranial') || t.includes('brain'))) {
+      return 'Patient has neurological history which may be relevant to this optic nerve finding.';
+    }
+  }
+  
+  return null;
+};
+
+export function TextualAnalysis({ scan, patient }: TextualAnalysisProps) {
   const highRiskDiseases = scan.diseases.filter(d => d.probability >= 70);
   const hasHighRisk = highRiskDiseases.length > 0;
 
@@ -111,6 +155,35 @@ export function TextualAnalysis({ scan }: TextualAnalysisProps) {
 
       {/* Analysis Results */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' }}>
+        {/* Patient Medical History Note */}
+        {patient?.medicalTags && patient.medicalTags.length > 0 && (
+          <div style={{
+            backgroundColor: '#f0f9ff',
+            border: '1px solid #bae6fd',
+            borderRadius: '12px',
+            padding: '14px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <User size={16} style={{ color: '#0284c7' }} />
+              <h4 style={{ fontWeight: 600, color: '#0284c7', fontSize: '13px' }}>Patient Medical History</h4>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {patient.medicalTags.map((tag, i) => (
+                <span key={i} style={{
+                  padding: '3px 8px',
+                  backgroundColor: 'white',
+                  border: '1px solid #bae6fd',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  color: '#0369a1',
+                }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Summary Card */}
         <div style={{
           backgroundColor: 'white',
@@ -202,6 +275,34 @@ export function TextualAnalysis({ scan }: TextualAnalysisProps) {
                   <p style={{ fontSize: '13px', color: '#374151', marginBottom: '12px' }}>
                     {disease.description}
                   </p>
+
+                  {/* Medical History Relevance */}
+                  {patient?.medicalTags && (() => {
+                    const relevance = checkMedicalHistoryRelevance(patient.medicalTags, disease.name);
+                    if (!relevance) return null;
+                    return (
+                      <div style={{ 
+                        backgroundColor: '#fef3c7', 
+                        borderRadius: '8px', 
+                        padding: '10px 12px',
+                        marginBottom: '12px',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '8px',
+                        border: '1px solid #fcd34d',
+                      }}>
+                        <AlertCircle size={14} style={{ color: '#d97706', marginTop: '2px', flexShrink: 0 }} />
+                        <div>
+                          <p style={{ fontSize: '11px', fontWeight: 600, color: '#92400e', marginBottom: '2px' }}>
+                            Medical History Correlation
+                          </p>
+                          <p style={{ fontSize: '12px', color: '#a16207', lineHeight: 1.5 }}>
+                            {relevance}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Justification */}
                   {disease.justification && (
