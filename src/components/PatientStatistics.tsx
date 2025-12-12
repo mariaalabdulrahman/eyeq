@@ -130,13 +130,36 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
           <Filter size={20} style={{ color: '#0891b2' }} />
           <h3 style={{ fontSize: '16px', fontWeight: 600 }}>Filters</h3>
         </div>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          {/* Patient Name Filter */}
-          <div style={{ minWidth: '250px' }}>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          {/* Patient Name Filter - Dropdown */}
+          <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '6px', color: '#6b7280' }}>
-              Patients ({selectedPatientIds.length > 0 ? `${selectedPatientIds.length} selected` : 'All'})
+              Patients
             </label>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+            <div style={{ position: 'relative' }}>
+              <select
+                multiple
+                value={selectedPatientIds}
+                onChange={(e) => {
+                  const options = Array.from(e.target.selectedOptions, option => option.value);
+                  setSelectedPatientIds(options);
+                }}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
+                  fontSize: '14px',
+                  minWidth: '200px',
+                  minHeight: '80px',
+                  backgroundColor: 'white',
+                }}
+              >
+                {patients.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
               <button
                 onClick={selectAllPatients}
                 style={{
@@ -145,11 +168,11 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
                   border: '1px solid #e5e7eb',
                   backgroundColor: selectedPatientIds.length === patients.length ? '#0891b2' : 'white',
                   color: selectedPatientIds.length === patients.length ? 'white' : '#374151',
-                  fontSize: '12px',
+                  fontSize: '11px',
                   cursor: 'pointer',
                 }}
               >
-                Select All
+                All
               </button>
               <button
                 onClick={clearPatientSelection}
@@ -159,45 +182,12 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
                   border: '1px solid #e5e7eb',
                   backgroundColor: 'white',
                   color: '#374151',
-                  fontSize: '12px',
+                  fontSize: '11px',
                   cursor: 'pointer',
                 }}
               >
                 Clear
               </button>
-            </div>
-            <div style={{ 
-              display: 'flex', 
-              flexWrap: 'wrap', 
-              gap: '6px',
-              maxHeight: '100px',
-              overflowY: 'auto',
-              padding: '8px',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              backgroundColor: '#f9fafb',
-            }}>
-              {patients.map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => togglePatient(p.id)}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: '20px',
-                    border: selectedPatientIds.includes(p.id) ? '2px solid #0891b2' : '1px solid #e5e7eb',
-                    backgroundColor: selectedPatientIds.includes(p.id) ? '#ecfeff' : 'white',
-                    color: selectedPatientIds.includes(p.id) ? '#0891b2' : '#374151',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  {p.name}
-                  {selectedPatientIds.includes(p.id) && <X size={12} />}
-                </button>
-              ))}
             </div>
           </div>
 
