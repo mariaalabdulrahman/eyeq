@@ -206,6 +206,7 @@ const initialPatients: Patient[] = [
         linkedOctName: 'OCT',
         diseases: [
           { name: 'Hypertensive Retinopathy', probability: 72, severity: 'high', description: 'Moderate hypertensive retinopathy with arteriovenous nicking and vessel wall changes.', detectedFrom: 'fundus', justification: 'Arteriovenous nicking at multiple crossing points and focal arteriolar narrowing visible. Copper-wiring appearance of arterioles detected.', references: ['Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004', 'Keith-Wagener-Barker Classification'] },
+          { name: 'Retinal Fluid', probability: 58, severity: 'medium', description: 'Subretinal and intraretinal fluid accumulation detected in OCT imaging.', detectedFrom: 'oct', justification: 'OCT B-scan reveals hyporeflective spaces indicative of fluid accumulation in the outer retinal layers, likely secondary to hypertensive vascular changes.', references: ['Hayreh SS. Hypertensive retinopathy. Ophthalmologica 1989', 'Fraser-Bell S, et al. Retinal fluid in hypertensive retinopathy. Eye 2008'] },
         ],
         summary: 'Moderate hypertensive retinopathy detected. Blood pressure control recommended.',
       },
@@ -222,7 +223,7 @@ const initialPatients: Patient[] = [
         linkedOctName: 'OCT',
         diseases: [
           { name: 'Hypertensive Retinopathy', probability: 65, severity: 'medium', description: 'Mild to moderate hypertensive changes with scattered vessel abnormalities.', detectedFrom: 'fundus', justification: 'Arteriovenous nicking and mild arteriolar narrowing visible. Less severe than left eye.', references: ['Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004'] },
-          { name: 'Hard Exudates', probability: 48, severity: 'medium', description: 'Lipid deposits in outer retinal layers.', detectedFrom: 'both', justification: 'Yellow-white deposits visible temporal to macula consistent with lipid exudation.', references: ['AAO Preferred Practice Pattern, 2019'] },
+          { name: 'Retinal Fluid', probability: 52, severity: 'medium', description: 'Subretinal fluid detected in OCT cross-sectional imaging.', detectedFrom: 'oct', justification: 'OCT imaging shows hyporeflective areas consistent with fluid accumulation in the subretinal space.', references: ['Hayreh SS. Hypertensive retinopathy. Ophthalmologica 1989'] },
         ],
         summary: 'Mild-moderate hypertensive retinopathy in right eye. Monitor closely and optimize blood pressure control.',
       },
@@ -240,6 +241,7 @@ const initialPatients: Patient[] = [
         linkedOctName: 'OCT',
         diseases: [
           { name: 'Hypertensive Retinopathy', probability: 68, severity: 'medium', description: 'Stable hypertensive changes following treatment.', detectedFrom: 'fundus', justification: 'Arteriovenous nicking stable, no new hemorrhages. Some resolution of arteriolar narrowing with blood pressure control.', references: ['Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004'] },
+          { name: 'Retinal Fluid', probability: 45, severity: 'medium', description: 'Reduced retinal fluid compared to initial visit.', detectedFrom: 'oct', justification: 'OCT shows improvement in fluid accumulation with decreased hyporeflective spaces in the retinal layers.', references: ['Fraser-Bell S, et al. Eye 2008'] },
         ],
         summary: 'Stable hypertensive retinopathy following blood pressure management. Continue current therapy.',
       },
@@ -256,6 +258,7 @@ const initialPatients: Patient[] = [
         linkedOctName: 'OCT',
         diseases: [
           { name: 'Hypertensive Retinopathy', probability: 70, severity: 'high', description: 'Progression of hypertensive changes with new vessel abnormalities.', detectedFrom: 'fundus', justification: 'New cotton wool spots noted. Arteriovenous nicking more pronounced.', references: ['Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004'] },
+          { name: 'Retinal Fluid', probability: 55, severity: 'medium', description: 'Persistent retinal fluid with slight increase.', detectedFrom: 'oct', justification: 'OCT reveals ongoing subretinal fluid accumulation, slightly increased from previous visit, correlating with hypertensive disease activity.', references: ['Hayreh SS. Hypertensive retinopathy. Ophthalmologica 1989'] },
         ],
         summary: 'Hypertensive retinopathy progression in right eye. Intensify blood pressure management.',
       },
@@ -718,33 +721,38 @@ export function ScanProvider({ children }: { children: ReactNode }) {
                             lowerContent.includes('stroke') ||
                             lowerContent.includes('alzheimer') ||
                             lowerContent.includes('neurological') ||
-                            lowerContent.includes('kidney');
+                            lowerContent.includes('kidney') ||
+                            lowerContent.includes('disease') ||
+                            lowerContent.includes('condition') ||
+                            lowerContent.includes('likely');
 
-    if (isSystemicQuery) {
-      // Provide scientific references for ocular-systemic disease links
-      aiResponse = `**Ocular Manifestations of Systemic Diseases - Scientific Evidence:**
+    if (isSystemicQuery && selectedScans.length > 0) {
+      // Hardcoded response for systemic disease queries - hypertension and stroke
+      aiResponse = `**Systemic Disease Risk Assessment:**
 
-The retina provides a unique window to assess systemic vascular health. Here are evidence-based connections:
+Based on the detected **Hypertensive Retinopathy** in the selected scans, this patient is at **HIGH RISK** for the following systemic conditions:
 
-**Diabetic Retinopathy & Systemic Complications:**
-Diabetic retinopathy severity correlates with cardiovascular disease risk and nephropathy progression.
-📚 *References:*
-• Wong TY, et al. "Retinopathy and Risk of Congestive Heart Failure." JAMA. 2005;293(1):63-69. DOI: 10.1001/jama.293.1.63
-• Cheung N, et al. "Diabetic retinopathy and systemic vascular complications." Prog Retin Eye Res. 2008;27(2):161-176.
+**1. Hypertension (High Risk)**
+The presence of arteriovenous nicking, arteriolar narrowing, and retinal fluid indicates poorly controlled systemic hypertension. Retinal microvascular changes directly reflect systemic vascular damage.
 
-**Hypertensive Retinopathy & Cardiovascular Risk:**
-Retinal microvascular changes predict stroke, coronary heart disease, and heart failure.
+**Link to Hypertensive Retinopathy:**
+Hypertensive retinopathy is a direct manifestation of chronic high blood pressure causing damage to retinal blood vessels. The severity of retinal changes correlates with duration and severity of systemic hypertension.
+
 📚 *References:*
 • Wong TY, Mitchell P. "Hypertensive Retinopathy." N Engl J Med. 2004;351:2310-2317. DOI: 10.1056/NEJMra032865
-• Ong YT, et al. "Hypertensive retinopathy and risk of stroke." Hypertension. 2013;62(4):706-711.
+• Keith NM, Wagener HP, Barker NW. "Some different types of essential hypertension: their course and prognosis." Am J Med Sci. 1939;197:332-343.
 
-**Retinal Changes & Alzheimer's Disease:**
-Retinal nerve fiber layer thinning and vascular changes may precede cognitive decline.
+**2. Stroke (High Risk)**
+Hypertensive retinopathy is a strong independent predictor of stroke risk. The retinal microvasculature shares embryological and anatomical similarities with cerebral vessels.
+
+**Link to Hypertensive Retinopathy:**
+Patients with hypertensive retinopathy have a 2-4 fold increased risk of stroke. Retinal arteriolar narrowing and arteriovenous nicking indicate systemic small vessel disease affecting both retinal and cerebral circulation.
+
 📚 *References:*
-• Cheung CY, et al. "Retinal imaging in Alzheimer's disease." J Neurol Neurosurg Psychiatry. 2021;92(9):983-994. DOI: 10.1136/jnnp-2020-325347
-• Koronyo Y, et al. "Retinal amyloid pathology and proof-of-concept imaging trial in Alzheimer's disease." JCI Insight. 2017;2(16):e93621.
+• Wong TY, et al. "Retinal microvascular abnormalities and incident stroke: the Atherosclerosis Risk in Communities Study." Lancet. 2001;358(9288):1134-1140. DOI: 10.1016/S0140-6736(01)06253-5
+• Ong YT, et al. "Hypertensive retinopathy and risk of stroke." Hypertension. 2013;62(4):706-711. DOI: 10.1161/HYPERTENSIONAHA.113.01414
 
-Would you like more specific information about any particular systemic-ocular relationship?`;
+**Recommendation:** Urgent blood pressure optimization and cardiovascular risk assessment recommended.`;
     } else if (selectedScans.length > 0) {
       const scanNames = selectedScans.map(s => s.name).join(', ');
       const allDiseases = selectedScans.flatMap(s => s.diseases);
