@@ -35,12 +35,12 @@ const Home = () => {
   }, []);
 
   const features = [
-    { icon: Upload, label: "Upload Image", angle: -60, action: () => navigate("/dashboard") },
-    { icon: ScanLine, label: "Scan Analysis", angle: -20, action: () => navigate("/dashboard") },
-    { icon: FolderOpen, label: "Patient Records", angle: 20, action: () => navigate("/records") },
-    { icon: GitCompare, label: "Compare Scans", angle: 60, action: () => navigate("/dashboard") },
-    { icon: BarChart3, label: "Visual Reports", angle: 100, action: () => navigate("/dashboard") },
-    { icon: Stethoscope, label: "Doctor Tools", angle: 140, action: () => navigate("/dashboard") },
+    { icon: Upload, label: "Upload Image", angle: -150, action: () => navigate("/dashboard") },
+    { icon: ScanLine, label: "Scan Analysis", angle: -110, action: () => navigate("/dashboard") },
+    { icon: FolderOpen, label: "Patient Records", angle: -70, action: () => navigate("/records") },
+    { icon: GitCompare, label: "Compare Scans", angle: 70, action: () => navigate("/dashboard") },
+    { icon: BarChart3, label: "Visual Reports", angle: 110, action: () => navigate("/dashboard") },
+    { icon: Stethoscope, label: "Doctor Tools", angle: 150, action: () => navigate("/dashboard") },
   ];
 
   const floatingGraphics = [
@@ -228,10 +228,10 @@ const Home = () => {
                 position: "absolute",
                 top: "50%",
                 left: "50%",
-                width: "180px",
-                height: "180px",
+                width: "200px",
+                height: "200px",
                 borderRadius: "50%",
-                background: "radial-gradient(circle, #2dd4bf 0%, #0891b2 30%, #0e7490 50%, #164e63 80%, #0c4a6e 100%)",
+                background: "radial-gradient(circle at 30% 30%, #ff6b35 0%, #c94a2e 15%, #8b2500 30%, #4a0e0e 50%, #1a0505 80%, #000 100%)",
                 boxShadow: "inset 0 0 50px rgba(0,0,0,0.6), 0 0 30px rgba(8, 145, 178, 0.3)",
                 transform: `translate(calc(-50% + ${pupilPosition.x}px), calc(-50% + ${pupilPosition.y}px))`,
                 transition: "transform 0.08s ease-out",
