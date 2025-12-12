@@ -169,12 +169,13 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
       doc.setFontSize(14);
       doc.text(reportType === 'doctor' ? "Clinical Findings" : "Health Findings", 20, tableStartY - 5);
 
-      const getGradeFromProbability = (name: string, prob: number) => {
+                const getGradeFromProbability = (name: string, prob: number) => {
         if (name.toLowerCase().includes('diabetic retinopathy') || name.toLowerCase().includes('dr')) {
-          if (prob >= 80) return 'Level 4 (Severe)';
-          if (prob >= 60) return 'Level 3 (Moderate)';
-          if (prob >= 40) return 'Level 2 (Mild)';
-          return 'Level 1 (Minimal)';
+          if (prob >= 85) return 'Proliferative DR';
+          if (prob >= 70) return 'Severe NPDR';
+          if (prob >= 55) return 'Moderate NPDR';
+          if (prob >= 40) return 'Mild NPDR';
+          return 'No DR';
         }
         if (name.toLowerCase().includes('glaucoma')) {
           if (prob >= 70) return 'Advanced';
@@ -510,10 +511,11 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
                   const name = disease.name.toLowerCase();
                   const prob = disease.probability;
                   if (name.includes('diabetic retinopathy') || name.includes('dr ')) {
-                    if (prob >= 80) return 'Level 4 (Severe)';
-                    if (prob >= 60) return 'Level 3 (Moderate)';
-                    if (prob >= 40) return 'Level 2 (Mild)';
-                    return 'Level 1 (Minimal)';
+                    if (prob >= 85) return 'Proliferative DR';
+                    if (prob >= 70) return 'Severe NPDR';
+                    if (prob >= 55) return 'Moderate NPDR';
+                    if (prob >= 40) return 'Mild NPDR';
+                    return 'No DR';
                   }
                   if (name.includes('glaucoma')) {
                     if (prob >= 70) return 'Advanced';
@@ -759,7 +761,7 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
                   backgroundColor: 'white',
                   color: disease.probability >= 70 ? '#ef4444' : '#f59e0b',
                 }}>
-                  {disease.probability >= 70 ? '⚠️ Needs Attention' : '👀 Monitor'}
+                  {disease.probability >= 70 ? 'Needs Attention' : 'Monitor'}
                 </span>
               </div>
               <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.6 }}>
