@@ -74,7 +74,7 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text(`Patient: ${patient.name}`, 20, 55);
-    doc.text(`Age: ${patient.age} | Gender: ${patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}`, 20, 62);
+    doc.text(`Age: ${patient.age || 'N/A'} | Gender: ${patient.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : 'N/A'}`, 20, 62);
     doc.text(`DOB: ${new Date(patient.dateOfBirth).toLocaleDateString()}`, 20, 69);
     doc.text(`Total Scans: ${patient.scans.length}`, 20, 76);
     doc.text(`Risk Level: ${risk.level}`, 20, 83);
@@ -151,7 +151,7 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
                 <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#111' }}>Clinical Report</h2>
               </div>
               <p style={{ color: '#6b7280' }}>
-                Patient: {patient.name} | Age: {patient.age} | Gender: {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}
+                Patient: {patient.name} | Age: {patient.age || 'N/A'} | Gender: {patient.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : 'N/A'}
               </p>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
