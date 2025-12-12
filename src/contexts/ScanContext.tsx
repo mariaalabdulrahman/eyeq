@@ -337,38 +337,14 @@ const getStorageKey = (url: string): string => {
 // Load patients from localStorage or use initial data
 const loadPatientsFromStorage = (): Patient[] => {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      
-      // Check if any scans have invalid blob URLs - if so, reset to initial data
-      const hasInvalidUrls = parsed.some((p: any) => 
-        p.scans?.some((s: any) => 
-          (typeof s.imageUrl === 'string' && s.imageUrl.startsWith('blob:')) ||
-          (typeof s.linkedOctUrl === 'string' && s.linkedOctUrl.startsWith('blob:'))
-        )
-      );
-      
-      if (hasInvalidUrls) {
-        console.warn('Detected invalid blob URLs in patient scans. Resetting to initial data.');
-        localStorage.removeItem(STORAGE_KEY);
-        return initialPatients;
-      }
-      
-      // Convert date strings back to Date objects and restore image URLs
-      return parsed.map((p: any) => ({
-        ...p,
-        createdAt: new Date(p.createdAt),
-        scans: p.scans.map((s: any) => ({
-          ...s,
-          uploadedAt: new Date(s.uploadedAt),
-          imageUrl: restoreImageUrl(s.imageUrl),
-          linkedOctUrl: s.linkedOctUrl ? restoreImageUrl(s.linkedOctUrl) : undefined,
-        })),
-      }));
+    // For reliability, always reset to the built-in demo patients that use
+    // the bundled fundus images (including the Disc Edema scans you provided).
+    // This avoids older cached data with broken image URLs.
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
     }
   } catch (e) {
-    console.error('Error loading patients from storage:', e);
+    console.error('Error resetting patients storage:', e);
   }
   return initialPatients;
 };
