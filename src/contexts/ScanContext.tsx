@@ -132,7 +132,7 @@ interface ScanContextType {
   setCurrentPatientId: (id: string | null) => void;
   addScan: (fundusFile: File, octFile?: File, patientId?: string, eyeSide?: 'left' | 'right') => void;
   removeScan: (id: string) => void;
-  addPatient: (name: string, dateOfBirth: string) => string;
+  addPatient: (name: string, dateOfBirth: string, age?: number, gender?: 'male' | 'female' | 'other', relevantInfo?: string) => string;
   addChatMessage: (content: string, selectedScanIds: string[]) => void;
   assignScansToPatient: (patientId: string, scanIds: string[]) => void;
 }
@@ -145,6 +145,9 @@ const initialPatients: Patient[] = [
     id: '1',
     name: 'John Smith',
     dateOfBirth: '1965-03-15',
+    age: 59,
+    gender: 'male',
+    relevantInfo: 'Type 2 diabetes for 15 years, hypertension',
     createdAt: new Date('2024-01-10'),
     scans: [
       {
@@ -168,6 +171,9 @@ const initialPatients: Patient[] = [
     id: '2',
     name: 'Sarah Johnson',
     dateOfBirth: '1978-08-22',
+    age: 46,
+    gender: 'female',
+    relevantInfo: 'Family history of glaucoma',
     createdAt: new Date('2024-01-12'),
     scans: [
       {
@@ -188,6 +194,9 @@ const initialPatients: Patient[] = [
     id: '3',
     name: 'Michael Brown',
     dateOfBirth: '1952-12-03',
+    age: 72,
+    gender: 'male',
+    relevantInfo: 'Age-related macular degeneration in family, smoker for 30 years',
     createdAt: new Date('2024-01-15'),
     scans: [
       {
@@ -323,11 +332,14 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     });
   }, [activeTabId]);
 
-  const addPatient = useCallback((name: string, dateOfBirth: string) => {
+  const addPatient = useCallback((name: string, dateOfBirth: string, age?: number, gender?: 'male' | 'female' | 'other', relevantInfo?: string) => {
     const newPatient: Patient = {
       id: crypto.randomUUID(),
       name,
       dateOfBirth,
+      age: age || 0,
+      gender: gender || 'other',
+      relevantInfo,
       scans: [],
       createdAt: new Date(),
     };
