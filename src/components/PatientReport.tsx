@@ -17,7 +17,6 @@ interface PatientReportProps {
 const SYSTEMIC_ASSOCIATIONS: Record<string, { systemicDisease: string; percentage: number; ocularLink: string; reference: string }[]> = {
   "Diabetic Retinopathy": [
     { systemicDisease: "Cardiovascular Disease", percentage: 65, ocularLink: "Microvascular damage in DR reflects systemic endothelial dysfunction", reference: "Cheung N, et al. Lancet. 2010;376(9735):124-36" },
-    { systemicDisease: "Chronic Kidney Disease", percentage: 40, ocularLink: "Shared microvascular pathology between retinal and renal vessels", reference: "Wong TY, et al. Kidney Int. 2004;65(6):2237-44" },
     { systemicDisease: "Stroke", percentage: 35, ocularLink: "Retinal microvascular abnormalities predict cerebrovascular events", reference: "Wong TY, et al. JAMA. 2002;287(15):1989-96" },
   ],
   "Glaucoma": [
@@ -33,7 +32,6 @@ const SYSTEMIC_ASSOCIATIONS: Record<string, { systemicDisease: string; percentag
   "Hypertensive Retinopathy": [
     { systemicDisease: "Stroke", percentage: 55, ocularLink: "Retinal arteriolar narrowing predicts cerebrovascular events", reference: "Wong TY, et al. Lancet. 2003;361(9369):1491-4" },
     { systemicDisease: "Heart Failure", percentage: 40, ocularLink: "Microvascular damage reflects cardiac stress", reference: "Wong TY, et al. Circulation. 2005;112(10):1406-13" },
-    { systemicDisease: "Chronic Kidney Disease", percentage: 35, ocularLink: "Parallel target organ damage from hypertension", reference: "Dimmitt SB, et al. Hypertension. 1989;13(6):793-800" },
   ],
   "Central Retinal Vein Occlusion": [
     { systemicDisease: "Hypertension", percentage: 60, ocularLink: "Arterial compression and venous stasis", reference: "Hayreh SS, et al. Ophthalmology. 2001;108(5):830-41" },

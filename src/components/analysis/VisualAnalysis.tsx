@@ -18,7 +18,6 @@ const SYSTEMIC_DISEASE_LINKS: Record<string, { systemicDiseases: { name: string;
   "Diabetic Retinopathy": {
     systemicDiseases: [
       { name: "Cardiovascular Disease", probability: 65, link: "Microvascular damage in DR reflects systemic endothelial dysfunction and atherosclerosis" },
-      { name: "Chronic Kidney Disease", probability: 45, link: "Shared microvascular pathology - retinal and renal vessels undergo similar damage from hyperglycemia" },
       { name: "Peripheral Neuropathy", probability: 55, link: "Both conditions result from diabetes-induced microvascular damage to nerves" },
       { name: "Stroke", probability: 35, link: "Retinal microvascular abnormalities predict cerebrovascular disease risk" },
     ]

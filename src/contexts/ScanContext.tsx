@@ -721,7 +721,6 @@ export function ScanProvider({ children }: { children: ReactNode }) {
                             lowerContent.includes('stroke') ||
                             lowerContent.includes('alzheimer') ||
                             lowerContent.includes('neurological') ||
-                            lowerContent.includes('kidney') ||
                             lowerContent.includes('disease') ||
                             lowerContent.includes('condition') ||
                             lowerContent.includes('likely');

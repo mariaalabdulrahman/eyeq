@@ -32,7 +32,7 @@ const DISEASE_SYSTEMIC_LINKS: Record<string, {
   references: { title: string; authors: string; journal: string; year: string; doi?: string }[];
 }> = {
   "Diabetic Retinopathy": {
-    systemicLinks: ["Type 2 Diabetes", "Cardiovascular Disease", "Chronic Kidney Disease", "Peripheral Neuropathy"],
+    systemicLinks: ["Type 2 Diabetes", "Cardiovascular Disease", "Peripheral Neuropathy"],
     description: "Diabetic retinopathy is a microvascular complication of diabetes and serves as a biomarker for systemic vascular damage. Patients with DR have significantly elevated risk of cardiovascular events, stroke, and nephropathy.",
     references: [
       { title: "Association of Diabetic Retinopathy and Cardiovascular Disease", authors: "Cheung N, Wang JJ, Klein R, et al.", journal: "Lancet Diabetes Endocrinol", year: "2012", doi: "10.1016/S2213-8587(12)70008-9" },
@@ -59,7 +59,7 @@ const DISEASE_SYSTEMIC_LINKS: Record<string, {
     ]
   },
   "Hypertensive Retinopathy": {
-    systemicLinks: ["Systemic Hypertension", "Stroke", "Heart Failure", "Chronic Kidney Disease"],
+    systemicLinks: ["Systemic Hypertension", "Stroke", "Heart Failure"],
     description: "Hypertensive retinopathy directly reflects systemic vascular damage from elevated blood pressure. Retinal vessel changes predict stroke, heart failure, and renal dysfunction independent of blood pressure measurements.",
     references: [
       { title: "Retinal Vascular Signs as Predictors of Stroke", authors: "Wong TY, Klein R, et al.", journal: "New England Journal of Medicine", year: "2001", doi: "10.1056/NEJM200111013451804" },

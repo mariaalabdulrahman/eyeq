@@ -285,29 +285,29 @@ const Index = () => {
           >
             LLM
           </button>
-        </div>
-        
-        {/* View Mode Buttons */}
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          
+          <div style={{ width: '1px', height: '24px', backgroundColor: '#e5e7eb' }} />
+          
+          {/* View Mode Buttons */}
           {viewModes.map(({ mode, icon: Icon, label }) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
               style={{
-                padding: '8px 16px',
-                borderRadius: '8px',
+                padding: '6px 12px',
+                borderRadius: '6px',
                 border: viewMode === mode ? '2px solid #0891b2' : '1px solid #e5e7eb',
                 backgroundColor: viewMode === mode ? '#ecfeff' : 'white',
                 color: viewMode === mode ? '#0891b2' : '#374151',
                 cursor: 'pointer',
                 fontWeight: 500,
-                fontSize: '13px',
+                fontSize: '12px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '4px',
               }}
             >
-              <Icon size={16} />
+              <Icon size={14} />
               {label}
             </button>
           ))}

@@ -186,7 +186,6 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
           'lupus',
           'sclerosis',
           'anemia',
-          'kidney',
           'liver',
           'cancer',
           'hiv',
@@ -412,7 +411,6 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
       'Hypertensive Retinopathy': [
         { condition: 'Hypertension', link: 'Direct manifestation of systemic hypertension', baseStrength: 98 },
         { condition: 'Stroke Risk', link: 'Marker of target organ damage', baseStrength: 68 },
-        { condition: 'Kidney Disease', link: 'Shared vascular pathology', baseStrength: 52 },
       ],
       'Optic Disc Edema': [
         { condition: 'Intracranial Hypertension', link: 'Papilledema from increased ICP', baseStrength: 85 },
