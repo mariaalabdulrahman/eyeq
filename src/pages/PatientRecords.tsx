@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Patient } from "@/types/scan";
 import { ArrowLeft, UserPlus, Home, Stethoscope, User, BarChart3, Lock, X, Edit2, Save } from "lucide-react";
 import Logo from "@/components/Logo";
@@ -13,10 +13,15 @@ type RecordsViewMode = 'home' | 'doctor-report' | 'patient-report' | 'statistics
 
 const PatientRecords = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { patients, addPatient, updatePatient } = useScanContext();
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
-  const [viewMode, setViewMode] = useState<RecordsViewMode>('home');
+  const [viewMode, setViewMode] = useState<RecordsViewMode>(() => {
+    const viewFromUrl = searchParams.get('view');
+    if (viewFromUrl === 'statistics') return 'statistics';
+    return 'home';
+  });
   const [isEditMode, setIsEditMode] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");

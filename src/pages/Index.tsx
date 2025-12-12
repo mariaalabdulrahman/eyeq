@@ -31,15 +31,22 @@ const Index = () => {
     addChatMessage,
   } = useScanContext();
 
-  // Sync currentPatientId with URL params
+  // Sync currentPatientId and viewMode with URL params
   useEffect(() => {
     const patientIdFromUrl = searchParams.get('patientId');
+    const viewFromUrl = searchParams.get('view');
+    
     if (patientIdFromUrl && patientIdFromUrl !== currentPatientId) {
       setCurrentPatientId(patientIdFromUrl);
     } else if (!patientIdFromUrl && patients.length > 0 && !currentPatientId) {
       // Default to first patient if none selected
       setCurrentPatientId(patients[0].id);
       setSearchParams({ patientId: patients[0].id });
+    }
+    
+    // Set view mode from URL
+    if (viewFromUrl && ['textual', 'visual', 'comparison', 'visualization'].includes(viewFromUrl)) {
+      setViewMode(viewFromUrl as ViewMode);
     }
   }, [searchParams, patients, currentPatientId, setCurrentPatientId, setSearchParams]);
 

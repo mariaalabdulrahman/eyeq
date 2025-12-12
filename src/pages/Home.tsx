@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, ScanLine, FolderOpen, GitCompare, BarChart3, Stethoscope } from "lucide-react";
+import { Upload, ScanLine, FolderOpen, GitCompare, BarChart3, MessageCircle } from "lucide-react";
 import Logo from "@/components/Logo";
 import { AnalyzePatientModal } from "@/components/AnalyzePatientModal";
+import { PatientSelectModal } from "@/components/PatientSelectModal";
 import { useScanContext } from "@/contexts/ScanContext";
 import kkeshLogo from "@/assets/kkesh-logo.png";
 
@@ -11,12 +12,14 @@ import eyeScanImg from "@/assets/eye-scan.png";
 import dnaDataImg from "@/assets/dna-data.png";
 import mlNetworkImg from "@/assets/ml-network.png";
 
+type ModalType = 'analyze' | 'upload' | 'compare' | 'textual' | null;
+
 const Home = () => {
   const navigate = useNavigate();
   const { patients, addPatient, setCurrentPatientId } = useScanContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const [pupilPosition, setPupilPosition] = useState({ x: 0, y: 0 });
-  const [isAnalyzeModalOpen, setIsAnalyzeModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -40,12 +43,12 @@ const Home = () => {
   }, []);
 
   const features = [
-    { icon: Upload, label: "Upload Image", angle: -140, action: () => navigate("/dashboard") },
-    { icon: ScanLine, label: "Scan Analysis", angle: -180, action: () => navigate("/dashboard") },
+    { icon: Upload, label: "Upload Image", angle: -140, action: () => setActiveModal('upload') },
+    { icon: ScanLine, label: "Scan Analysis", angle: -180, action: () => setActiveModal('textual') },
     { icon: FolderOpen, label: "Patient Records", angle: -220, action: () => navigate("/records") },
-    { icon: GitCompare, label: "Compare Scans", angle: -40, action: () => navigate("/dashboard") },
-    { icon: BarChart3, label: "Visual Reports", angle: 0, action: () => navigate("/dashboard") },
-    { icon: Stethoscope, label: "Doctor Tools", angle: 40, action: () => navigate("/dashboard") },
+    { icon: GitCompare, label: "Compare Scans", angle: -40, action: () => setActiveModal('compare') },
+    { icon: BarChart3, label: "Visual Reports", angle: 0, action: () => navigate("/records?view=statistics") },
+    { icon: MessageCircle, label: "Talk to LLM", angle: 40, action: () => navigate("/llm-chat") },
   ];
 
   const floatingGraphics = [
@@ -58,6 +61,16 @@ const Home = () => {
   const handleSelectExistingPatient = (patientId: string) => {
     setCurrentPatientId(patientId);
     navigate(`/dashboard?patientId=${patientId}`);
+  };
+
+  const handleSelectForCompare = (patientId: string) => {
+    setCurrentPatientId(patientId);
+    navigate(`/dashboard?patientId=${patientId}&view=comparison`);
+  };
+
+  const handleSelectForTextual = (patientId: string) => {
+    setCurrentPatientId(patientId);
+    navigate(`/dashboard?patientId=${patientId}&view=textual`);
   };
 
   const handleCreateNewPatient = (data: { name: string; age: number; gender: 'male' | 'female' | 'other'; medicalTags: string[] }) => {
@@ -459,7 +472,7 @@ const Home = () => {
 
         {/* CTA Button */}
         <button
-          onClick={() => setIsAnalyzeModalOpen(true)}
+          onClick={() => setActiveModal('analyze')}
           style={{
             marginTop: "50px",
             padding: "14px 36px",
@@ -488,13 +501,35 @@ const Home = () => {
         </button>
       </main>
 
-      {/* Analyze Patient Modal */}
+      {/* Analyze Patient Modal (for Analyze and Upload) */}
       <AnalyzePatientModal
-        isOpen={isAnalyzeModalOpen}
-        onClose={() => setIsAnalyzeModalOpen(false)}
+        isOpen={activeModal === 'analyze' || activeModal === 'upload'}
+        onClose={() => setActiveModal(null)}
         onSelectExisting={handleSelectExistingPatient}
         onCreateNew={handleCreateNewPatient}
         patients={patients}
+      />
+
+      {/* Compare Scans Modal */}
+      <PatientSelectModal
+        isOpen={activeModal === 'compare'}
+        onClose={() => setActiveModal(null)}
+        onSelect={handleSelectForCompare}
+        patients={patients}
+        title="Compare Scans"
+        description="Select a patient to compare their scans"
+        icon="compare"
+      />
+
+      {/* Textual Analysis Modal */}
+      <PatientSelectModal
+        isOpen={activeModal === 'textual'}
+        onClose={() => setActiveModal(null)}
+        onSelect={handleSelectForTextual}
+        patients={patients}
+        title="Scan Analysis"
+        description="Select a patient to view their scan analysis"
+        icon="textual"
       />
 
       {/* Footer */}
