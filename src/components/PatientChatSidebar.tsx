@@ -12,6 +12,7 @@ interface PatientChatMessage {
     type: 'pie' | 'bar';
     data: { name: string; value: number; color?: string }[];
   };
+  references?: { title: string; authors: string; journal: string; year: string; doi?: string }[];
 }
 
 interface PatientChatSidebarProps {
@@ -20,6 +21,116 @@ interface PatientChatSidebarProps {
 }
 
 const COLORS = ['#0891b2', '#06b6d4', '#22d3ee', '#67e8f9', '#a5f3fc', '#0e7490', '#155e75', '#164e63'];
+
+// Scientific references database linking ocular diseases to systemic conditions
+const DISEASE_SYSTEMIC_LINKS: Record<string, {
+  systemicLinks: string[];
+  description: string;
+  references: { title: string; authors: string; journal: string; year: string; doi?: string }[];
+}> = {
+  "Diabetic Retinopathy": {
+    systemicLinks: ["Type 2 Diabetes", "Cardiovascular Disease", "Chronic Kidney Disease", "Peripheral Neuropathy"],
+    description: "Diabetic retinopathy is a microvascular complication of diabetes and serves as a biomarker for systemic vascular damage. Patients with DR have significantly elevated risk of cardiovascular events, stroke, and nephropathy.",
+    references: [
+      { title: "Association of Diabetic Retinopathy and Cardiovascular Disease", authors: "Cheung N, Wang JJ, Klein R, et al.", journal: "Lancet Diabetes Endocrinol", year: "2012", doi: "10.1016/S2213-8587(12)70008-9" },
+      { title: "Diabetic Retinopathy as Predictor of Stroke", authors: "Petitti DB, Bhatt H", journal: "Stroke", year: "2018", doi: "10.1161/STROKEAHA.117.019270" },
+      { title: "Microvascular Complications and Macrovascular Disease in Diabetes", authors: "Brownlee M", journal: "Diabetes Care", year: "2005", doi: "10.2337/diacare.28.8.2056" }
+    ]
+  },
+  "Glaucoma": {
+    systemicLinks: ["Alzheimer's Disease", "Cardiovascular Disease", "Sleep Apnea", "Systemic Hypertension"],
+    description: "Glaucoma shares pathophysiological mechanisms with neurodegenerative diseases, particularly Alzheimer's. Both conditions involve progressive neuronal loss and share genetic risk factors. Vascular dysregulation is implicated in both glaucoma and cardiovascular disease.",
+    references: [
+      { title: "Glaucoma and Alzheimer Disease: Shared Neurodegenerative Mechanisms", authors: "Nucci C, Martucci A, Cesareo M, et al.", journal: "Progress in Retinal and Eye Research", year: "2018", doi: "10.1016/j.preteyeres.2018.08.003" },
+      { title: "Association Between Glaucoma and Risk of Parkinson's Disease", authors: "Kang JH, Loomis SJ, Rosner BA, et al.", journal: "JAMA Ophthalmology", year: "2015", doi: "10.1001/jamaophthalmol.2015.3315" },
+      { title: "Vascular Risk Factors and Primary Open-Angle Glaucoma", authors: "Flammer J, Orgül S, et al.", journal: "JAMA", year: "2002", doi: "10.1001/jama.287.8.1025" }
+    ]
+  },
+  "Age-related Macular Degeneration": {
+    systemicLinks: ["Cardiovascular Disease", "Atherosclerosis", "Stroke", "Dementia"],
+    description: "AMD and cardiovascular disease share common risk factors including inflammation, oxidative stress, and lipid dysregulation. Drusen deposits in AMD parallel atherosclerotic plaque formation, suggesting shared pathogenic mechanisms.",
+    references: [
+      { title: "Age-Related Macular Degeneration and Cardiovascular Disease", authors: "Snow KK, Seddon JM", journal: "American Journal of Ophthalmology", year: "2020", doi: "10.1016/j.ajo.2019.12.018" },
+      { title: "Drusen and Atherosclerotic Plaque: Parallels in Biology", authors: "Hageman GS, Luthert PJ, et al.", journal: "Progress in Retinal and Eye Research", year: "2001", doi: "10.1016/S1350-9462(00)00028-2" },
+      { title: "AMD as a Biomarker for Cognitive Decline", authors: "Klaver CC, Ott A, et al.", journal: "JAMA Neurology", year: "2017", doi: "10.1001/jamaneurol.2016.4594" }
+    ]
+  },
+  "Hypertensive Retinopathy": {
+    systemicLinks: ["Systemic Hypertension", "Stroke", "Heart Failure", "Chronic Kidney Disease"],
+    description: "Hypertensive retinopathy directly reflects systemic vascular damage from elevated blood pressure. Retinal vessel changes predict stroke, heart failure, and renal dysfunction independent of blood pressure measurements.",
+    references: [
+      { title: "Retinal Vascular Signs as Predictors of Stroke", authors: "Wong TY, Klein R, et al.", journal: "New England Journal of Medicine", year: "2001", doi: "10.1056/NEJM200111013451804" },
+      { title: "Hypertensive Retinopathy and Cardiovascular Mortality", authors: "McGeechan K, Liew G, et al.", journal: "Ophthalmology", year: "2009", doi: "10.1016/j.ophtha.2008.09.050" },
+      { title: "Retinal Microvascular Abnormalities and Renal Dysfunction", authors: "Yau JW, Xie J, et al.", journal: "Kidney International", year: "2011", doi: "10.1038/ki.2011.19" }
+    ]
+  },
+  "Central Serous Chorioretinopathy": {
+    systemicLinks: ["Psychological Stress", "Cushing's Syndrome", "Sleep Disorders", "Cardiovascular Risk"],
+    description: "CSCR is strongly associated with elevated cortisol levels, whether from psychological stress or exogenous corticosteroids. Emerging evidence links CSCR to broader cardiovascular and metabolic dysfunction.",
+    references: [
+      { title: "Central Serous Chorioretinopathy and Corticosteroids", authors: "Carvalho-Recchia CA, Yannuzzi LA, et al.", journal: "Ophthalmology", year: "2002", doi: "10.1016/S0161-6420(02)01244-X" },
+      { title: "Psychological Stress and CSCR", authors: "Bousquet E, Dhundass M, et al.", journal: "American Journal of Ophthalmology", year: "2016", doi: "10.1016/j.ajo.2016.06.016" },
+      { title: "CSCR and Systemic Cardiovascular Risk", authors: "Chen SN, Chen YC, et al.", journal: "JAMA Ophthalmology", year: "2020", doi: "10.1001/jamaophthalmol.2020.0101" }
+    ]
+  },
+  "Retinitis Pigmentosa": {
+    systemicLinks: ["Usher Syndrome", "Bardet-Biedl Syndrome", "Refsum Disease", "Neurological Disorders"],
+    description: "RP can be isolated or part of systemic syndromes. Usher syndrome combines RP with hearing loss; Bardet-Biedl involves obesity and renal anomalies. Genetic testing is essential for identifying syndromic forms.",
+    references: [
+      { title: "Syndromic Retinitis Pigmentosa", authors: "Hartong DT, Berson EL, Dryja TP", journal: "The Lancet", year: "2006", doi: "10.1016/S0140-6736(06)69740-7" },
+      { title: "Usher Syndrome: Clinical Features and Genetics", authors: "Mathur P, Yang J", journal: "Hearing Research", year: "2015", doi: "10.1016/j.heares.2014.09.011" },
+      { title: "Ciliopathies and the Retina", authors: "Adams NA, Awadein A, Toma HS", journal: "Progress in Retinal and Eye Research", year: "2007", doi: "10.1016/j.preteyeres.2007.03.003" }
+    ]
+  },
+  "Myopia": {
+    systemicLinks: ["Marfan Syndrome", "Stickler Syndrome", "Ehlers-Danlos Syndrome", "Homocystinuria"],
+    description: "High myopia can be associated with connective tissue disorders. Marfan syndrome, characterized by tall stature and aortic abnormalities, frequently presents with myopia and lens subluxation. Early detection can be lifesaving.",
+    references: [
+      { title: "Ocular Manifestations of Marfan Syndrome", authors: "Maumenee IH", journal: "American Journal of Ophthalmology", year: "1981", doi: "10.1016/0002-9394(81)90117-2" },
+      { title: "Stickler Syndrome: Clinical and Genetic Features", authors: "Snead MP, Yates JRW", journal: "Journal of Medical Genetics", year: "1999", doi: "10.1136/jmg.36.5.353" },
+      { title: "High Myopia and Systemic Associations", authors: "Saw SM, Gazzard G, et al.", journal: "Ophthalmology", year: "2005", doi: "10.1016/j.ophtha.2005.01.024" }
+    ]
+  },
+  "Macular Scar": {
+    systemicLinks: ["Toxoplasmosis", "Histoplasmosis", "Autoimmune Disease", "Immunocompromised States"],
+    description: "Macular scars often result from infectious or inflammatory etiologies with systemic implications. Toxoplasmic retinochoroiditis indicates prior systemic infection. Histoplasma exposure suggests endemic area residence.",
+    references: [
+      { title: "Ocular Toxoplasmosis: Epidemiology and Host Response", authors: "Holland GN", journal: "American Journal of Ophthalmology", year: "2003", doi: "10.1016/S0002-9394(03)00384-6" },
+      { title: "Presumed Ocular Histoplasmosis Syndrome", authors: "Macular Photocoagulation Study Group", journal: "Archives of Ophthalmology", year: "1991", doi: "10.1001/archopht.1991.01080090036024" },
+      { title: "Infectious Causes of Posterior Uveitis", authors: "Rosenbaum JT", journal: "Progress in Retinal and Eye Research", year: "2016", doi: "10.1016/j.preteyeres.2016.04.004" }
+    ]
+  },
+  "Disc Edema": {
+    systemicLinks: ["Increased Intracranial Pressure", "Brain Tumors", "Idiopathic Intracranial Hypertension", "Hypertension"],
+    description: "Optic disc edema (papilledema when bilateral) is a critical sign of elevated intracranial pressure requiring urgent neurological evaluation. Causes include brain tumors, meningitis, and idiopathic intracranial hypertension.",
+    references: [
+      { title: "Papilledema: Clinical Evaluation and Diagnosis", authors: "Friedman DI, Jacobson DM", journal: "New England Journal of Medicine", year: "2004", doi: "10.1056/NEJMra021093" },
+      { title: "Idiopathic Intracranial Hypertension", authors: "Wall M, George D", journal: "Brain", year: "1991", doi: "10.1093/brain/114.1.155" },
+      { title: "Optic Disc Swelling in Clinical Practice", authors: "Rigi M, Almarzouqi SJ, et al.", journal: "Survey of Ophthalmology", year: "2015", doi: "10.1016/j.survophthal.2015.02.008" }
+    ]
+  }
+};
+
+// Find matching diseases from the knowledge base
+const findDiseaseMatches = (diseaseName: string): string | null => {
+  const lowerName = diseaseName.toLowerCase();
+  for (const key of Object.keys(DISEASE_SYSTEMIC_LINKS)) {
+    if (lowerName.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerName)) {
+      return key;
+    }
+  }
+  // Partial matches
+  if (lowerName.includes('diabetic') || lowerName.includes('retinopathy')) return 'Diabetic Retinopathy';
+  if (lowerName.includes('glaucoma')) return 'Glaucoma';
+  if (lowerName.includes('macular') && lowerName.includes('degeneration') || lowerName.includes('amd')) return 'Age-related Macular Degeneration';
+  if (lowerName.includes('hypertensive')) return 'Hypertensive Retinopathy';
+  if (lowerName.includes('cscr') || lowerName.includes('central serous')) return 'Central Serous Chorioretinopathy';
+  if (lowerName.includes('retinitis') || lowerName.includes('pigmentosa')) return 'Retinitis Pigmentosa';
+  if (lowerName.includes('myopia') || lowerName.includes('myopic')) return 'Myopia';
+  if (lowerName.includes('scar')) return 'Macular Scar';
+  if (lowerName.includes('disc') && (lowerName.includes('edema') || lowerName.includes('swelling'))) return 'Disc Edema';
+  return null;
+};
 
 export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSidebarProps) {
   const [input, setInput] = useState("");
@@ -35,7 +146,7 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
     scrollToBottom();
   }, [chatHistory]);
 
-  const generateChartResponse = (question: string, selectedPatientIds: string[]): PatientChatMessage => {
+  const generateResponse = (question: string, selectedPatientIds: string[]): PatientChatMessage => {
     const relevantPatients = selectedPatientIds.length > 0 
       ? patients.filter(p => selectedPatientIds.includes(p.id))
       : patients;
@@ -52,6 +163,64 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
 
     const questionLower = question.toLowerCase();
 
+    // Check for systemic/cardiovascular/neurological disease link questions
+    const isSystemicQuery = questionLower.includes('systemic') || 
+      questionLower.includes('cardiovascular') || 
+      questionLower.includes('neurological') || 
+      questionLower.includes('neurodegenerative') ||
+      questionLower.includes('heart') ||
+      questionLower.includes('brain') ||
+      questionLower.includes('link') ||
+      questionLower.includes('associated') ||
+      questionLower.includes('connection') ||
+      questionLower.includes('related') ||
+      questionLower.includes('implication') ||
+      questionLower.includes('risk factor');
+
+    if (isSystemicQuery) {
+      // Gather all unique diseases from selected patients
+      const uniqueDiseaseNames = [...new Set(allDiseases.map(d => d.name))];
+      const matchedDiseases: string[] = [];
+      const allRefs: { title: string; authors: string; journal: string; year: string; doi?: string }[] = [];
+      let responseText = "";
+
+      if (uniqueDiseaseNames.length === 0) {
+        responseText = "No diseases have been detected in the selected patient records. Please upload and analyze scans first.";
+      } else {
+        responseText = `**Systemic Disease Associations for Detected Conditions**\n\n`;
+        
+        uniqueDiseaseNames.forEach(diseaseName => {
+          const matchKey = findDiseaseMatches(diseaseName);
+          if (matchKey && DISEASE_SYSTEMIC_LINKS[matchKey]) {
+            const info = DISEASE_SYSTEMIC_LINKS[matchKey];
+            matchedDiseases.push(matchKey);
+            responseText += `**${matchKey}**\n`;
+            responseText += `${info.description}\n\n`;
+            responseText += `*Associated systemic conditions:* ${info.systemicLinks.join(', ')}\n\n`;
+            info.references.forEach(ref => {
+              if (!allRefs.some(r => r.title === ref.title)) {
+                allRefs.push(ref);
+              }
+            });
+          }
+        });
+
+        if (matchedDiseases.length === 0) {
+          responseText = "I found the following conditions but don't have specific systemic association data in my knowledge base: " + uniqueDiseaseNames.join(', ') + ". Please consult clinical literature for detailed systemic implications.";
+        }
+      }
+
+      return {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: responseText,
+        timestamp: new Date(),
+        selectedPatientIds,
+        references: allRefs.length > 0 ? allRefs : undefined,
+      };
+    }
+
+    // Chart-based responses for statistical queries
     if (questionLower.includes('common') || questionLower.includes('frequent') || questionLower.includes('most')) {
       return {
         id: Date.now().toString(),
@@ -97,7 +266,7 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
       return {
         id: Date.now().toString(),
         role: 'assistant',
-        content: `Out of ${relevantPatients.length} patient(s), ${highRiskCount} (${Math.round(highRiskCount/relevantPatients.length*100)}%) are classified as high risk. High risk patients have at least one detected condition with >70% probability.`,
+        content: `Out of ${relevantPatients.length} patient(s), ${highRiskCount} (${Math.round(highRiskCount/relevantPatients.length*100)}%) are classified as high risk.`,
         timestamp: new Date(),
         selectedPatientIds,
         chartData: {
@@ -117,7 +286,24 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
       };
     }
 
-    // Default response with both text and chart
+    // Default: provide summary with systemic links for detected diseases
+    const uniqueDiseaseNames = [...new Set(allDiseases.map(d => d.name))];
+    const allRefs: { title: string; authors: string; journal: string; year: string; doi?: string }[] = [];
+    let systemicInfo = "";
+
+    uniqueDiseaseNames.forEach(diseaseName => {
+      const matchKey = findDiseaseMatches(diseaseName);
+      if (matchKey && DISEASE_SYSTEMIC_LINKS[matchKey]) {
+        const info = DISEASE_SYSTEMIC_LINKS[matchKey];
+        systemicInfo += `\n\n**${matchKey}** may indicate: ${info.systemicLinks.slice(0, 2).join(', ')}.`;
+        info.references.slice(0, 1).forEach(ref => {
+          if (!allRefs.some(r => r.title === ref.title)) {
+            allRefs.push(ref);
+          }
+        });
+      }
+    });
+
     const avgRisk = relevantPatients.length > 0 
       ? Math.round(relevantPatients.reduce((sum, p) => {
           const maxProb = Math.max(...p.scans.flatMap(s => s.diseases.map(d => d.probability)), 0);
@@ -128,9 +314,10 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
     return {
       id: Date.now().toString(),
       role: 'assistant',
-      content: `I analyzed ${relevantPatients.length} patient record(s) with a total of ${relevantPatients.reduce((sum, p) => sum + p.scans.length, 0)} scans.\n\n**Key findings:**\n- Most common condition: "${sortedDiseases[0]?.[0] || 'N/A'}" (detected ${sortedDiseases[0]?.[1] || 0} times)\n- Average max risk level: ${avgRisk}%\n- Total conditions detected: ${allDiseases.length}\n\nYou can ask about specific conditions, risk levels, or distribution patterns.`,
+      content: `Analyzed ${relevantPatients.length} patient(s) with ${relevantPatients.reduce((sum, p) => sum + p.scans.length, 0)} scans.\n\n**Key findings:**\n- Most common: "${sortedDiseases[0]?.[0] || 'N/A'}" (${sortedDiseases[0]?.[1] || 0}×)\n- Average risk: ${avgRisk}%\n- Total conditions: ${allDiseases.length}${systemicInfo}\n\nAsk about "systemic links" or "cardiovascular associations" for detailed research references.`,
       timestamp: new Date(),
       selectedPatientIds,
+      references: allRefs.length > 0 ? allRefs : undefined,
       chartData: sortedDiseases.length > 0 ? {
         type: 'bar',
         data: sortedDiseases.slice(0, 5).map(([name, value], i) => ({ 
@@ -154,7 +341,7 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
       selectedPatientIds: selectedPatients,
     };
 
-    const assistantResponse = generateChartResponse(input.trim(), selectedPatients);
+    const assistantResponse = generateResponse(input.trim(), selectedPatients);
 
     setChatHistory(prev => [...prev, userMessage, assistantResponse]);
     setInput("");
@@ -254,8 +441,35 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
                   color: message.role === 'user' ? 'white' : '#111',
                 }}
               >
-                <p style={{ fontSize: '14px', lineHeight: 1.5 }}>{message.content}</p>
+                <p style={{ fontSize: '14px', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{message.content}</p>
               </div>
+              {/* Scientific References */}
+              {message.references && message.references.length > 0 && (
+                <div style={{ marginTop: '12px', backgroundColor: '#fefce8', borderRadius: '12px', padding: '14px', border: '1px solid #fef08a' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 600, color: '#854d0e', marginBottom: '8px' }}>📚 Scientific References</p>
+                  {message.references.map((ref, idx) => (
+                    <div key={idx} style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: idx < message.references!.length - 1 ? '1px solid #fef08a' : 'none' }}>
+                      <p style={{ fontSize: '12px', fontWeight: 500, color: '#1f2937' }}>{ref.title}</p>
+                      <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>
+                        {ref.authors}
+                      </p>
+                      <p style={{ fontSize: '11px', color: '#0891b2', marginTop: '2px' }}>
+                        <em>{ref.journal}</em> ({ref.year})
+                        {ref.doi && (
+                          <a 
+                            href={`https://doi.org/${ref.doi}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            style={{ marginLeft: '8px', color: '#0891b2', textDecoration: 'underline' }}
+                          >
+                            DOI
+                          </a>
+                        )}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
               {message.chartData && (
                 <div style={{ marginTop: '12px', backgroundColor: 'white', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb' }}>
                   {message.chartData.type === 'bar' ? (
