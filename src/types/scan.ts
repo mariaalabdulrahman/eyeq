@@ -29,6 +29,7 @@ export interface Patient {
   age: number;
   gender: 'male' | 'female' | 'other';
   relevantInfo?: string;
+  medicalTags?: string[];
   scans: ScanAnalysis[];
   createdAt: Date;
 }

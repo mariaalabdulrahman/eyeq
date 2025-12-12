@@ -2,11 +2,12 @@ import { useState, useCallback } from "react";
 import { Upload, X, Microscope, Eye, UserPlus, User, Plus } from "lucide-react";
 import { Patient } from "@/types/scan";
 import { getImagePreviewUrl } from "@/lib/tifUtils";
+import { MedicalTagInput } from "./MedicalTagInput";
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (fundusFile: File, octFile?: File, patientId?: string, newPatientData?: { name: string; age: number; gender: 'male' | 'female' | 'other'; relevantInfo?: string }, eyeSide?: 'left' | 'right') => void;
+  onUpload: (fundusFile: File, octFile?: File, patientId?: string, newPatientData?: { name: string; age: number; gender: 'male' | 'female' | 'other'; relevantInfo?: string; medicalTags?: string[] }, eyeSide?: 'left' | 'right') => void;
   patients: Patient[];
 }
 
@@ -21,7 +22,7 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
   const [newPatientName, setNewPatientName] = useState<string>('');
   const [newPatientAge, setNewPatientAge] = useState<string>('');
   const [newPatientGender, setNewPatientGender] = useState<'male' | 'female' | 'other'>('male');
-  const [newPatientInfo, setNewPatientInfo] = useState<string>('');
+  const [newPatientMedicalTags, setNewPatientMedicalTags] = useState<string[]>([]);
   const [eyeSide, setEyeSide] = useState<'left' | 'right'>('right');
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -77,7 +78,8 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
         name: newPatientName.trim(),
         age: parseInt(newPatientAge) || 0,
         gender: newPatientGender,
-        relevantInfo: newPatientInfo.trim() || undefined,
+        relevantInfo: newPatientMedicalTags.length > 0 ? newPatientMedicalTags.join(', ') : undefined,
+        medicalTags: newPatientMedicalTags,
       } : undefined;
       onUpload(fundusFile, octFile || undefined, patientId, newPatientData, eyeSide);
       resetForm();
@@ -95,7 +97,7 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
     setNewPatientName('');
     setNewPatientAge('');
     setNewPatientGender('male');
-    setNewPatientInfo('');
+    setNewPatientMedicalTags([]);
     setEyeSide('right');
   };
 
@@ -315,23 +317,16 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
                   <option value="other">Other</option>
                 </select>
               </div>
-              <textarea
-                value={newPatientInfo}
-                onChange={(e) => setNewPatientInfo(e.target.value)}
-                placeholder="Relevant medical history (optional)"
-                rows={2}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid #e5e7eb',
-                  backgroundColor: '#f9fafb',
-                  fontSize: '14px',
-                  boxSizing: 'border-box',
-                  resize: 'vertical',
-                  fontFamily: 'inherit',
-                }}
-              />
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#374151' }}>
+                  Medical History (optional)
+                </label>
+                <MedicalTagInput
+                  value={newPatientMedicalTags}
+                  onChange={setNewPatientMedicalTags}
+                  placeholder="Type to search conditions..."
+                />
+              </div>
             </div>
           )}
         </div>
