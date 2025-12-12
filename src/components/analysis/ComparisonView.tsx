@@ -345,8 +345,8 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
     // Add images side by side
     let imageY = 82;
     try {
-      // Helper to load image as base64
-      const loadImageAsBase64 = (url: string): Promise<string> => {
+      // Helper to load image as base64 and get dimensions
+      const loadImageAsBase64 = (url: string): Promise<{ data: string; width: number; height: number }> => {
         return new Promise((resolve, reject) => {
           const img = new Image();
           img.crossOrigin = 'anonymous';
@@ -356,23 +356,42 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
             canvas.height = img.height;
             const ctx = canvas.getContext('2d');
             ctx?.drawImage(img, 0, 0);
-            resolve(canvas.toDataURL('image/jpeg', 0.8));
+            resolve({ 
+              data: canvas.toDataURL('image/jpeg', 0.8),
+              width: img.width,
+              height: img.height
+            });
           };
           img.onerror = reject;
           img.src = url;
         });
       };
 
-      const imgWidth = 80;
-      const imgHeight = 50;
+      // Calculate dimensions maintaining aspect ratio
+      const maxWidth = 80;
+      const maxHeight = 60;
+      const calculateDimensions = (imgWidth: number, imgHeight: number) => {
+        const aspectRatio = imgWidth / imgHeight;
+        let width = maxWidth;
+        let height = maxWidth / aspectRatio;
+        if (height > maxHeight) {
+          height = maxHeight;
+          width = maxHeight * aspectRatio;
+        }
+        return { width, height };
+      };
+
+      let maxFundusHeight = 0;
 
       // Left scan fundus image
       if (orderedLeftScan.imageUrl) {
         try {
-          const imgData = await loadImageAsBase64(orderedLeftScan.imageUrl);
-          doc.addImage(imgData, 'JPEG', 20, imageY, imgWidth, imgHeight);
+          const imgResult = await loadImageAsBase64(orderedLeftScan.imageUrl);
+          const dims = calculateDimensions(imgResult.width, imgResult.height);
+          doc.addImage(imgResult.data, 'JPEG', 20, imageY, dims.width, dims.height);
           doc.setFontSize(9);
-          doc.text('Fundus - ' + orderedLeftScan.name, 20, imageY + imgHeight + 5);
+          doc.text('Fundus - ' + orderedLeftScan.name, 20, imageY + dims.height + 5);
+          maxFundusHeight = Math.max(maxFundusHeight, dims.height);
         } catch (e) {
           console.log('Could not load left scan image');
         }
@@ -381,25 +400,30 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
       // Right scan fundus image
       if (orderedRightScan?.imageUrl) {
         try {
-          const imgData = await loadImageAsBase64(orderedRightScan.imageUrl);
-          doc.addImage(imgData, 'JPEG', 110, imageY, imgWidth, imgHeight);
+          const imgResult = await loadImageAsBase64(orderedRightScan.imageUrl);
+          const dims = calculateDimensions(imgResult.width, imgResult.height);
+          doc.addImage(imgResult.data, 'JPEG', 110, imageY, dims.width, dims.height);
           doc.setFontSize(9);
-          doc.text('Fundus - ' + orderedRightScan.name, 110, imageY + imgHeight + 5);
+          doc.text('Fundus - ' + orderedRightScan.name, 110, imageY + dims.height + 5);
+          maxFundusHeight = Math.max(maxFundusHeight, dims.height);
         } catch (e) {
           console.log('Could not load right scan image');
         }
       }
 
-      imageY += imgHeight + 12;
+      imageY += maxFundusHeight + 12;
 
       // Add OCT images if available
       let hasOct = false;
+      let maxOctHeight = 0;
       if (orderedLeftScan.linkedOctUrl) {
         try {
-          const imgData = await loadImageAsBase64(orderedLeftScan.linkedOctUrl);
-          doc.addImage(imgData, 'JPEG', 20, imageY, imgWidth, imgHeight);
+          const imgResult = await loadImageAsBase64(orderedLeftScan.linkedOctUrl);
+          const dims = calculateDimensions(imgResult.width, imgResult.height);
+          doc.addImage(imgResult.data, 'JPEG', 20, imageY, dims.width, dims.height);
           doc.setFontSize(9);
-          doc.text('OCT', 20, imageY + imgHeight + 5);
+          doc.text('OCT', 20, imageY + dims.height + 5);
+          maxOctHeight = Math.max(maxOctHeight, dims.height);
           hasOct = true;
         } catch (e) {
           console.log('Could not load left OCT image');
@@ -408,10 +432,12 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
 
       if (orderedRightScan?.linkedOctUrl) {
         try {
-          const imgData = await loadImageAsBase64(orderedRightScan.linkedOctUrl);
-          doc.addImage(imgData, 'JPEG', 110, imageY, imgWidth, imgHeight);
+          const imgResult = await loadImageAsBase64(orderedRightScan.linkedOctUrl);
+          const dims = calculateDimensions(imgResult.width, imgResult.height);
+          doc.addImage(imgResult.data, 'JPEG', 110, imageY, dims.width, dims.height);
           doc.setFontSize(9);
-          doc.text('OCT', 110, imageY + imgHeight + 5);
+          doc.text('OCT', 110, imageY + dims.height + 5);
+          maxOctHeight = Math.max(maxOctHeight, dims.height);
           hasOct = true;
         } catch (e) {
           console.log('Could not load right OCT image');
@@ -419,7 +445,7 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
       }
 
       if (hasOct) {
-        imageY += imgHeight + 12;
+        imageY += maxOctHeight + 12;
       }
     } catch (e) {
       console.log('Error loading images:', e);
