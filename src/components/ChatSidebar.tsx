@@ -321,7 +321,11 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
                     color: message.role === 'user' ? 'white' : '#111',
                   }}
                 >
-                  <p style={{ fontSize: '15px', lineHeight: 1.6 }}>{message.content}</p>
+                  {message.role === 'assistant' && message.content.includes('<') ? (
+                    <div style={{ fontSize: '15px', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: message.content }} />
+                  ) : (
+                    <p style={{ fontSize: '15px', lineHeight: 1.6 }}>{message.content}</p>
+                  )}
                   {message.selectedScanIds.length > 0 && (
                     <p style={{ fontSize: '12px', opacity: 0.7, marginTop: '8px' }}>
                       📎 {message.selectedScanIds.length} image(s) referenced
@@ -455,7 +459,11 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
                 color: message.role === 'user' ? 'white' : '#111',
               }}
             >
-              <p style={{ fontSize: '14px', lineHeight: 1.5 }}>{message.content}</p>
+              {message.role === 'assistant' && message.content.includes('<') ? (
+                <div style={{ fontSize: '14px', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: message.content }} />
+              ) : (
+                <p style={{ fontSize: '14px', lineHeight: 1.5 }}>{message.content}</p>
+              )}
               {message.selectedScanIds.length > 0 && (
                 <p style={{ fontSize: '11px', opacity: 0.7, marginTop: '4px' }}>
                   📎 {message.selectedScanIds.length} image(s) referenced
