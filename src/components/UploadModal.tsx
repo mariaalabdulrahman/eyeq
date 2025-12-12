@@ -1,19 +1,20 @@
 import { useState, useCallback } from "react";
-import { Upload, X, Microscope, Eye, UserPlus, User } from "lucide-react";
+import { Upload, X, Microscope, Eye, UserPlus, User, Plus } from "lucide-react";
 import { Patient } from "@/types/scan";
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (file: File, type: 'oct' | 'fundus', patientId?: string, newPatientName?: string) => void;
+  onUpload: (fundusFile: File, octFile?: File, patientId?: string, newPatientName?: string) => void;
   patients: Patient[];
 }
 
 export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModalProps) {
   const [dragActive, setDragActive] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [scanType, setScanType] = useState<'oct' | 'fundus'>('oct');
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [fundusFile, setFundusFile] = useState<File | null>(null);
+  const [octFile, setOctFile] = useState<File | null>(null);
+  const [fundusPreview, setFundusPreview] = useState<string | null>(null);
+  const [octPreview, setOctPreview] = useState<string | null>(null);
   const [patientOption, setPatientOption] = useState<'none' | 'existing' | 'new'>('none');
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [newPatientName, setNewPatientName] = useState<string>('');
@@ -35,32 +36,47 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      setFundusFile(file);
+      setFundusPreview(URL.createObjectURL(file));
     }
   }, []);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFundusSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      setFundusFile(file);
+      setFundusPreview(URL.createObjectURL(file));
     }
   };
 
+  const handleOctSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setOctFile(file);
+      setOctPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeOct = () => {
+    setOctFile(null);
+    setOctPreview(null);
+  };
+
   const handleSubmit = () => {
-    if (selectedFile) {
+    if (fundusFile) {
       const patientId = patientOption === 'existing' ? selectedPatientId : undefined;
       const patientName = patientOption === 'new' ? newPatientName : undefined;
-      onUpload(selectedFile, scanType, patientId, patientName);
+      onUpload(fundusFile, octFile || undefined, patientId, patientName);
       resetForm();
       onClose();
     }
   };
 
   const resetForm = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
+    setFundusFile(null);
+    setOctFile(null);
+    setFundusPreview(null);
+    setOctPreview(null);
     setPatientOption('none');
     setSelectedPatientId('');
     setNewPatientName('');
@@ -72,6 +88,11 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
   };
 
   if (!isOpen) return null;
+
+  const canSubmit = fundusFile && 
+    (patientOption === 'none' || 
+     (patientOption === 'existing' && selectedPatientId) || 
+     (patientOption === 'new' && newPatientName.trim()));
 
   return (
     <div style={{
@@ -99,7 +120,7 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
         borderRadius: '12px',
         padding: '24px',
         width: '100%',
-        maxWidth: '500px',
+        maxWidth: '600px',
         maxHeight: '90vh',
         overflowY: 'auto',
         boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
@@ -123,9 +144,12 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
           <X size={20} />
         </button>
 
-        <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '24px', color: '#111' }}>
-          Upload Medical Scan
+        <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '8px', color: '#111' }}>
+          Upload Eye Scan
         </h2>
+        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+          Fundus image is required. You can optionally add an OCT scan of the same eye.
+        </p>
 
         {/* Patient Assignment Options */}
         <div style={{ marginBottom: '20px' }}>
@@ -133,7 +157,6 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
             Assign to Patient
           </label>
           
-          {/* Option Buttons */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
             <button
               onClick={() => setPatientOption('none')}
@@ -200,7 +223,6 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
             </button>
           </div>
 
-          {/* Existing Patient Dropdown */}
           {patientOption === 'existing' && (
             <select
               value={selectedPatientId}
@@ -222,7 +244,6 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
             </select>
           )}
 
-          {/* New Patient Input */}
           {patientOption === 'new' && (
             <input
               type="text"
@@ -242,103 +263,154 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
           )}
         </div>
 
-        {/* Scan Type Selection */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-          <button
-            onClick={() => setScanType('oct')}
-            style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              padding: '12px',
-              borderRadius: '8px',
-              border: scanType === 'oct' ? '2px solid #0891b2' : '1px solid #e5e7eb',
-              backgroundColor: scanType === 'oct' ? '#ecfeff' : '#f9fafb',
-              color: scanType === 'oct' ? '#0891b2' : '#6b7280',
-              cursor: 'pointer',
-              fontWeight: 500,
-            }}
-          >
-            <Microscope size={18} />
-            OCT Scan
-          </button>
-          <button
-            onClick={() => setScanType('fundus')}
-            style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              padding: '12px',
-              borderRadius: '8px',
-              border: scanType === 'fundus' ? '2px solid #0891b2' : '1px solid #e5e7eb',
-              backgroundColor: scanType === 'fundus' ? '#ecfeff' : '#f9fafb',
-              color: scanType === 'fundus' ? '#0891b2' : '#6b7280',
-              cursor: 'pointer',
-              fontWeight: 500,
-            }}
-          >
-            <Eye size={18} />
-            Fundus Image
-          </button>
-        </div>
-
-        {/* Upload Area */}
-        <div
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          style={{
-            position: 'relative',
-            border: dragActive ? '2px dashed #0891b2' : previewUrl ? '2px solid #0891b2' : '2px dashed #e5e7eb',
-            borderRadius: '12px',
-            padding: '32px',
-            textAlign: 'center',
-            backgroundColor: dragActive ? '#ecfeff' : '#f9fafb',
-          }}
-        >
-          {previewUrl ? (
-            <div>
-              <img
-                src={previewUrl}
-                alt="Preview"
-                style={{ maxHeight: '192px', margin: '0 auto', borderRadius: '8px', objectFit: 'contain' }}
+        {/* Upload Areas */}
+        <div style={{ display: 'grid', gridTemplateColumns: fundusPreview ? '1fr 1fr' : '1fr', gap: '16px', marginBottom: '24px' }}>
+          {/* Fundus Upload - Required */}
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 500, marginBottom: '8px', color: '#374151' }}>
+              <Eye size={18} style={{ color: '#0891b2' }} />
+              Fundus Image <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+            <div
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              style={{
+                position: 'relative',
+                border: dragActive ? '2px dashed #0891b2' : fundusPreview ? '2px solid #22c55e' : '2px dashed #e5e7eb',
+                borderRadius: '12px',
+                padding: '24px',
+                textAlign: 'center',
+                backgroundColor: dragActive ? '#ecfeff' : fundusPreview ? '#f0fdf4' : '#f9fafb',
+                minHeight: '180px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {fundusPreview ? (
+                <div>
+                  <img
+                    src={fundusPreview}
+                    alt="Fundus Preview"
+                    style={{ maxHeight: '120px', margin: '0 auto', borderRadius: '8px', objectFit: 'contain' }}
+                  />
+                  <p style={{ fontSize: '12px', color: '#22c55e', marginTop: '8px', fontWeight: 500 }}>✓ {fundusFile?.name}</p>
+                </div>
+              ) : (
+                <>
+                  <Upload size={36} style={{ marginBottom: '12px', color: '#9ca3af' }} />
+                  <p style={{ fontWeight: 500, marginBottom: '4px', color: '#111', fontSize: '14px' }}>
+                    Drop fundus image here
+                  </p>
+                  <p style={{ fontSize: '12px', color: '#6b7280' }}>
+                    Required for analysis
+                  </p>
+                </>
+              )}
+              
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFundusSelect}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  opacity: 0,
+                  cursor: 'pointer',
+                }}
               />
-              <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '16px' }}>{selectedFile?.name}</p>
             </div>
-          ) : (
-            <>
-              <Upload size={48} style={{ margin: '0 auto 16px', color: '#9ca3af' }} />
-              <p style={{ fontWeight: 500, marginBottom: '8px', color: '#111' }}>
-                Drop your scan here or click to browse
-              </p>
-              <p style={{ fontSize: '14px', color: '#6b7280' }}>
-                Supports JPG, PNG, DICOM formats
-              </p>
-            </>
+          </div>
+
+          {/* OCT Upload - Optional, only shown when fundus is uploaded */}
+          {fundusPreview && (
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 500, marginBottom: '8px', color: '#374151' }}>
+                <Microscope size={18} style={{ color: '#0891b2' }} />
+                OCT Scan <span style={{ color: '#6b7280', fontWeight: 400 }}>(optional)</span>
+              </label>
+              <div
+                style={{
+                  position: 'relative',
+                  border: octPreview ? '2px solid #22c55e' : '2px dashed #e5e7eb',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  textAlign: 'center',
+                  backgroundColor: octPreview ? '#f0fdf4' : '#f9fafb',
+                  minHeight: '180px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {octPreview ? (
+                  <div style={{ position: 'relative' }}>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removeOct(); }}
+                      style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        border: 'none',
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 10,
+                      }}
+                    >
+                      <X size={14} />
+                    </button>
+                    <img
+                      src={octPreview}
+                      alt="OCT Preview"
+                      style={{ maxHeight: '120px', margin: '0 auto', borderRadius: '8px', objectFit: 'contain' }}
+                    />
+                    <p style={{ fontSize: '12px', color: '#22c55e', marginTop: '8px', fontWeight: 500 }}>✓ {octFile?.name}</p>
+                  </div>
+                ) : (
+                  <>
+                    <Plus size={36} style={{ marginBottom: '12px', color: '#9ca3af' }} />
+                    <p style={{ fontWeight: 500, marginBottom: '4px', color: '#111', fontSize: '14px' }}>
+                      Add OCT scan
+                    </p>
+                    <p style={{ fontSize: '12px', color: '#6b7280' }}>
+                      Same eye as fundus
+                    </p>
+                  </>
+                )}
+                
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleOctSelect}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    opacity: 0,
+                    cursor: 'pointer',
+                  }}
+                />
+              </div>
+            </div>
           )}
-          
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              opacity: 0,
-              cursor: 'pointer',
-            }}
-          />
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+        <div style={{ display: 'flex', gap: '12px' }}>
           <button
             onClick={handleClose}
             style={{
@@ -355,19 +427,19 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!selectedFile || (patientOption === 'existing' && !selectedPatientId) || (patientOption === 'new' && !newPatientName.trim())}
+            disabled={!canSubmit}
             style={{
               flex: 1,
               padding: '12px',
               borderRadius: '8px',
               border: 'none',
-              backgroundColor: selectedFile && (patientOption === 'none' || (patientOption === 'existing' && selectedPatientId) || (patientOption === 'new' && newPatientName.trim())) ? '#0891b2' : '#9ca3af',
+              backgroundColor: canSubmit ? '#0891b2' : '#9ca3af',
               color: 'white',
-              cursor: selectedFile ? 'pointer' : 'not-allowed',
+              cursor: canSubmit ? 'pointer' : 'not-allowed',
               fontWeight: 500,
             }}
           >
-            Analyze Scan
+            Analyze Scan{octFile ? 's' : ''}
           </button>
         </div>
       </div>

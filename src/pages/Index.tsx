@@ -29,14 +29,14 @@ const Index = () => {
     addChatMessage,
   } = useScanContext();
 
-  const handleUpload = (file: File, type: 'oct' | 'fundus', patientId?: string, newPatientName?: string) => {
+  const handleUpload = (fundusFile: File, octFile?: File, patientId?: string, newPatientName?: string) => {
     let assignPatientId = patientId;
     
     if (newPatientName) {
       assignPatientId = addPatient(newPatientName, '');
     }
     
-    addScan(file, type, assignPatientId);
+    addScan(fundusFile, octFile, assignPatientId);
   };
 
   const handleSendMessage = (message: string, selectedScanIds: string[]) => {
@@ -121,8 +121,8 @@ const Index = () => {
         <aside style={{ 
           width: `${sidebarWidth}px`, 
           minWidth: '250px',
-          maxWidth: '500px',
-          backgroundColor: 'white', 
+          maxWidth: '50vw',
+          backgroundColor: 'white',
           borderRight: '1px solid #e5e7eb',
           display: 'flex',
           flexDirection: 'column',
@@ -212,7 +212,8 @@ const Index = () => {
               
               const onMouseMove = (e: MouseEvent) => {
                 const deltaX = e.clientX - startX;
-                setSidebarWidth(Math.min(500, Math.max(250, startWidth + deltaX)));
+                const maxWidth = window.innerWidth * 0.5;
+                setSidebarWidth(Math.min(maxWidth, Math.max(250, startWidth + deltaX)));
               };
               
               const onMouseUp = () => {

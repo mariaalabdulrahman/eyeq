@@ -1,5 +1,5 @@
 import { ScanAnalysis } from "@/types/scan";
-import { DiseaseRiskBar } from "@/components/DiseaseRiskBar";
+import { Eye, Microscope, BookOpen, ExternalLink } from "lucide-react";
 
 interface TextualAnalysisProps {
   scan: ScanAnalysis;
@@ -9,33 +9,104 @@ export function TextualAnalysis({ scan }: TextualAnalysisProps) {
   const highRiskDiseases = scan.diseases.filter(d => d.probability >= 70);
   const hasHighRisk = highRiskDiseases.length > 0;
 
+  const getColor = (probability: number) => {
+    if (probability >= 70) return '#ef4444';
+    if (probability >= 40) return '#f59e0b';
+    return '#22c55e';
+  };
+
+  const getBgColor = (probability: number) => {
+    if (probability >= 70) return '#fef2f2';
+    if (probability >= 40) return '#fffbeb';
+    return '#f0fdf4';
+  };
+
+  const getSourceIcon = (source?: 'fundus' | 'oct' | 'both') => {
+    if (source === 'oct') return <Microscope size={14} style={{ color: '#1d4ed8' }} />;
+    if (source === 'both') return (
+      <div style={{ display: 'flex', gap: '4px' }}>
+        <Eye size={14} style={{ color: '#0891b2' }} />
+        <Microscope size={14} style={{ color: '#1d4ed8' }} />
+      </div>
+    );
+    return <Eye size={14} style={{ color: '#0891b2' }} />;
+  };
+
+  const getSourceLabel = (source?: 'fundus' | 'oct' | 'both') => {
+    if (source === 'oct') return 'Detected from OCT';
+    if (source === 'both') return 'Detected from Fundus & OCT';
+    return 'Detected from Fundus';
+  };
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', height: '100%' }}>
-      {/* Image Display */}
-      <div style={{ 
-        backgroundColor: 'white', 
-        border: '1px solid #e5e7eb', 
-        borderRadius: '12px', 
-        padding: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        <h3 style={{ fontWeight: 600, marginBottom: '16px', color: '#111' }}>Scan Image</h3>
+    <div style={{ display: 'grid', gridTemplateColumns: scan.linkedOctUrl ? '1fr 1fr' : '1fr 2fr', gap: '24px', height: '100%' }}>
+      {/* Images Display */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Fundus Image */}
         <div style={{ 
-          flex: 1, 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          backgroundColor: '#f3f4f6', 
-          borderRadius: '8px',
-          overflow: 'hidden',
+          backgroundColor: 'white', 
+          border: '1px solid #e5e7eb', 
+          borderRadius: '12px', 
+          padding: '16px',
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
         }}>
-          <img
-            src={scan.imageUrl}
-            alt={scan.name}
-            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <Eye size={18} style={{ color: '#0891b2' }} />
+            <h3 style={{ fontWeight: 600, color: '#111', fontSize: '14px' }}>Fundus Image</h3>
+          </div>
+          <div style={{ 
+            flex: 1, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            backgroundColor: '#f3f4f6', 
+            borderRadius: '8px',
+            overflow: 'hidden',
+            minHeight: '200px',
+          }}>
+            <img
+              src={scan.imageUrl}
+              alt="Fundus"
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            />
+          </div>
         </div>
+
+        {/* OCT Image (if available) */}
+        {scan.linkedOctUrl && (
+          <div style={{ 
+            backgroundColor: 'white', 
+            border: '1px solid #e5e7eb', 
+            borderRadius: '12px', 
+            padding: '16px',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <Microscope size={18} style={{ color: '#1d4ed8' }} />
+              <h3 style={{ fontWeight: 600, color: '#111', fontSize: '14px' }}>OCT Scan</h3>
+            </div>
+            <div style={{ 
+              flex: 1, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              backgroundColor: '#f3f4f6', 
+              borderRadius: '8px',
+              overflow: 'hidden',
+              minHeight: '200px',
+            }}>
+              <img
+                src={scan.linkedOctUrl}
+                alt="OCT"
+                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Analysis Results */}
@@ -56,15 +127,114 @@ export function TextualAnalysis({ scan }: TextualAnalysisProps) {
           <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.6 }}>
             {scan.summary}
           </p>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+            <span style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '4px', 
+              fontSize: '12px', 
+              color: '#0891b2',
+              backgroundColor: '#ecfeff',
+              padding: '4px 8px',
+              borderRadius: '6px',
+            }}>
+              <Eye size={12} /> Fundus analyzed
+            </span>
+            {scan.linkedOctUrl && (
+              <span style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '4px', 
+                fontSize: '12px', 
+                color: '#1d4ed8',
+                backgroundColor: '#dbeafe',
+                padding: '4px 8px',
+                borderRadius: '6px',
+              }}>
+                <Microscope size={12} /> OCT analyzed
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Disease List */}
+        {/* Detected Conditions with Justifications */}
         <div>
           <h3 style={{ fontWeight: 600, marginBottom: '12px', color: '#111' }}>Detected Conditions</h3>
           {scan.diseases.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {scan.diseases.map((disease, index) => (
-                <DiseaseRiskBar key={index} disease={disease} />
+                <div key={index} style={{ 
+                  backgroundColor: 'white', 
+                  border: '1px solid #e5e7eb', 
+                  borderRadius: '12px', 
+                  padding: '16px',
+                  borderLeft: `4px solid ${getColor(disease.probability)}`,
+                }}>
+                  {/* Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                    <div>
+                      <h4 style={{ fontWeight: 600, color: '#111', marginBottom: '4px' }}>{disease.name}</h4>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {getSourceIcon(disease.detectedFrom)}
+                        <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                          {getSourceLabel(disease.detectedFrom)}
+                        </span>
+                      </div>
+                    </div>
+                    <span style={{ 
+                      padding: '6px 12px', 
+                      borderRadius: '16px', 
+                      fontSize: '14px', 
+                      fontWeight: 600, 
+                      backgroundColor: getBgColor(disease.probability), 
+                      color: getColor(disease.probability) 
+                    }}>
+                      {disease.probability}%
+                    </span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div style={{ height: '8px', backgroundColor: '#e5e7eb', borderRadius: '4px', overflow: 'hidden', marginBottom: '12px' }}>
+                    <div style={{ width: `${disease.probability}%`, height: '100%', backgroundColor: getColor(disease.probability), borderRadius: '4px' }} />
+                  </div>
+
+                  {/* Description */}
+                  <p style={{ fontSize: '13px', color: '#374151', marginBottom: '12px' }}>
+                    {disease.description}
+                  </p>
+
+                  {/* Justification */}
+                  {disease.justification && (
+                    <div style={{ 
+                      backgroundColor: '#f8fafc', 
+                      borderRadius: '8px', 
+                      padding: '12px',
+                      marginBottom: '12px',
+                    }}>
+                      <h5 style={{ fontSize: '12px', fontWeight: 600, color: '#374151', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <BookOpen size={12} /> AI Justification
+                      </h5>
+                      <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: 1.6 }}>
+                        {disease.justification}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* References */}
+                  {disease.references && disease.references.length > 0 && (
+                    <div>
+                      <h5 style={{ fontSize: '12px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>References</h5>
+                      <ul style={{ margin: 0, paddingLeft: '16px' }}>
+                        {disease.references.map((ref, refIndex) => (
+                          <li key={refIndex} style={{ fontSize: '11px', color: '#6b7280', marginBottom: '4px', display: 'flex', alignItems: 'flex-start', gap: '4px' }}>
+                            <ExternalLink size={10} style={{ marginTop: '3px', flexShrink: 0 }} />
+                            <span>{ref}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           ) : (
