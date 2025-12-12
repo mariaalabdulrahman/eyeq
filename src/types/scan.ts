@@ -19,6 +19,7 @@ export interface ScanAnalysis {
   linkedOctId?: string; // Optional linked OCT scan
   linkedOctUrl?: string;
   linkedOctName?: string;
+  eyeSide?: 'left' | 'right'; // Which eye the scan is from
 }
 
 export interface Patient {

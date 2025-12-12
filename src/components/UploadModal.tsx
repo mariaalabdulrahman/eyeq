@@ -6,7 +6,7 @@ import { getImagePreviewUrl } from "@/lib/tifUtils";
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (fundusFile: File, octFile?: File, patientId?: string, newPatientName?: string) => void;
+  onUpload: (fundusFile: File, octFile?: File, patientId?: string, newPatientName?: string, eyeSide?: 'left' | 'right') => void;
   patients: Patient[];
 }
 
@@ -19,6 +19,7 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
   const [patientOption, setPatientOption] = useState<'none' | 'existing' | 'new'>('none');
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [newPatientName, setNewPatientName] = useState<string>('');
+  const [eyeSide, setEyeSide] = useState<'left' | 'right'>('right');
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -70,7 +71,7 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
     if (fundusFile) {
       const patientId = patientOption === 'existing' ? selectedPatientId : undefined;
       const patientName = patientOption === 'new' ? newPatientName : undefined;
-      onUpload(fundusFile, octFile || undefined, patientId, patientName);
+      onUpload(fundusFile, octFile || undefined, patientId, patientName, eyeSide);
       resetForm();
       onClose();
     }
@@ -84,6 +85,7 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
     setPatientOption('none');
     setSelectedPatientId('');
     setNewPatientName('');
+    setEyeSide('right');
   };
 
   const handleClose = () => {
@@ -265,6 +267,57 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
               }}
             />
           )}
+        </div>
+
+        {/* Eye Side Selection */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '12px', color: '#374151' }}>
+            Eye Side
+          </label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setEyeSide('right')}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: eyeSide === 'right' ? '2px solid #0891b2' : '1px solid #e5e7eb',
+                backgroundColor: eyeSide === 'right' ? '#ecfeff' : '#f9fafb',
+                color: eyeSide === 'right' ? '#0891b2' : '#6b7280',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '13px',
+              }}
+            >
+              <Eye size={16} />
+              Right Eye (OD)
+            </button>
+            <button
+              onClick={() => setEyeSide('left')}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: eyeSide === 'left' ? '2px solid #0891b2' : '1px solid #e5e7eb',
+                backgroundColor: eyeSide === 'left' ? '#ecfeff' : '#f9fafb',
+                color: eyeSide === 'left' ? '#0891b2' : '#6b7280',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '13px',
+              }}
+            >
+              <Eye size={16} />
+              Left Eye (OS)
+            </button>
+          </div>
         </div>
 
         {/* Upload Areas */}

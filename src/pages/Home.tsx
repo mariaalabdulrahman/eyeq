@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Upload, ScanLine, FolderOpen, GitCompare, BarChart3, Stethoscope } from "lucide-react";
 import Logo from "@/components/Logo";
+import kkeshLogo from "@/assets/kkesh-logo.png";
 
 import aiBrainImg from "@/assets/ai-brain.png";
 import eyeScanImg from "@/assets/eye-scan.png";
@@ -53,7 +54,8 @@ const Home = () => {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100vh",
+        maxHeight: "100vh",
         backgroundColor: "#ffffff",
         display: "flex",
         flexDirection: "column",
@@ -148,10 +150,15 @@ const Home = () => {
       />
 
       {/* Header */}
-      <header style={{ padding: "24px 32px", position: "relative", zIndex: 10 }}>
+      <header style={{ padding: "16px 24px", position: "relative", zIndex: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
-          <Logo size={40} />
+          <Logo size={36} />
         </div>
+        <img 
+          src={kkeshLogo} 
+          alt="King Khaled Eye Specialist Hospital" 
+          style={{ height: "50px", objectFit: "contain" }}
+        />
       </header>
 
       {/* Main Content */}
@@ -162,8 +169,8 @@ const Home = () => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: "0 32px",
-          marginTop: "-40px",
+          padding: "0 24px",
+          marginTop: "-20px",
           position: "relative",
           zIndex: 10,
         }}
@@ -171,21 +178,21 @@ const Home = () => {
         {/* Title */}
         <h2
           style={{
-            fontSize: "48px",
+            fontSize: "36px",
             fontWeight: 700,
             color: "#111",
-            marginBottom: "16px",
+            marginBottom: "10px",
             textAlign: "center",
           }}
         >
           Intelligent Eye Analysis
         </h2>
-        <p style={{ fontSize: "18px", color: "#6b7280", marginBottom: "60px", textAlign: "center", maxWidth: "600px" }}>
+        <p style={{ fontSize: "15px", color: "#6b7280", marginBottom: "30px", textAlign: "center", maxWidth: "500px" }}>
           Advanced AI-powered medical imaging analysis for OCT and Fundus scans
         </p>
 
         {/* Big Eye - Just the eyeball */}
-        <div ref={containerRef} style={{ position: "relative", width: "400px", height: "400px" }}>
+        <div ref={containerRef} style={{ position: "relative", width: "300px", height: "300px" }}>
           {/* Outer Glow */}
           <div
             style={{
@@ -373,7 +380,7 @@ const Home = () => {
 
           {/* Feature Buttons Around Eye - Left and Right sides */}
           {features.map((feature, index) => {
-            const radius = 280;
+            const radius = 210;
             const angleRad = (feature.angle * Math.PI) / 180;
             const x = Math.cos(angleRad) * radius;
             const y = Math.sin(angleRad) * radius;
@@ -432,11 +439,11 @@ const Home = () => {
         <button
           onClick={() => navigate("/dashboard")}
           style={{
-            marginTop: "100px",
-            padding: "16px 40px",
-            fontSize: "18px",
+            marginTop: "50px",
+            padding: "14px 36px",
+            fontSize: "16px",
             fontWeight: 600,
-            borderRadius: "12px",
+            borderRadius: "10px",
             border: "none",
             backgroundColor: "#0891b2",
             color: "white",
@@ -462,15 +469,15 @@ const Home = () => {
       {/* Footer */}
       <footer
         style={{
-          padding: "24px 32px",
+          padding: "16px 24px",
           textAlign: "center",
-          fontSize: "14px",
+          fontSize: "13px",
           color: "#6b7280",
           position: "relative",
           zIndex: 10,
         }}
       >
-        <p>2024 LucidEye Technologies. All rights reserved.</p>
+        <p>© 2025 LucidEye Technologies. All rights reserved.</p>
       </footer>
 
       {/* CSS Animations */}
