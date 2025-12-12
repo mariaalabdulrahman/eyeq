@@ -184,7 +184,7 @@ const LLMChat = () => {
     {
       id: '1',
       role: 'assistant',
-      content: `## Welcome to EyeQ Medical Knowledge Assistant\n\nI can help you explore the connections between **ocular diseases** and **systemic conditions**. All responses include peer-reviewed references.\n\n### Try asking:\n- "What systemic diseases are linked to diabetic retinopathy?"\n- "Show me a chart of glaucoma associations"\n- "What are the cardiovascular implications of hypertensive retinopathy?"\n- "Explain the connection between papilledema and neurological conditions"`,
+      content: `## Welcome to Eye-GPT\n\nI can help you explore the connections between **ocular diseases** and **systemic conditions**. All responses include peer-reviewed references.\n\n### Try asking:\n- "What systemic diseases are linked to diabetic retinopathy?"\n- "Show me a chart of glaucoma associations"\n- "What are the cardiovascular implications of hypertensive retinopathy?"\n- "Explain the connection between papilledema and neurological conditions"`,
     }
   ]);
   const [input, setInput] = useState("");
@@ -248,7 +248,7 @@ const LLMChat = () => {
               <MessageCircle size={18} color="#2563eb" />
             </div>
             <div>
-              <h1 style={{ fontSize: '16px', fontWeight: 600, color: '#111', margin: 0 }}>Medical Knowledge Assistant</h1>
+              <h1 style={{ fontSize: '16px', fontWeight: 600, color: '#111', margin: 0 }}>Eye-GPT</h1>
               <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Ocular-Systemic Disease Links</p>
             </div>
           </div>
@@ -271,6 +271,38 @@ const LLMChat = () => {
           Back to Home
         </button>
       </header>
+
+      {/* Large Logo Section */}
+      {messages.length <= 1 && (
+        <div style={{ 
+          padding: '40px 24px', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          backgroundColor: 'white',
+          borderBottom: '1px solid #e5e7eb',
+        }}>
+          <Logo size={120} />
+          <h1 style={{ 
+            fontSize: '36px', 
+            fontWeight: 700, 
+            color: '#0891b2', 
+            marginTop: '16px',
+            letterSpacing: '-0.5px',
+          }}>
+            Eye-GPT
+          </h1>
+          <p style={{ 
+            fontSize: '16px', 
+            color: '#6b7280', 
+            marginTop: '8px',
+            textAlign: 'center',
+            maxWidth: '500px',
+          }}>
+            Your AI assistant for exploring ocular-systemic disease connections with peer-reviewed references
+          </p>
+        </div>
+      )}
 
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
@@ -295,7 +327,7 @@ const LLMChat = () => {
                 {message.role === 'assistant' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                     <Bot size={18} color="#0891b2" />
-                    <span style={{ fontWeight: 600, color: '#0891b2', fontSize: '13px' }}>EyeQ Assistant</span>
+                    <span style={{ fontWeight: 600, color: '#0891b2', fontSize: '13px' }}>Eye-GPT</span>
                     <Sparkles size={14} color="#f59e0b" />
                   </div>
                 )}
