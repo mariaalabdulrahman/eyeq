@@ -399,13 +399,6 @@ const LLMChat = () => {
                   color: message.role === 'user' ? 'white' : '#374151',
                   boxShadow: message.role === 'assistant' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
                 }}>
-                  {message.role === 'assistant' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                      <Logo size={20} />
-                      <span style={{ fontWeight: 600, color: '#0891b2', fontSize: '13px' }}>Eye-GPT</span>
-                      <Sparkles size={14} color="#f59e0b" />
-                    </div>
-                  )}
                   
                   <div 
                     style={{ 
@@ -516,7 +509,6 @@ const LLMChat = () => {
             padding: '4px 4px 4px 16px',
             border: '1px solid #e5e7eb',
           }}>
-            <Logo size={20} />
             <input
               type="text"
               value={input}
