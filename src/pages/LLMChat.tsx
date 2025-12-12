@@ -15,7 +15,7 @@ interface Message {
 // Knowledge base of ocular-systemic disease links with references
 const OCULAR_SYSTEMIC_KNOWLEDGE: Record<string, { systemic: string[]; description: string; references: string[] }> = {
   "diabetic retinopathy": {
-    systemic: ["Cardiovascular Disease", "Chronic Kidney Disease", "Stroke", "Peripheral Neuropathy", "Heart Failure"],
+    systemic: ["Cardiovascular Disease", "Stroke", "Peripheral Neuropathy", "Heart Failure"],
     description: "Diabetic retinopathy is strongly associated with systemic vascular complications. The microvascular damage seen in the retina reflects similar changes throughout the body.",
     references: [
       "Cheung N, et al. Diabetic retinopathy and systemic vascular complications. Lancet. 2010;376(9735):124-36",
@@ -42,7 +42,7 @@ const OCULAR_SYSTEMIC_KNOWLEDGE: Record<string, { systemic: string[]; descriptio
     ]
   },
   "hypertensive retinopathy": {
-    systemic: ["Stroke", "Heart Failure", "Chronic Kidney Disease", "Coronary Heart Disease", "Cognitive Decline"],
+    systemic: ["Stroke", "Heart Failure", "Coronary Heart Disease", "Cognitive Decline"],
     description: "Retinal vascular changes in hypertension mirror systemic vascular damage and are strong predictors of cardiovascular events.",
     references: [
       "Wong TY, et al. Hypertensive retinopathy. N Engl J Med. 2004;351(22):2310-7",
@@ -146,9 +146,9 @@ const generateResponse = (userMessage: string): Message => {
     responseContent = `<h2>Ocular-Systemic Disease Relationships</h2>`;
     responseContent += `<p>The eye provides a unique window into systemic health. Many ocular conditions are associated with systemic diseases:</p>`;
     responseContent += `<ul>`;
-    responseContent += `<li><strong>Diabetic Retinopathy</strong> → Cardiovascular disease, kidney disease, stroke</li>`;
+    responseContent += `<li><strong>Diabetic Retinopathy</strong> → Cardiovascular disease, stroke, peripheral neuropathy</li>`;
     responseContent += `<li><strong>Glaucoma</strong> → Alzheimer's disease, sleep apnea, cardiovascular disease</li>`;
-    responseContent += `<li><strong>Hypertensive Retinopathy</strong> → Stroke, heart failure, kidney disease</li>`;
+    responseContent += `<li><strong>Hypertensive Retinopathy</strong> → Stroke, heart failure, coronary heart disease</li>`;
     responseContent += `<li><strong>AMD</strong> → Cardiovascular disease, Alzheimer's disease</li>`;
     responseContent += `<li><strong>Papilledema</strong> → Intracranial hypertension, brain tumors</li>`;
     responseContent += `</ul>`;

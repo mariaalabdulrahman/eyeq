@@ -58,7 +58,6 @@ const PREDEFINED_TAGS = {
     "Multiple Sclerosis",
     "Sarcoidosis",
     "Anemia",
-    "Kidney Disease",
     "Liver Disease",
     "Cancer",
     "HIV/AIDS",
