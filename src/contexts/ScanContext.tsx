@@ -45,113 +45,40 @@ const STORAGE_KEY = "eyeq_patients";
 const SCANS_STORAGE_KEY = "eyeq_scans";
 
 const generateMockDiseases = (hasOct: boolean): Disease[] => {
-  const fundusDiseases: Disease[] = [
-    {
-      name: "Diabetic Retinopathy",
-      probability: Math.floor(Math.random() * 45) + 15,
-      severity: "medium",
-      description: "Microaneurysms and hemorrhages visible in fundus photography.",
-      detectedFrom: "fundus",
-      justification:
-        "The AI detected multiple microaneurysms and dot-blot hemorrhages in the posterior pole region of the fundus image. The pattern and distribution are consistent with early non-proliferative diabetic retinopathy.",
-      references: [
-        "Early Treatment Diabetic Retinopathy Study (ETDRS), Ophthalmology 1991",
-        "AAO Preferred Practice Pattern: Diabetic Retinopathy, 2019",
-      ],
-    },
-    {
-      name: "Glaucoma",
-      probability: Math.floor(Math.random() * 35) + 10,
-      severity: "low",
-      description: "Optic disc cupping and nerve fiber layer changes detected.",
-      detectedFrom: hasOct ? "both" : "fundus",
-      justification: hasOct
-        ? "The fundus image shows an increased cup-to-disc ratio (0.7), and the OCT confirms retinal nerve fiber layer (RNFL) thinning in the inferior and superior quadrants."
-        : "The fundus image reveals an increased cup-to-disc ratio with associated peripapillary atrophy. OCT imaging would provide additional RNFL thickness measurements for confirmation.",
-      references: [
-        "American Academy of Ophthalmology Glaucoma Guidelines, 2020",
-        "European Glaucoma Society Terminology and Guidelines, 5th Ed",
-      ],
-    },
+  // Return the same diseases as John Smith's left eye first visit
+  const diseases: Disease[] = [
     {
       name: "Hypertensive Retinopathy",
-      probability: Math.floor(Math.random() * 30) + 5,
-      severity: "low",
-      description: "Arteriovenous nicking and vessel wall changes observed.",
+      probability: 72,
+      severity: "high",
+      description: "Moderate hypertensive retinopathy with arteriovenous nicking and vessel wall changes.",
       detectedFrom: "fundus",
       justification:
-        "Arteriovenous nicking at multiple crossing points and focal arteriolar narrowing are visible in the fundus image, consistent with Grade II hypertensive retinopathy according to the Keith-Wagener-Barker classification.",
+        "Arteriovenous nicking at multiple crossing points and focal arteriolar narrowing visible. Copper-wiring appearance of arterioles detected.",
       references: [
-        "Keith NM, Wagener HP, Barker NW. Hypertensive Retinopathy. Am J Med Sci 1939",
         "Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004",
-      ],
-    },
-    {
-      name: "Papilledema",
-      probability: Math.floor(Math.random() * 20),
-      severity: "low",
-      description: "Optic disc swelling potentially indicating increased intracranial pressure.",
-      detectedFrom: "fundus",
-      justification:
-        "The fundus image shows blurring of the optic disc margins with obscuration of blood vessels at the disc edge. The disc appears hyperemic with mild elevation.",
-      references: [
-        "Friedman DI, Jacobson DM. Papilledema. UpToDate 2023",
-        "OCT Substudy Committee for NORDIC Idiopathic Intracranial Hypertension Study Group, 2015",
+        "Keith-Wagener-Barker Classification",
       ],
     },
   ];
 
   if (hasOct) {
-    fundusDiseases.push(
-      {
-        name: "Diabetic Macular Edema",
-        probability: Math.floor(Math.random() * 40) + 10,
-        severity: "low",
-        description: "Fluid accumulation in the macula detected via cross-sectional imaging.",
-        detectedFrom: "oct",
-        justification:
-          "The OCT B-scan reveals intraretinal fluid pockets and cystoid spaces in the macular region. Central retinal thickness is elevated above normal limits (>300μm), confirming center-involving diabetic macular edema.",
-        references: [
-          "DRCR.net Protocol T: Anti-VEGF Treatment for DME, NEJM 2015",
-          "International Council of Ophthalmology DME Guidelines, 2017",
-        ],
-      },
-      {
-        name: "Age-Related Macular Degeneration",
-        probability: Math.floor(Math.random() * 50) + 20,
-        severity: "medium",
-        description: "Drusen deposits and RPE changes visible in OCT layers.",
-        detectedFrom: "both",
-        justification:
-          "Multiple soft drusen are visible in the fundus image as yellow-white deposits. The OCT confirms these as RPE-basal laminar deposits with associated RPE irregularity. No subretinal fluid or CNV is detected, consistent with intermediate dry AMD.",
-        references: [
-          "Age-Related Eye Disease Study (AREDS) Classification, Ophthalmology 2001",
-          "Ferris FL et al. Clinical Classification of AMD. Ophthalmology 2013",
-        ],
-      },
-      {
-        name: "Epiretinal Membrane",
-        probability: Math.floor(Math.random() * 30) + 5,
-        severity: "low",
-        description: "Thin membrane on retinal surface causing mild distortion.",
-        detectedFrom: "oct",
-        justification:
-          "The OCT clearly demonstrates a hyperreflective line on the inner retinal surface with associated retinal wrinkling and loss of the foveal depression, consistent with an epiretinal membrane.",
-        references: [
-          "Govetto A et al. OCT Analysis of the Epiretinal Membrane. Ophthalmology 2018",
-          "Duker JS. Epiretinal Membranes. Retina, 5th Ed, Elsevier 2013",
-        ],
-      },
-    );
+    diseases.push({
+      name: "Retinal Fluid",
+      probability: 58,
+      severity: "medium",
+      description: "Subretinal and intraretinal fluid accumulation detected in OCT imaging.",
+      detectedFrom: "oct",
+      justification:
+        "OCT B-scan reveals hyporeflective spaces indicative of fluid accumulation in the outer retinal layers, likely secondary to hypertensive vascular changes.",
+      references: [
+        "Hayreh SS. Hypertensive retinopathy. Ophthalmologica 1989",
+        "Fraser-Bell S, et al. Retinal fluid in hypertensive retinopathy. Eye 2008",
+      ],
+    });
   }
 
-  return fundusDiseases
-    .sort(() => Math.random() - 0.5)
-    .slice(0, Math.floor(Math.random() * 3) + 2)
-    .map((d) => ({
-      ...d,
-      severity: d.probability >= 70 ? "high" : d.probability >= 40 ? "medium" : ("low" as const),
-    }));
+  return diseases;
 };
 
 const generateSummary = (diseases: Disease[]): string => {
