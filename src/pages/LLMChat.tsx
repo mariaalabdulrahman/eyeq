@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, MessageCircle, Bot, Sparkles, AlertCircle, BookOpen, BarChart3 } from "lucide-react";
+import { Send, ArrowLeft, Sparkles, BookOpen, BarChart3 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
@@ -90,6 +90,15 @@ const OCULAR_SYSTEMIC_KNOWLEDGE: Record<string, { systemic: string[]; descriptio
 
 const COLORS = ['#0891b2', '#059669', '#7c3aed', '#dc2626', '#f59e0b', '#ec4899'];
 
+const SAMPLE_QUESTIONS = [
+  "What systemic diseases are linked to diabetic retinopathy?",
+  "Show me a chart of glaucoma associations",
+  "What are the cardiovascular implications of hypertensive retinopathy?",
+  "Explain the connection between papilledema and neurological conditions",
+  "How is AMD related to Alzheimer's disease?",
+  "What systemic conditions cause optic neuritis?",
+];
+
 const generateResponse = (userMessage: string): Message => {
   const lowerMessage = userMessage.toLowerCase();
   let responseContent = "";
@@ -114,12 +123,15 @@ const generateResponse = (userMessage: string): Message => {
 
   if (foundDisease) {
     const knowledge = OCULAR_SYSTEMIC_KNOWLEDGE[foundDisease];
-    responseContent = `## ${foundDisease.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} and Systemic Disease Links\n\n`;
-    responseContent += `${knowledge.description}\n\n`;
-    responseContent += `### Associated Systemic Conditions:\n`;
-    knowledge.systemic.forEach((condition, i) => {
-      responseContent += `${i + 1}. **${condition}**\n`;
+    const diseaseName = foundDisease.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    
+    responseContent = `<h2>${diseaseName} and Systemic Disease Links</h2>`;
+    responseContent += `<p>${knowledge.description}</p>`;
+    responseContent += `<h3>Associated Systemic Conditions:</h3><ol>`;
+    knowledge.systemic.forEach((condition) => {
+      responseContent += `<li><strong>${condition}</strong></li>`;
     });
+    responseContent += `</ol>`;
     
     references = knowledge.references;
     
@@ -131,27 +143,31 @@ const generateResponse = (userMessage: string): Message => {
       }));
     }
   } else if (isAskingAboutLinks) {
-    responseContent = `## Ocular-Systemic Disease Relationships\n\n`;
-    responseContent += `The eye provides a unique window into systemic health. Many ocular conditions are associated with systemic diseases:\n\n`;
-    responseContent += `- **Diabetic Retinopathy** → Cardiovascular disease, kidney disease, stroke\n`;
-    responseContent += `- **Glaucoma** → Alzheimer's disease, sleep apnea, cardiovascular disease\n`;
-    responseContent += `- **Hypertensive Retinopathy** → Stroke, heart failure, kidney disease\n`;
-    responseContent += `- **AMD** → Cardiovascular disease, Alzheimer's disease\n`;
-    responseContent += `- **Papilledema** → Intracranial hypertension, brain tumors\n\n`;
-    responseContent += `Ask me about a specific ocular condition for detailed information and references.`;
+    responseContent = `<h2>Ocular-Systemic Disease Relationships</h2>`;
+    responseContent += `<p>The eye provides a unique window into systemic health. Many ocular conditions are associated with systemic diseases:</p>`;
+    responseContent += `<ul>`;
+    responseContent += `<li><strong>Diabetic Retinopathy</strong> → Cardiovascular disease, kidney disease, stroke</li>`;
+    responseContent += `<li><strong>Glaucoma</strong> → Alzheimer's disease, sleep apnea, cardiovascular disease</li>`;
+    responseContent += `<li><strong>Hypertensive Retinopathy</strong> → Stroke, heart failure, kidney disease</li>`;
+    responseContent += `<li><strong>AMD</strong> → Cardiovascular disease, Alzheimer's disease</li>`;
+    responseContent += `<li><strong>Papilledema</strong> → Intracranial hypertension, brain tumors</li>`;
+    responseContent += `</ul>`;
+    responseContent += `<p>Ask me about a specific ocular condition for detailed information and references.</p>`;
     
     references = [
       "Wong TY, et al. The eye in hypertension. Lancet. 2007;369(9559):425-35",
       "Cheung N, et al. Retinal vascular image analysis for cardiovascular disease risk. Prog Retin Eye Res. 2009;28(6):438-52"
     ];
   } else if (lowerMessage.includes("reference") || lowerMessage.includes("evidence") || lowerMessage.includes("study")) {
-    responseContent = `## Key References in Ocular-Systemic Medicine\n\n`;
-    responseContent += `Here are foundational studies linking ocular and systemic diseases:\n\n`;
-    responseContent += `1. **ETDRS Study** - Established classification of diabetic retinopathy\n`;
-    responseContent += `2. **Beaver Dam Eye Study** - Long-term population study on eye diseases\n`;
-    responseContent += `3. **Blue Mountains Eye Study** - Cardiovascular and retinal disease links\n`;
-    responseContent += `4. **AREDS Studies** - Age-related macular degeneration research\n\n`;
-    responseContent += `Ask about a specific condition for targeted references.`;
+    responseContent = `<h2>Key References in Ocular-Systemic Medicine</h2>`;
+    responseContent += `<p>Here are foundational studies linking ocular and systemic diseases:</p>`;
+    responseContent += `<ol>`;
+    responseContent += `<li><strong>ETDRS Study</strong> - Established classification of diabetic retinopathy</li>`;
+    responseContent += `<li><strong>Beaver Dam Eye Study</strong> - Long-term population study on eye diseases</li>`;
+    responseContent += `<li><strong>Blue Mountains Eye Study</strong> - Cardiovascular and retinal disease links</li>`;
+    responseContent += `<li><strong>AREDS Studies</strong> - Age-related macular degeneration research</li>`;
+    responseContent += `</ol>`;
+    responseContent += `<p>Ask about a specific condition for targeted references.</p>`;
     
     references = [
       "ETDRS Research Group. Early photocoagulation for diabetic retinopathy. Ophthalmology. 1991;98(5):766-85",
@@ -159,14 +175,16 @@ const generateResponse = (userMessage: string): Message => {
       "Mitchell P, et al. Prevalence of age-related maculopathy in Australia. Ophthalmology. 1995;102(10):1450-60"
     ];
   } else {
-    responseContent = `I can help you understand the links between ocular and systemic diseases. Here are some topics I can discuss:\n\n`;
-    responseContent += `- **Diabetic Retinopathy** and its systemic associations\n`;
-    responseContent += `- **Glaucoma** and neurological/cardiovascular connections\n`;
-    responseContent += `- **Age-Related Macular Degeneration** and systemic risk factors\n`;
-    responseContent += `- **Hypertensive Retinopathy** as a marker of systemic disease\n`;
-    responseContent += `- **Papilledema** and neurological emergencies\n`;
-    responseContent += `- **Retinitis Pigmentosa** and associated syndromes\n\n`;
-    responseContent += `Try asking: *"What systemic diseases are linked to diabetic retinopathy?"* or *"Show me a chart of glaucoma associations"*`;
+    responseContent = `<p>I can help you understand the links between ocular and systemic diseases. Here are some topics I can discuss:</p>`;
+    responseContent += `<ul>`;
+    responseContent += `<li><strong>Diabetic Retinopathy</strong> and its systemic associations</li>`;
+    responseContent += `<li><strong>Glaucoma</strong> and neurological/cardiovascular connections</li>`;
+    responseContent += `<li><strong>Age-Related Macular Degeneration</strong> and systemic risk factors</li>`;
+    responseContent += `<li><strong>Hypertensive Retinopathy</strong> as a marker of systemic disease</li>`;
+    responseContent += `<li><strong>Papilledema</strong> and neurological emergencies</li>`;
+    responseContent += `<li><strong>Retinitis Pigmentosa</strong> and associated syndromes</li>`;
+    responseContent += `</ul>`;
+    responseContent += `<p><em>Try asking: "What systemic diseases are linked to diabetic retinopathy?" or "Show me a chart of glaucoma associations"</em></p>`;
   }
 
   return {
@@ -180,13 +198,7 @@ const generateResponse = (userMessage: string): Message => {
 
 const LLMChat = () => {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: `## Welcome to Eye-GPT\n\nI can help you explore the connections between **ocular diseases** and **systemic conditions**. All responses include peer-reviewed references.\n\n### Try asking:\n- "What systemic diseases are linked to diabetic retinopathy?"\n- "Show me a chart of glaucoma associations"\n- "What are the cardiovascular implications of hypertensive retinopathy?"\n- "Explain the connection between papilledema and neurological conditions"`,
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -199,13 +211,14 @@ const LLMChat = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim() || isLoading) return;
+  const handleSend = (messageText?: string) => {
+    const textToSend = messageText || input.trim();
+    if (!textToSend || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input.trim()
+      content: textToSend
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -219,6 +232,12 @@ const LLMChat = () => {
       setIsLoading(false);
     }, 800);
   };
+
+  const handleSampleQuestion = (question: string) => {
+    handleSend(question);
+  };
+
+  const isLandingView = messages.length === 0;
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc' }}>
@@ -236,17 +255,7 @@ const LLMChat = () => {
             <Logo size={40} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              backgroundColor: '#dbeafe',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <MessageCircle size={18} color="#2563eb" />
-            </div>
+            <Logo size={28} />
             <div>
               <h1 style={{ fontSize: '16px', fontWeight: 600, color: '#111', margin: 0 }}>Eye-GPT</h1>
               <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Ocular-Systemic Disease Links</p>
@@ -272,164 +281,190 @@ const LLMChat = () => {
         </button>
       </header>
 
-      {/* Large Logo Section */}
-      {messages.length <= 1 && (
-        <div style={{ 
-          padding: '40px 24px', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center',
-          backgroundColor: 'white',
-          borderBottom: '1px solid #e5e7eb',
-        }}>
-          <Logo size={120} />
+      {/* Landing View */}
+      {isLandingView ? (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+          <Logo size={140} />
           <h1 style={{ 
-            fontSize: '36px', 
+            fontSize: '48px', 
             fontWeight: 700, 
             color: '#0891b2', 
-            marginTop: '16px',
-            letterSpacing: '-0.5px',
+            marginTop: '24px',
+            letterSpacing: '-1px',
           }}>
             Eye-GPT
           </h1>
           <p style={{ 
-            fontSize: '16px', 
+            fontSize: '18px', 
             color: '#6b7280', 
-            marginTop: '8px',
+            marginTop: '12px',
             textAlign: 'center',
-            maxWidth: '500px',
+            maxWidth: '600px',
           }}>
             Your AI assistant for exploring ocular-systemic disease connections with peer-reviewed references
           </p>
-        </div>
-      )}
 
-      {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              style={{
-                display: 'flex',
-                justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start',
-                marginBottom: '20px',
-              }}
-            >
-              <div style={{
-                maxWidth: '80%',
-                padding: '16px 20px',
-                borderRadius: '16px',
-                backgroundColor: message.role === 'user' ? '#0891b2' : 'white',
-                color: message.role === 'user' ? 'white' : '#374151',
-                boxShadow: message.role === 'assistant' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-              }}>
-                {message.role === 'assistant' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                    <Bot size={18} color="#0891b2" />
-                    <span style={{ fontWeight: 600, color: '#0891b2', fontSize: '13px' }}>Eye-GPT</span>
-                    <Sparkles size={14} color="#f59e0b" />
-                  </div>
-                )}
-                
-                <div 
-                  style={{ 
-                    fontSize: '14px', 
-                    lineHeight: 1.7,
-                    whiteSpace: 'pre-wrap',
-                  }}
-                  dangerouslySetInnerHTML={{ 
-                    __html: message.content
-                      .replace(/## (.*?)\n/g, '<h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #111;">$1</h3>')
-                      .replace(/### (.*?)\n/g, '<h4 style="font-size: 15px; font-weight: 600; margin: 16px 0 8px; color: #374151;">$1</h4>')
-                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                      .replace(/- (.*?)(?:\n|$)/g, '<li style="margin-left: 16px; margin-bottom: 4px;">$1</li>')
-                  }}
-                />
-
-                {/* Chart */}
-                {message.chart && (
-                  <div style={{ 
-                    marginTop: '20px', 
-                    padding: '16px', 
-                    backgroundColor: '#f9fafb', 
+          {/* Sample Questions */}
+          <div style={{ marginTop: '48px', maxWidth: '800px', width: '100%' }}>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '16px', textAlign: 'center' }}>
+              Try asking:
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+              {SAMPLE_QUESTIONS.map((question, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSampleQuestion(question)}
+                  style={{
+                    padding: '16px 20px',
                     borderRadius: '12px',
                     border: '1px solid #e5e7eb',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                      <BarChart3 size={16} color="#0891b2" />
-                      <span style={{ fontWeight: 600, fontSize: '13px', color: '#374151' }}>
-                        Association Prevalence (%)
-                      </span>
-                    </div>
-                    <div style={{ height: '200px' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={message.chart} layout="vertical">
-                          <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
-                          <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={100} />
-                          <Tooltip />
-                          <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                            {message.chart.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                )}
-
-                {/* References */}
-                {message.references && message.references.length > 0 && (
-                  <div style={{ 
-                    marginTop: '16px', 
-                    padding: '12px 16px', 
-                    backgroundColor: '#fffbeb', 
-                    borderRadius: '8px',
-                    borderLeft: '4px solid #f59e0b',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                      <BookOpen size={14} color="#d97706" />
-                      <span style={{ fontWeight: 600, fontSize: '12px', color: '#92400e' }}>References</span>
-                    </div>
-                    <ol style={{ margin: 0, paddingLeft: '16px' }}>
-                      {message.references.map((ref, i) => (
-                        <li key={i} style={{ fontSize: '11px', color: '#78350f', marginBottom: '4px', lineHeight: 1.5 }}>
-                          {ref}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-              </div>
+                    backgroundColor: 'white',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontSize: '14px',
+                    color: '#374151',
+                    transition: 'all 0.2s',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#0891b2';
+                    e.currentTarget.style.backgroundColor = '#ecfeff';
+                    e.currentTarget.style.color = '#0891b2';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.backgroundColor = 'white';
+                    e.currentTarget.style.color = '#374151';
+                  }}
+                >
+                  <span style={{ marginRight: '8px' }}>💬</span>
+                  {question}
+                </button>
+              ))}
             </div>
-          ))}
-          
-          {isLoading && (
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
-              <div style={{
-                padding: '16px 20px',
-                borderRadius: '16px',
-                backgroundColor: 'white',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}>
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0891b2', animation: 'bounce 1s infinite' }} />
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0891b2', animation: 'bounce 1s infinite 0.2s' }} />
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0891b2', animation: 'bounce 1s infinite 0.4s' }} />
-                </div>
-                <span style={{ fontSize: '13px', color: '#6b7280' }}>Searching knowledge base...</span>
-              </div>
-            </div>
-          )}
-          
-          <div ref={messagesEndRef} />
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Messages View */
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                style={{
+                  display: 'flex',
+                  justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start',
+                  marginBottom: '20px',
+                }}
+              >
+                <div style={{
+                  maxWidth: '80%',
+                  padding: '16px 20px',
+                  borderRadius: '16px',
+                  backgroundColor: message.role === 'user' ? '#0891b2' : 'white',
+                  color: message.role === 'user' ? 'white' : '#374151',
+                  boxShadow: message.role === 'assistant' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                }}>
+                  {message.role === 'assistant' && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                      <Logo size={20} />
+                      <span style={{ fontWeight: 600, color: '#0891b2', fontSize: '13px' }}>Eye-GPT</span>
+                      <Sparkles size={14} color="#f59e0b" />
+                    </div>
+                  )}
+                  
+                  <div 
+                    style={{ 
+                      fontSize: '14px', 
+                      lineHeight: 1.7,
+                    }}
+                    className="llm-response"
+                    dangerouslySetInnerHTML={{ __html: message.content }}
+                  />
+
+                  {/* Chart */}
+                  {message.chart && (
+                    <div style={{ 
+                      marginTop: '20px', 
+                      padding: '16px', 
+                      backgroundColor: '#f9fafb', 
+                      borderRadius: '12px',
+                      border: '1px solid #e5e7eb',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                        <BarChart3 size={16} color="#0891b2" />
+                        <span style={{ fontWeight: 600, fontSize: '13px', color: '#374151' }}>
+                          Association Prevalence (%)
+                        </span>
+                      </div>
+                      <div style={{ height: '200px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={message.chart} layout="vertical">
+                            <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
+                            <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={100} />
+                            <Tooltip />
+                            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                              {message.chart.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* References */}
+                  {message.references && message.references.length > 0 && (
+                    <div style={{ 
+                      marginTop: '16px', 
+                      padding: '12px 16px', 
+                      backgroundColor: '#fffbeb', 
+                      borderRadius: '8px',
+                      borderLeft: '4px solid #f59e0b',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                        <BookOpen size={14} color="#d97706" />
+                        <span style={{ fontWeight: 600, fontSize: '12px', color: '#92400e' }}>References</span>
+                      </div>
+                      <ol style={{ margin: 0, paddingLeft: '16px' }}>
+                        {message.references.map((ref, i) => (
+                          <li key={i} style={{ fontSize: '11px', color: '#78350f', marginBottom: '4px', lineHeight: 1.5 }}>
+                            {ref}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
+                <div style={{
+                  padding: '16px 20px',
+                  borderRadius: '16px',
+                  backgroundColor: 'white',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0891b2', animation: 'bounce 1s infinite' }} />
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0891b2', animation: 'bounce 1s infinite 0.2s' }} />
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0891b2', animation: 'bounce 1s infinite 0.4s' }} />
+                  </div>
+                  <span style={{ fontSize: '13px', color: '#6b7280' }}>Searching knowledge base...</span>
+                </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+      )}
 
       {/* Input */}
       <div style={{ 
@@ -447,7 +482,7 @@ const LLMChat = () => {
             padding: '4px 4px 4px 16px',
             border: '1px solid #e5e7eb',
           }}>
-            <AlertCircle size={18} color="#6b7280" />
+            <Logo size={20} />
             <input
               type="text"
               value={input}
@@ -464,7 +499,7 @@ const LLMChat = () => {
               }}
             />
             <button
-              onClick={handleSend}
+              onClick={() => handleSend()}
               disabled={!input.trim() || isLoading}
               style={{
                 padding: '10px 20px',
@@ -493,6 +528,34 @@ const LLMChat = () => {
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-4px); }
+        }
+        .llm-response h2 {
+          font-size: 18px;
+          font-weight: 700;
+          margin-bottom: 12px;
+          color: #111;
+        }
+        .llm-response h3 {
+          font-size: 15px;
+          font-weight: 600;
+          margin: 16px 0 8px;
+          color: #374151;
+        }
+        .llm-response p {
+          margin-bottom: 12px;
+        }
+        .llm-response ul, .llm-response ol {
+          margin: 12px 0;
+          padding-left: 24px;
+        }
+        .llm-response li {
+          margin-bottom: 6px;
+        }
+        .llm-response strong {
+          color: #111;
+        }
+        .llm-response em {
+          color: #6b7280;
         }
       `}</style>
     </div>
