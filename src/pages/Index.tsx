@@ -14,6 +14,7 @@ const Index = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('textual');
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(320);
+  const [chatHeight, setChatHeight] = useState(400);
   
   const {
     scans,
@@ -127,17 +128,62 @@ const Index = () => {
           flexDirection: 'column',
           position: 'relative',
         }}>
-          {/* Chat Section */}
-          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          {/* Chat Section - Resizable */}
+          <div style={{ 
+            height: `${chatHeight}px`, 
+            minHeight: '150px',
+            overflow: 'hidden', 
+            display: 'flex', 
+            flexDirection: 'column',
+            position: 'relative',
+          }}>
             <ChatSidebar
               scans={scans}
               chatHistory={chatHistory}
               onSendMessage={handleSendMessage}
             />
+            
+            {/* Vertical Resize Handle for Chat */}
+            <div 
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: '6px',
+                cursor: 'row-resize',
+                backgroundColor: 'transparent',
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                const startY = e.clientY;
+                const startHeight = chatHeight;
+                
+                const onMouseMove = (e: MouseEvent) => {
+                  const deltaY = e.clientY - startY;
+                  setChatHeight(Math.max(150, startHeight + deltaY));
+                };
+                
+                const onMouseUp = () => {
+                  document.removeEventListener('mousemove', onMouseMove);
+                  document.removeEventListener('mouseup', onMouseUp);
+                };
+                
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0891b2'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            />
           </div>
           
-          {/* Image Library Below Chat */}
-          <div style={{ borderTop: '1px solid #e5e7eb', maxHeight: '200px', overflowY: 'auto' }}>
+          {/* Image Library Below Chat - Takes remaining space */}
+          <div style={{ 
+            flex: 1, 
+            borderTop: '1px solid #e5e7eb', 
+            overflowY: 'auto',
+            minHeight: '100px',
+          }}>
             <ImageTabs
               scans={scans}
               activeTab={activeTabId}
