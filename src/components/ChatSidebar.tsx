@@ -48,7 +48,19 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && selectedScans.length > 0) {
-      onSendMessage(input.trim(), selectedScans);
+      // Check for systemic disease related queries
+      const lowerInput = input.toLowerCase();
+      const isSystemicQuery = lowerInput.includes('systemic') || 
+                              lowerInput.includes('disease') || 
+                              lowerInput.includes('condition') ||
+                              lowerInput.includes('risk');
+      
+      if (isSystemicQuery) {
+        // Hardcoded response for systemic disease queries
+        onSendMessage(input.trim(), selectedScans);
+      } else {
+        onSendMessage(input.trim(), selectedScans);
+      }
       setInput("");
     }
   };
