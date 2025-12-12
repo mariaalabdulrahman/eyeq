@@ -286,6 +286,31 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
     return description;
   }, [progressionData, compareScan, compareMode, currentScan]);
 
+  // Determine which scan should be on the left based on mode
+  const getOrderedScans = () => {
+    if (!compareScan) return { leftScan: currentScan, rightScan: null };
+    
+    if (compareMode === 'progression') {
+      // Chronological order: earlier visit on left
+      const currentVisit = currentScan.visitNumber || 1;
+      const compareVisit = compareScan.visitNumber || 1;
+      if (currentVisit <= compareVisit) {
+        return { leftScan: currentScan, rightScan: compareScan };
+      } else {
+        return { leftScan: compareScan, rightScan: currentScan };
+      }
+    } else {
+      // Left-right mode: left eye on left, right eye on right
+      if (currentScan.eyeSide === 'left') {
+        return { leftScan: currentScan, rightScan: compareScan };
+      } else {
+        return { leftScan: compareScan, rightScan: currentScan };
+      }
+    }
+  };
+
+  const { leftScan, rightScan } = getOrderedScans();
+
   // Download comparison as PDF with images
   const downloadComparisonPDF = async () => {
     const doc = new jsPDF();
@@ -308,10 +333,13 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
     doc.setTextColor(0, 0, 0);
     doc.text(`Comparison Type: ${compareMode === 'left-right' ? 'Left vs Right Eye (Same Visit)' : 'Same Eye (Different Visits)'}`, 20, 55);
     
-    // Scans Info
-    doc.text(`Current Scan: ${currentScan.name}${currentScan.visitNumber ? ` (Visit ${currentScan.visitNumber})` : ''}`, 20, 65);
-    if (compareScan) {
-      doc.text(`Compare Scan: ${compareScan.name}${compareScan.visitNumber ? ` (Visit ${compareScan.visitNumber})` : ''}`, 20, 72);
+    // Scans Info - use ordered scans
+    const orderedLeftScan = leftScan;
+    const orderedRightScan = rightScan;
+    
+    doc.text(`Left Panel: ${orderedLeftScan.name}${orderedLeftScan.visitNumber ? ` (Visit ${orderedLeftScan.visitNumber})` : ''}`, 20, 65);
+    if (orderedRightScan) {
+      doc.text(`Right Panel: ${orderedRightScan.name}${orderedRightScan.visitNumber ? ` (Visit ${orderedRightScan.visitNumber})` : ''}`, 20, 72);
     }
 
     // Add images side by side
@@ -336,58 +364,103 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
       };
 
       const imgWidth = 80;
-      const imgHeight = 60;
+      const imgHeight = 50;
 
-      // Current scan image
-      if (currentScan.imageUrl) {
+      // Left scan fundus image
+      if (orderedLeftScan.imageUrl) {
         try {
-          const imgData = await loadImageAsBase64(currentScan.imageUrl);
+          const imgData = await loadImageAsBase64(orderedLeftScan.imageUrl);
           doc.addImage(imgData, 'JPEG', 20, imageY, imgWidth, imgHeight);
           doc.setFontSize(9);
-          doc.text(currentScan.name, 20, imageY + imgHeight + 5);
+          doc.text('Fundus - ' + orderedLeftScan.name, 20, imageY + imgHeight + 5);
         } catch (e) {
-          console.log('Could not load current scan image');
+          console.log('Could not load left scan image');
         }
       }
 
-      // Compare scan image
-      if (compareScan?.imageUrl) {
+      // Right scan fundus image
+      if (orderedRightScan?.imageUrl) {
         try {
-          const imgData = await loadImageAsBase64(compareScan.imageUrl);
+          const imgData = await loadImageAsBase64(orderedRightScan.imageUrl);
           doc.addImage(imgData, 'JPEG', 110, imageY, imgWidth, imgHeight);
           doc.setFontSize(9);
-          doc.text(compareScan.name, 110, imageY + imgHeight + 5);
+          doc.text('Fundus - ' + orderedRightScan.name, 110, imageY + imgHeight + 5);
         } catch (e) {
-          console.log('Could not load compare scan image');
+          console.log('Could not load right scan image');
         }
       }
 
-      imageY += imgHeight + 15;
+      imageY += imgHeight + 12;
+
+      // Add OCT images if available
+      let hasOct = false;
+      if (orderedLeftScan.linkedOctUrl) {
+        try {
+          const imgData = await loadImageAsBase64(orderedLeftScan.linkedOctUrl);
+          doc.addImage(imgData, 'JPEG', 20, imageY, imgWidth, imgHeight);
+          doc.setFontSize(9);
+          doc.text('OCT', 20, imageY + imgHeight + 5);
+          hasOct = true;
+        } catch (e) {
+          console.log('Could not load left OCT image');
+        }
+      }
+
+      if (orderedRightScan?.linkedOctUrl) {
+        try {
+          const imgData = await loadImageAsBase64(orderedRightScan.linkedOctUrl);
+          doc.addImage(imgData, 'JPEG', 110, imageY, imgWidth, imgHeight);
+          doc.setFontSize(9);
+          doc.text('OCT', 110, imageY + imgHeight + 5);
+          hasOct = true;
+        } catch (e) {
+          console.log('Could not load right OCT image');
+        }
+      }
+
+      if (hasOct) {
+        imageY += imgHeight + 12;
+      }
     } catch (e) {
       console.log('Error loading images:', e);
     }
     
-    // Disease Comparison Table
+    // Disease Comparison Table - no percentages
     if (progressionData.length > 0) {
       doc.setFontSize(14);
-      doc.text("Disease Comparison", 20, imageY + 5);
+      doc.text("Disease Findings", 20, imageY + 5);
       
-      const compareLabel = compareMode === 'progression' 
-        ? `Visit ${compareScan?.visitNumber || 1}` 
-        : `${compareScan?.eyeSide === 'left' ? 'Left' : 'Right'} Eye`;
-      const currentLabel = compareMode === 'progression'
-        ? `Visit ${currentScan.visitNumber || 1}`
-        : `${currentScan.eyeSide === 'left' ? 'Left' : 'Right'} Eye`;
+      const leftLabel = compareMode === 'progression' 
+        ? `Visit ${orderedLeftScan.visitNumber || 1}` 
+        : `${orderedLeftScan.eyeSide === 'left' ? 'Left' : 'Right'} Eye`;
+      const rightLabel = compareMode === 'progression'
+        ? `Visit ${orderedRightScan?.visitNumber || 1}`
+        : `${orderedRightScan?.eyeSide === 'left' ? 'Left' : 'Right'} Eye`;
+      
+      // For progression mode, calculate improvement/worsening
+      const tableBody = progressionData.map(d => {
+        const leftVal = Number(d[leftLabel]) || 0;
+        const rightVal = Number(d[rightLabel]) || 0;
+        
+        let status = 'Stable';
+        if (compareMode === 'progression') {
+          const diff = rightVal - leftVal;
+          if (diff < -10) {
+            status = 'Improved';
+          } else if (diff > 10) {
+            status = 'Worsened';
+          }
+        }
+        
+        return compareMode === 'progression'
+          ? [d.fullName, status]
+          : [d.fullName, 'Detected in both eyes'];
+      });
       
       autoTable(doc, {
         startY: imageY + 10,
-        head: [['Condition', currentLabel, compareLabel, 'Difference']],
-        body: progressionData.map(d => [
-          d.fullName,
-          `${d[currentLabel] || 0}%`,
-          `${d[compareLabel] || 0}%`,
-          `${d.diff > 0 ? '+' : ''}${d.diff}%`,
-        ]),
+        head: [compareMode === 'progression' ? ['Condition', 'Status (Visit 1 → Visit 2)'] : ['Condition', 'Finding']],
+        body: tableBody,
         theme: 'striped',
         headStyles: { fillColor: [8, 145, 178] },
       });
@@ -535,7 +608,7 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
 
       {/* Comparison Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-        {/* Current Scan */}
+        {/* Left Panel (ordered scan) */}
         <div style={{ 
           backgroundColor: 'white', 
           border: '2px solid #0891b2', 
@@ -546,10 +619,10 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
         }}>
           <h3 style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0891b2' }} />
-            {currentScan.eyeSide === 'left' ? 'Left Eye' : 'Right Eye'}
+            {leftScan.eyeSide === 'left' ? 'Left Eye' : 'Right Eye'}
           </h3>
           <p style={{ fontSize: '12px', color: '#7c3aed', fontWeight: 500, marginBottom: '12px' }}>
-            Visit {currentScan.visitNumber || 1}
+            Visit {leftScan.visitNumber || 1}
           </p>
           <div style={{ 
             display: 'flex', 
@@ -568,19 +641,19 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
             </div>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <img
-                src={currentScan.imageUrl}
-                alt={currentScan.name}
+                src={leftScan.imageUrl}
+                alt={leftScan.name}
                 style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }}
               />
             </div>
-            {currentScan.linkedOctUrl && (
+            {leftScan.linkedOctUrl && (
               <div style={{ marginTop: '8px' }}>
                 <div style={{ fontSize: '12px', fontWeight: 500, color: '#4b5563', marginBottom: '4px' }}>
                   OCT
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   <TifImage
-                    src={currentScan.linkedOctUrl}
+                    src={leftScan.linkedOctUrl}
                     alt="OCT"
                     style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }}
                   />
@@ -589,7 +662,7 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
             )}
           </div>
           <div style={{ overflowY: 'auto', maxHeight: '150px' }}>
-            {currentScan.diseases.map((disease, i) => {
+            {leftScan.diseases.map((disease, i) => {
               const confidence = Math.floor(Math.random() * 5) + 95;
               return (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '4px 0' }}>
@@ -603,8 +676,8 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
           </div>
         </div>
 
-        {/* Compare Scan */}
-        {compareScan ? (
+        {/* Right Panel (ordered scan) */}
+        {rightScan ? (
           <div style={{ 
             backgroundColor: 'white', 
             border: '1px solid #e5e7eb', 
@@ -615,10 +688,10 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
           }}>
             <h3 style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#6b7280' }} />
-              {compareScan.eyeSide === 'left' ? 'Left Eye' : 'Right Eye'}
+              {rightScan.eyeSide === 'left' ? 'Left Eye' : 'Right Eye'}
             </h3>
             <p style={{ fontSize: '12px', color: '#7c3aed', fontWeight: 500, marginBottom: '12px' }}>
-              Visit {compareScan.visitNumber || 1}
+              Visit {rightScan.visitNumber || 1}
             </p>
             <div style={{ 
               display: 'flex', 
@@ -637,19 +710,19 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
               </div>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <img
-                  src={compareScan.imageUrl}
-                  alt={compareScan.name}
+                  src={rightScan.imageUrl}
+                  alt={rightScan.name}
                   style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }}
                 />
               </div>
-              {compareScan.linkedOctUrl && (
+              {rightScan.linkedOctUrl && (
                 <div style={{ marginTop: '8px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 500, color: '#4b5563', marginBottom: '4px' }}>
                     OCT
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <TifImage
-                      src={compareScan.linkedOctUrl}
+                      src={rightScan.linkedOctUrl}
                       alt="OCT"
                       style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }}
                     />
@@ -658,9 +731,9 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
               )}
             </div>
             <div style={{ overflowY: 'auto', maxHeight: '150px' }}>
-              {compareScan.diseases.map((disease, i) => {
-                const currentDisease = currentScan.diseases.find(d => d.name === disease.name);
-                const diff = currentDisease ? disease.probability - currentDisease.probability : 0;
+              {rightScan.diseases.map((disease, i) => {
+                const leftDisease = leftScan.diseases.find(d => d.name === disease.name);
+                const diff = leftDisease ? disease.probability - leftDisease.probability : 0;
                 const confidence = Math.floor(Math.random() * 5) + 95;
                 
                 return (
@@ -670,7 +743,7 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
                       <span style={{ fontWeight: 600, fontSize: '12px', color: '#374151', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>
                         {confidence}% confidence
                       </span>
-                      {diff !== 0 && (
+                      {compareMode === 'progression' && diff !== 0 && (
                         <span style={{ fontSize: '11px', color: diff > 0 ? '#ef4444' : '#22c55e' }}>
                           ({diff > 0 ? '+' : ''}{diff})
                         </span>

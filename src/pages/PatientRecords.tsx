@@ -172,12 +172,67 @@ const PatientRecords = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-        <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          <Logo size={40} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+          <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+            <Logo size={40} />
+          </div>
+          
+          {/* Fixed Navigation Tabs */}
+          <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+            <button
+              onClick={() => navigate('/dashboard')}
+              style={{
+                padding: '8px 0',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '14px',
+                color: '#6b7280',
+                borderBottom: '2px solid transparent',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#374151'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
+            >
+              Image Analysis
+            </button>
+            <button
+              onClick={() => {}}
+              style={{
+                padding: '8px 0',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '14px',
+                color: '#0891b2',
+                borderBottom: '2px solid #0891b2',
+              }}
+            >
+              Patient Records
+            </button>
+            <button
+              onClick={() => navigate('/llm')}
+              style={{
+                padding: '8px 0',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '14px',
+                color: '#6b7280',
+                borderBottom: '2px solid transparent',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#374151'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
+            >
+              LLM
+            </button>
+          </div>
         </div>
         
         {/* View Mode Buttons */}
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           {viewModes.map(({ mode, icon: Icon, label }) => (
             <button
               key={mode}
@@ -200,41 +255,26 @@ const PatientRecords = () => {
               {label}
             </button>
           ))}
-        </div>
-
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button
-            onClick={() => navigate('/dashboard')}
-            style={{
-              padding: '10px 20px',
-              borderRadius: '8px',
-              border: '1px solid #e5e7eb',
-              backgroundColor: 'white',
-              cursor: 'pointer',
-              fontWeight: 500,
-              display: 'flex',
-              alignItems: 'center',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <ArrowLeft size={16} style={{ marginRight: '6px', flexShrink: 0 }} />
-            Back to Dashboard
-          </button>
+          
+          <div style={{ width: '1px', height: '24px', backgroundColor: '#e5e7eb', margin: '0 8px' }} />
+          
           <button
             onClick={startNewPatientInline}
             style={{
-              padding: '10px 20px',
+              padding: '8px 16px',
               borderRadius: '8px',
               border: 'none',
               backgroundColor: '#0891b2',
               color: 'white',
               cursor: 'pointer',
               fontWeight: 500,
+              fontSize: '13px',
               display: 'flex',
               alignItems: 'center',
+              gap: '6px',
             }}
           >
-            <UserPlus size={16} style={{ marginRight: '6px' }} /> New Patient
+            <UserPlus size={16} /> New Patient
           </button>
         </div>
       </header>

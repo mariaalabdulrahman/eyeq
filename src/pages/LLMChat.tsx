@@ -249,33 +249,70 @@ const LLMChat = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        position: 'relative',
       }}>
-        <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          <Logo size={40} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+          <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+            <Logo size={40} />
+          </div>
+          
+          {/* Fixed Navigation Tabs */}
+          <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+            <button
+              onClick={() => navigate('/dashboard')}
+              style={{
+                padding: '8px 0',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '14px',
+                color: '#6b7280',
+                borderBottom: '2px solid transparent',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#374151'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
+            >
+              Image Analysis
+            </button>
+            <button
+              onClick={() => navigate('/records')}
+              style={{
+                padding: '8px 0',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '14px',
+                color: '#6b7280',
+                borderBottom: '2px solid transparent',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#374151'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
+            >
+              Patient Records
+            </button>
+            <button
+              onClick={() => {}}
+              style={{
+                padding: '8px 0',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '14px',
+                color: '#0891b2',
+                borderBottom: '2px solid #0891b2',
+              }}
+            >
+              LLM
+            </button>
+          </div>
         </div>
         
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
           <h1 style={{ fontSize: '16px', fontWeight: 600, color: '#111', margin: 0 }}>Eye-GPT</h1>
           <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Ocular-Systemic Disease Links</p>
         </div>
-        
-        <button
-          onClick={() => navigate('/')}
-          style={{
-            padding: '10px 20px',
-            borderRadius: '8px',
-            border: '1px solid #e5e7eb',
-            backgroundColor: 'white',
-            cursor: 'pointer',
-            fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <ArrowLeft size={16} style={{ marginRight: '6px' }} />
-          Back to Home
-        </button>
       </header>
 
       {/* Landing View */}

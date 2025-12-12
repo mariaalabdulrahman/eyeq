@@ -241,7 +241,7 @@ const initialPatients: Patient[] = [
         linkedOctName: 'OCT',
         diseases: [
           { name: 'Hypertensive Retinopathy', probability: 68, severity: 'medium', description: 'Stable hypertensive changes following treatment.', detectedFrom: 'fundus', justification: 'Arteriovenous nicking stable, no new hemorrhages. Some resolution of arteriolar narrowing with blood pressure control.', references: ['Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004'] },
-          { name: 'Retinal Fluid', probability: 45, severity: 'medium', description: 'Reduced retinal fluid compared to initial visit.', detectedFrom: 'oct', justification: 'OCT shows improvement in fluid accumulation with decreased hyporeflective spaces in the retinal layers.', references: ['Fraser-Bell S, et al. Eye 2008'] },
+          { name: 'Retinal Fluid', probability: 10, severity: 'low', description: 'Significant improvement in retinal fluid compared to initial visit.', detectedFrom: 'oct', justification: 'OCT shows marked reduction in fluid accumulation with near-resolution of hyporeflective spaces in the retinal layers.', references: ['Fraser-Bell S, et al. Eye 2008'] },
         ],
         summary: 'Stable hypertensive retinopathy following blood pressure management. Continue current therapy.',
       },
@@ -258,7 +258,7 @@ const initialPatients: Patient[] = [
         linkedOctName: 'OCT',
         diseases: [
           { name: 'Hypertensive Retinopathy', probability: 70, severity: 'high', description: 'Progression of hypertensive changes with new vessel abnormalities.', detectedFrom: 'fundus', justification: 'New cotton wool spots noted. Arteriovenous nicking more pronounced.', references: ['Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004'] },
-          { name: 'Retinal Fluid', probability: 55, severity: 'medium', description: 'Persistent retinal fluid with slight increase.', detectedFrom: 'oct', justification: 'OCT reveals ongoing subretinal fluid accumulation, slightly increased from previous visit, correlating with hypertensive disease activity.', references: ['Hayreh SS. Hypertensive retinopathy. Ophthalmologica 1989'] },
+          { name: 'Retinal Fluid', probability: 11, severity: 'low', description: 'Significant reduction in retinal fluid following treatment.', detectedFrom: 'oct', justification: 'OCT reveals marked improvement with near-resolution of subretinal fluid accumulation compared to previous visit.', references: ['Hayreh SS. Hypertensive retinopathy. Ophthalmologica 1989'] },
         ],
         summary: 'Hypertensive retinopathy progression in right eye. Intensify blood pressure management.',
       },
