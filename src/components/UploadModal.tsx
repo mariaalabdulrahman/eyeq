@@ -313,7 +313,7 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
               
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,.tif,.tiff"
                 onChange={handleFundusSelect}
                 style={{
                   position: 'absolute',
@@ -393,7 +393,7 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
                 
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.tif,.tiff"
                   onChange={handleOctSelect}
                   style={{
                     position: 'absolute',
