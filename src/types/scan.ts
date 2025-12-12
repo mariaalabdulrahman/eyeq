@@ -20,6 +20,8 @@ export interface ScanAnalysis {
   linkedOctUrl?: string;
   linkedOctName?: string;
   eyeSide?: 'left' | 'right'; // Which eye the scan is from
+  visitNumber?: number; // Visit number (1 = first visit, 2 = second visit, etc.)
+  visitDate?: Date; // Date of the visit
 }
 
 export interface Patient {
