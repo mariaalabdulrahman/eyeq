@@ -553,8 +553,8 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
             {currentScan.diseases.map((disease, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '4px 0' }}>
                 <span style={{ color: '#6b7280' }}>{disease.name}</span>
-                <span style={{ fontWeight: 600, fontFamily: 'monospace', color: getColor(disease.probability) }}>
-                  {disease.probability}%
+                <span style={{ fontWeight: 600, fontSize: '12px', color: getColor(disease.probability) }}>
+                  {disease.probability}% confidence
                 </span>
               </div>
             ))}
@@ -626,12 +626,12 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '4px 0' }}>
                     <span style={{ color: '#6b7280' }}>{disease.name}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: 600, fontFamily: 'monospace', color: getColor(disease.probability) }}>
-                        {disease.probability}%
+                      <span style={{ fontWeight: 600, fontSize: '12px', color: getColor(disease.probability) }}>
+                        {disease.probability}% confidence
                       </span>
                       {diff !== 0 && (
-                        <span style={{ fontSize: '12px', fontFamily: 'monospace', color: diff > 0 ? '#ef4444' : '#22c55e' }}>
-                          ({diff > 0 ? '+' : ''}{diff}%)
+                        <span style={{ fontSize: '11px', color: diff > 0 ? '#ef4444' : '#22c55e' }}>
+                          ({diff > 0 ? '+' : ''}{diff})
                         </span>
                       )}
                     </div>
@@ -663,8 +663,8 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
         )}
       </div>
 
-      {/* Progression Chart */}
-      {compareScan && progressionData.length > 0 && (
+      {/* Analysis Summary */}
+      {compareScan && (
         <div style={{ 
           backgroundColor: 'white', 
           border: '1px solid #e5e7eb', 
@@ -672,36 +672,11 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
           padding: '16px',
         }}>
           <h3 style={{ fontWeight: 600, marginBottom: '16px' }}>
-            {compareMode === 'progression' ? 'Disease Progression Chart' : 'Bilateral Comparison Chart'}
+            {compareMode === 'progression' ? 'Progression Analysis' : 'Bilateral Comparison'}
           </h3>
-          <div style={{ height: '250px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={progressionData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 100]} unit="%" />
-                <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
-                <Tooltip 
-                  formatter={(value: number, name: string) => [`${value}%`, name]}
-                  contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                />
-                <Legend />
-                <Bar 
-                  dataKey={compareMode === 'progression' ? `Visit ${currentScan.visitNumber || 1}` : `${currentScan.eyeSide === 'left' ? 'Left' : 'Right'} Eye`}
-                  fill="#0891b2" 
-                  radius={[0, 4, 4, 0]}
-                />
-                <Bar 
-                  dataKey={compareMode === 'progression' ? `Visit ${compareScan.visitNumber || 1}` : `${compareScan.eyeSide === 'left' ? 'Left' : 'Right'} Eye`}
-                  fill="#94a3b8" 
-                  radius={[0, 4, 4, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
           
           {/* Analysis Description */}
           <div style={{ 
-            marginTop: '16px', 
             padding: '12px', 
             backgroundColor: '#f8fafc', 
             borderRadius: '8px',
@@ -731,25 +706,43 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
             Possible Systemic Conditions
           </h3>
           <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>
-            Based on detected ocular findings with medium-to-high severity (≥40%)
+            Based on detected ocular findings with medium-to-high severity
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {systemicAssociations.map((assoc, i) => (
-              <div key={i} style={{ 
-                padding: '12px', 
-                backgroundColor: '#fef3c7', 
-                borderRadius: '8px',
-                borderLeft: '4px solid #f59e0b',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-                  <span style={{ fontWeight: 600, color: '#92400e' }}>{assoc.condition}</span>
-                  <span style={{ fontSize: '11px', color: '#6b7280', backgroundColor: 'white', padding: '2px 8px', borderRadius: '10px' }}>
-                    Related to: {assoc.relatedTo}
-                  </span>
+            {systemicAssociations.map((assoc, i) => {
+              // Determine risk level based on the related ocular disease probability
+              const relatedDisease = [...currentScan.diseases, ...(compareScan?.diseases || [])].find(d => d.name === assoc.relatedTo);
+              const isHighRisk = relatedDisease ? relatedDisease.probability >= 60 : false;
+              
+              return (
+                <div key={i} style={{ 
+                  padding: '12px', 
+                  backgroundColor: isHighRisk ? '#fef2f2' : '#fef3c7', 
+                  borderRadius: '8px',
+                  borderLeft: `4px solid ${isHighRisk ? '#ef4444' : '#f59e0b'}`,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontWeight: 600, color: isHighRisk ? '#991b1b' : '#92400e' }}>{assoc.condition}</span>
+                      <span style={{ 
+                        fontSize: '11px', 
+                        fontWeight: 600,
+                        padding: '2px 8px', 
+                        borderRadius: '10px',
+                        backgroundColor: isHighRisk ? '#ef4444' : '#f59e0b',
+                        color: 'white',
+                      }}>
+                        {isHighRisk ? 'High Risk' : 'Low Risk'}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '11px', color: '#6b7280', backgroundColor: 'white', padding: '2px 8px', borderRadius: '10px' }}>
+                      From: {assoc.relatedTo}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '13px', color: isHighRisk ? '#7f1d1d' : '#78350f' }}>{assoc.description}</p>
                 </div>
-                <p style={{ fontSize: '13px', color: '#78350f' }}>{assoc.description}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
