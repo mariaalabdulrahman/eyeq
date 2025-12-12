@@ -169,9 +169,26 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
       doc.setFontSize(14);
       doc.text(reportType === 'doctor' ? "Clinical Findings" : "Health Findings", 20, tableStartY - 5);
 
+      const getGradeFromProbability = (name: string, prob: number) => {
+        if (name.toLowerCase().includes('diabetic retinopathy') || name.toLowerCase().includes('dr')) {
+          if (prob >= 80) return 'Level 4 (Severe)';
+          if (prob >= 60) return 'Level 3 (Moderate)';
+          if (prob >= 40) return 'Level 2 (Mild)';
+          return 'Level 1 (Minimal)';
+        }
+        if (name.toLowerCase().includes('glaucoma')) {
+          if (prob >= 70) return 'Advanced';
+          if (prob >= 40) return 'Moderate';
+          return 'Early';
+        }
+        if (prob >= 70) return 'Severe';
+        if (prob >= 40) return 'Moderate';
+        return 'Mild';
+      };
+
       const tableData = diseases.map(d => [
         d.name,
-        `${d.probability}%`,
+        getGradeFromProbability(d.name, d.probability),
         d.severity.toUpperCase(),
         reportType === 'doctor' 
           ? d.description 
@@ -180,14 +197,14 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
 
       autoTable(doc, {
         startY: tableStartY,
-        head: [['Condition', 'Probability', 'Severity', reportType === 'doctor' ? 'Clinical Notes' : 'Status']],
+        head: [['Condition', 'Grade', 'Severity', reportType === 'doctor' ? 'Clinical Notes' : 'Status']],
         body: tableData,
         theme: 'striped',
         headStyles: { fillColor: [8, 145, 178] },
         styles: { fontSize: 9 },
         columnStyles: {
           0: { cellWidth: 40 },
-          1: { cellWidth: 25 },
+          1: { cellWidth: 30 },
           2: { cellWidth: 25 },
           3: { cellWidth: 'auto' },
         },
@@ -478,62 +495,87 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         }}>
           <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>Clinical Findings</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: '#f3f4f6' }}>
                 <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Condition</th>
-                <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Probability</th>
+                <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Grade</th>
                 <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Severity</th>
                 <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Notes</th>
               </tr>
             </thead>
             <tbody>
-              {diseases.map((disease, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                  <td style={{ padding: '12px', fontWeight: 500, fontSize: '14px' }}>{disease.name}</td>
-                  <td style={{ padding: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '50px', height: '6px', backgroundColor: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ width: `${disease.probability}%`, height: '100%', backgroundColor: disease.probability >= 70 ? '#ef4444' : disease.probability >= 40 ? '#f59e0b' : '#22c55e' }} />
-                      </div>
-                      <span style={{ fontSize: '13px', fontWeight: 600 }}>{disease.probability}%</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: '12px' }}>
-                    <span style={{
-                      padding: '3px 8px',
-                      borderRadius: '10px',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      backgroundColor: disease.severity === 'high' ? '#fef2f2' : disease.severity === 'medium' ? '#fffbeb' : '#f0fdf4',
-                      color: disease.severity === 'high' ? '#ef4444' : disease.severity === 'medium' ? '#f59e0b' : '#22c55e',
-                    }}>
-                      {disease.severity.toUpperCase()}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px' }}>
-                    {isEditMode ? (
-                      <textarea
-                        value={editedNotes[disease.name] ?? disease.description}
-                        onChange={(e) => setEditedNotes({ ...editedNotes, [disease.name]: e.target.value })}
-                        style={{
-                          width: '100%',
-                          padding: '8px',
-                          borderRadius: '6px',
-                          border: '1px solid #e5e7eb',
-                          fontSize: '13px',
-                          minHeight: '60px',
-                          resize: 'vertical',
-                        }}
-                      />
-                    ) : (
-                      <span style={{ fontSize: '13px', color: '#6b7280' }}>
-                        {editedNotes[disease.name] ?? disease.description}
+              {diseases.map((disease, idx) => {
+                const getGrade = () => {
+                  const name = disease.name.toLowerCase();
+                  const prob = disease.probability;
+                  if (name.includes('diabetic retinopathy') || name.includes('dr ')) {
+                    if (prob >= 80) return 'Level 4 (Severe)';
+                    if (prob >= 60) return 'Level 3 (Moderate)';
+                    if (prob >= 40) return 'Level 2 (Mild)';
+                    return 'Level 1 (Minimal)';
+                  }
+                  if (name.includes('glaucoma')) {
+                    if (prob >= 70) return 'Advanced';
+                    if (prob >= 40) return 'Moderate';
+                    return 'Early';
+                  }
+                  if (prob >= 70) return 'Severe';
+                  if (prob >= 40) return 'Moderate';
+                  return 'Mild';
+                };
+                
+                return (
+                  <tr key={idx} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                    <td style={{ padding: '12px', fontWeight: 500, fontSize: '14px' }}>{disease.name}</td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{ 
+                        fontSize: '13px', 
+                        fontWeight: 600,
+                        padding: '4px 10px',
+                        borderRadius: '8px',
+                        backgroundColor: disease.probability >= 70 ? '#fef2f2' : disease.probability >= 40 ? '#fffbeb' : '#f0fdf4',
+                        color: disease.probability >= 70 ? '#ef4444' : disease.probability >= 40 ? '#f59e0b' : '#22c55e',
+                      }}>
+                        {getGrade()}
                       </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{
+                        padding: '3px 8px',
+                        borderRadius: '10px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        backgroundColor: disease.severity === 'high' ? '#fef2f2' : disease.severity === 'medium' ? '#fffbeb' : '#f0fdf4',
+                        color: disease.severity === 'high' ? '#ef4444' : disease.severity === 'medium' ? '#f59e0b' : '#22c55e',
+                      }}>
+                        {disease.severity.toUpperCase()}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      {isEditMode ? (
+                        <textarea
+                          value={editedNotes[disease.name] ?? disease.description}
+                          onChange={(e) => setEditedNotes({ ...editedNotes, [disease.name]: e.target.value })}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            borderRadius: '6px',
+                            border: '1px solid #e5e7eb',
+                            fontSize: '13px',
+                            minHeight: '60px',
+                            resize: 'vertical',
+                          }}
+                        />
+                      ) : (
+                        <span style={{ fontSize: '13px', color: '#6b7280' }}>
+                          {editedNotes[disease.name] ?? disease.description}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -560,44 +602,51 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
                 <thead>
                   <tr style={{ backgroundColor: '#f3f4f6' }}>
                     <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Systemic Condition</th>
-                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Association</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Risk Level</th>
                     <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Linked Ocular Finding</th>
                     <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Pathophysiological Link</th>
                     <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Reference</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {systemicAssociations.map((assoc, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                      <td style={{ padding: '12px', fontWeight: 500, fontSize: '14px' }}>{assoc.systemicDisease}</td>
-                      <td style={{ padding: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '50px', height: '6px', backgroundColor: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }}>
-                            <div style={{ width: `${assoc.percentage}%`, height: '100%', backgroundColor: assoc.percentage >= 40 ? '#ef4444' : assoc.percentage >= 20 ? '#f59e0b' : '#3b82f6' }} />
-                          </div>
-                          <span style={{ fontSize: '13px', fontWeight: 600 }}>{assoc.percentage}%</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{
-                          padding: '3px 8px',
-                          borderRadius: '10px',
-                          fontSize: '11px',
-                          fontWeight: 500,
-                          backgroundColor: '#ecfeff',
-                          color: '#0891b2',
-                        }}>
-                          {assoc.linkedOcularDisease}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px', fontSize: '12px', color: '#6b7280', maxWidth: '200px' }}>
-                        {assoc.ocularLink}
-                      </td>
-                      <td style={{ padding: '12px', fontSize: '11px', color: '#6b7280', fontStyle: 'italic', maxWidth: '150px' }}>
-                        {assoc.reference}
-                      </td>
-                    </tr>
-                  ))}
+                  {systemicAssociations.map((assoc, idx) => {
+                    const isHighRisk = assoc.percentage >= 40;
+                    return (
+                      <tr key={idx} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                        <td style={{ padding: '12px', fontWeight: 500, fontSize: '14px' }}>{assoc.systemicDisease}</td>
+                        <td style={{ padding: '12px' }}>
+                          <span style={{ 
+                            fontSize: '12px', 
+                            fontWeight: 600,
+                            padding: '4px 10px',
+                            borderRadius: '8px',
+                            backgroundColor: isHighRisk ? '#fef2f2' : '#fffbeb',
+                            color: isHighRisk ? '#ef4444' : '#f59e0b',
+                          }}>
+                            {isHighRisk ? 'High Risk' : 'Low Risk'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px' }}>
+                          <span style={{
+                            padding: '3px 8px',
+                            borderRadius: '10px',
+                            fontSize: '11px',
+                            fontWeight: 500,
+                            backgroundColor: '#ecfeff',
+                            color: '#0891b2',
+                          }}>
+                            {assoc.linkedOcularDisease}
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px', fontSize: '12px', color: '#6b7280', maxWidth: '200px' }}>
+                          {assoc.ocularLink}
+                        </td>
+                        <td style={{ padding: '12px', fontSize: '11px', color: '#6b7280', fontStyle: 'italic', maxWidth: '150px' }}>
+                          {assoc.reference}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -740,38 +789,41 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
             <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '16px' }}>
               Your eye findings may be connected to other health conditions. Please discuss these with your doctor.
             </p>
-            {systemicAssociations.slice(0, 5).map((assoc, idx) => (
-              <div key={idx} style={{ 
-                padding: '14px',
-                marginBottom: idx < Math.min(systemicAssociations.length, 5) - 1 ? '10px' : 0,
-                borderRadius: '10px',
-                backgroundColor: '#f8fafc',
-                border: '1px solid #e2e8f0',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '15px', color: '#1e293b' }}>{assoc.systemicDisease}</span>
-                  <span style={{
-                    padding: '3px 10px',
-                    borderRadius: '12px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    backgroundColor: assoc.percentage >= 40 ? '#fef2f2' : assoc.percentage >= 20 ? '#fffbeb' : '#eff6ff',
-                    color: assoc.percentage >= 40 ? '#ef4444' : assoc.percentage >= 20 ? '#f59e0b' : '#3b82f6',
-                  }}>
-                    {assoc.percentage}% association
-                  </span>
+            {systemicAssociations.slice(0, 5).map((assoc, idx) => {
+              const isHighRisk = assoc.percentage >= 40;
+              return (
+                <div key={idx} style={{ 
+                  padding: '14px',
+                  marginBottom: idx < Math.min(systemicAssociations.length, 5) - 1 ? '10px' : 0,
+                  borderRadius: '10px',
+                  backgroundColor: isHighRisk ? '#fef2f2' : '#f8fafc',
+                  border: `1px solid ${isHighRisk ? '#fecaca' : '#e2e8f0'}`,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '15px', color: '#1e293b' }}>{assoc.systemicDisease}</span>
+                    <span style={{
+                      padding: '3px 10px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      backgroundColor: isHighRisk ? '#ef4444' : '#f59e0b',
+                      color: 'white',
+                    }}>
+                      {isHighRisk ? 'High Risk' : 'Low Risk'}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '6px' }}>
+                    <strong>Connected to:</strong> {assoc.linkedOcularDisease}
+                  </p>
+                  <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                    {assoc.ocularLink}
+                  </p>
+                  <p style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', marginTop: '6px' }}>
+                    Source: {assoc.reference}
+                  </p>
                 </div>
-                <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '6px' }}>
-                  <strong>Connected to:</strong> {assoc.linkedOcularDisease}
-                </p>
-                <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
-                  {assoc.ocularLink}
-                </p>
-                <p style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', marginTop: '6px' }}>
-                  Source: {assoc.reference}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         );
       })()}

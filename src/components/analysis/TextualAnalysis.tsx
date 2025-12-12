@@ -263,7 +263,7 @@ export function TextualAnalysis({ scan, patient }: TextualAnalysisProps) {
                       backgroundColor: getBgColor(disease.probability), 
                       color: getColor(disease.probability) 
                     }}>
-                      {disease.probability}%
+                      {disease.probability}% confidence
                     </span>
                   </div>
 
