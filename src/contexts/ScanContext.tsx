@@ -168,11 +168,13 @@ const initialPatients: Patient[] = [
         uploadedAt: new Date('2024-01-10'),
         type: 'fundus',
         eyeSide: 'left',
+        linkedOctUrl: fundus_Myopia12, // Using as demo OCT
+        linkedOctName: 'OCT Scan Left Eye',
         diseases: [
-          { name: 'Diabetic Macular Edema', probability: 45, severity: 'medium', description: 'Fluid accumulation detected.', detectedFrom: 'fundus', justification: 'Fundus reveals hard exudates and macular thickening consistent with diabetic macular edema.', references: ['DRCR.net Protocol T, NEJM 2015'] },
+          { name: 'Diabetic Macular Edema', probability: 45, severity: 'medium', description: 'Fluid accumulation detected.', detectedFrom: 'both', justification: 'Fundus reveals hard exudates and macular thickening; OCT confirms intraretinal fluid pockets.', references: ['DRCR.net Protocol T, NEJM 2015'] },
           { name: 'Diabetic Retinopathy', probability: 65, severity: 'medium', description: 'Microaneurysms and hard exudates visible in fundus.', detectedFrom: 'fundus', justification: 'Multiple microaneurysms and hard exudates detected in the posterior pole of the fundus image.', references: ['ETDRS Study, 1991'] },
         ],
-        summary: 'Moderate diabetic retinopathy detected. Follow-up recommended.',
+        summary: 'Moderate diabetic retinopathy detected with macular edema confirmed on OCT. Follow-up recommended.',
       },
       {
         id: 's1b',
@@ -204,10 +206,12 @@ const initialPatients: Patient[] = [
         uploadedAt: new Date('2024-01-12'),
         type: 'fundus',
         eyeSide: 'left',
+        linkedOctUrl: fundus_CSCR99, // Using as demo OCT
+        linkedOctName: 'OCT RNFL Analysis',
         diseases: [
-          { name: 'Glaucoma', probability: 78, severity: 'high', description: 'Significant optic nerve changes detected.', detectedFrom: 'fundus', justification: 'Increased cup-to-disc ratio (0.8) with peripapillary atrophy visible in fundus.', references: ['AAO Glaucoma Guidelines, 2020'] },
+          { name: 'Glaucoma', probability: 78, severity: 'high', description: 'Significant optic nerve changes detected.', detectedFrom: 'both', justification: 'Increased cup-to-disc ratio (0.8) with peripapillary atrophy visible in fundus. OCT shows RNFL thinning in superior and inferior quadrants.', references: ['AAO Glaucoma Guidelines, 2020'] },
         ],
-        summary: 'High glaucoma risk detected. Specialist referral recommended.',
+        summary: 'High glaucoma risk detected with RNFL loss on OCT. Specialist referral recommended.',
       },
       {
         id: 's3b',

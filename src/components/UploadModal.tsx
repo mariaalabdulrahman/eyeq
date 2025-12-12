@@ -6,7 +6,7 @@ import { getImagePreviewUrl } from "@/lib/tifUtils";
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (fundusFile: File, octFile?: File, patientId?: string, newPatientName?: string, eyeSide?: 'left' | 'right') => void;
+  onUpload: (fundusFile: File, octFile?: File, patientId?: string, newPatientData?: { name: string; age: number; gender: 'male' | 'female' | 'other'; relevantInfo?: string }, eyeSide?: 'left' | 'right') => void;
   patients: Patient[];
 }
 
@@ -19,6 +19,9 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
   const [patientOption, setPatientOption] = useState<'none' | 'existing' | 'new'>('none');
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [newPatientName, setNewPatientName] = useState<string>('');
+  const [newPatientAge, setNewPatientAge] = useState<string>('');
+  const [newPatientGender, setNewPatientGender] = useState<'male' | 'female' | 'other'>('male');
+  const [newPatientInfo, setNewPatientInfo] = useState<string>('');
   const [eyeSide, setEyeSide] = useState<'left' | 'right'>('right');
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -70,8 +73,13 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
   const handleSubmit = () => {
     if (fundusFile) {
       const patientId = patientOption === 'existing' ? selectedPatientId : undefined;
-      const patientName = patientOption === 'new' ? newPatientName : undefined;
-      onUpload(fundusFile, octFile || undefined, patientId, patientName, eyeSide);
+      const newPatientData = patientOption === 'new' && newPatientName.trim() ? {
+        name: newPatientName.trim(),
+        age: parseInt(newPatientAge) || 0,
+        gender: newPatientGender,
+        relevantInfo: newPatientInfo.trim() || undefined,
+      } : undefined;
+      onUpload(fundusFile, octFile || undefined, patientId, newPatientData, eyeSide);
       resetForm();
       onClose();
     }
@@ -85,6 +93,9 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
     setPatientOption('none');
     setSelectedPatientId('');
     setNewPatientName('');
+    setNewPatientAge('');
+    setNewPatientGender('male');
+    setNewPatientInfo('');
     setEyeSide('right');
   };
 
@@ -251,21 +262,77 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
           )}
 
           {patientOption === 'new' && (
-            <input
-              type="text"
-              value={newPatientName}
-              onChange={(e) => setNewPatientName(e.target.value)}
-              placeholder="Enter patient name"
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '1px solid #e5e7eb',
-                backgroundColor: '#f9fafb',
-                fontSize: '14px',
-                boxSizing: 'border-box',
-              }}
-            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <input
+                type="text"
+                value={newPatientName}
+                onChange={(e) => setNewPatientName(e.target.value)}
+                placeholder="Patient name *"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
+                  backgroundColor: '#f9fafb',
+                  fontSize: '14px',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <input
+                  type="number"
+                  value={newPatientAge}
+                  onChange={(e) => setNewPatientAge(e.target.value)}
+                  placeholder="Age"
+                  min="0"
+                  max="150"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    backgroundColor: '#f9fafb',
+                    fontSize: '14px',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                <select
+                  value={newPatientGender}
+                  onChange={(e) => setNewPatientGender(e.target.value as 'male' | 'female' | 'other')}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    backgroundColor: '#f9fafb',
+                    fontSize: '14px',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <textarea
+                value={newPatientInfo}
+                onChange={(e) => setNewPatientInfo(e.target.value)}
+                placeholder="Relevant medical history (optional)"
+                rows={2}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
+                  backgroundColor: '#f9fafb',
+                  fontSize: '14px',
+                  boxSizing: 'border-box',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                }}
+              />
+            </div>
           )}
         </div>
 

@@ -136,59 +136,53 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '6px', color: '#6b7280' }}>
               Patients
             </label>
-            <div style={{ position: 'relative' }}>
-              <select
-                multiple
-                value={selectedPatientIds}
-                onChange={(e) => {
-                  const options = Array.from(e.target.selectedOptions, option => option.value);
-                  setSelectedPatientIds(options);
-                }}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid #e5e7eb',
-                  fontSize: '14px',
-                  minWidth: '200px',
-                  minHeight: '80px',
-                  backgroundColor: 'white',
-                }}
-              >
-                {patients.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-              <button
-                onClick={selectAllPatients}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid #e5e7eb',
-                  backgroundColor: selectedPatientIds.length === patients.length ? '#0891b2' : 'white',
-                  color: selectedPatientIds.length === patients.length ? 'white' : '#374151',
-                  fontSize: '11px',
-                  cursor: 'pointer',
-                }}
-              >
-                All
-              </button>
+            <select
+              value={selectedPatientIds.length === 0 ? 'all' : selectedPatientIds.length === 1 ? selectedPatientIds[0] : 'multiple'}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === 'all') {
+                  setSelectedPatientIds([]);
+                } else if (val === 'multiple') {
+                  // Ignore - this is just a display value
+                } else {
+                  // Toggle single selection
+                  setSelectedPatientIds(prev => 
+                    prev.includes(val) ? prev.filter(id => id !== val) : [val]
+                  );
+                }
+              }}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                fontSize: '14px',
+                minWidth: '200px',
+                backgroundColor: 'white',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="all">All Patients</option>
+              {patients.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            {selectedPatientIds.length > 0 && (
               <button
                 onClick={clearPatientSelection}
                 style={{
-                  padding: '4px 10px',
+                  marginLeft: '8px',
+                  padding: '6px 12px',
                   borderRadius: '6px',
                   border: '1px solid #e5e7eb',
                   backgroundColor: 'white',
                   color: '#374151',
-                  fontSize: '11px',
+                  fontSize: '12px',
                   cursor: 'pointer',
                 }}
               >
                 Clear
               </button>
-            </div>
+            )}
           </div>
 
           <div>
