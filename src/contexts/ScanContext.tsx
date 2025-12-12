@@ -22,6 +22,12 @@ import fundus_MacularScar from "@/assets/fundus/Macular_Scar27.jpg";
 import fundus_DiscEdema6 from "@/assets/fundus/Disc_Edema6.jpg";
 import fundus_DiscEdema8 from "@/assets/fundus/Disc_Edema8.jpg";
 
+// John Smith fundus images
+import fundus_lefteye1 from "@/assets/fundus/lefteye1.jpg";
+import fundus_lefteye2 from "@/assets/fundus/lefteye2.jpg";
+import fundus_righteye1 from "@/assets/fundus/righteye1.jpg";
+import fundus_righteye2 from "@/assets/fundus/righteye2.jpg";
+
 // Import OCT scans (B&W TIF images)
 import oct_09 from "@/assets/oct/oct_09.tif";
 import oct_017_2 from "@/assets/oct/oct_017_2.tif";
@@ -188,7 +194,7 @@ const initialPatients: Patient[] = [
       {
         id: 's1a',
         name: 'DR Fundus (Left)',
-        imageUrl: fundus_DR161,
+        imageUrl: fundus_lefteye1,
         uploadedAt: new Date('2024-01-10'),
         type: 'fundus',
         eyeSide: 'left',
@@ -205,7 +211,7 @@ const initialPatients: Patient[] = [
       {
         id: 's1b',
         name: 'DR Fundus (Right)',
-        imageUrl: fundus_DR164,
+        imageUrl: fundus_righteye1,
         uploadedAt: new Date('2024-01-10'),
         type: 'fundus',
         eyeSide: 'right',
@@ -223,7 +229,7 @@ const initialPatients: Patient[] = [
       {
         id: 's1c',
         name: 'Follow-up (Left)',
-        imageUrl: fundus_DR168,
+        imageUrl: fundus_lefteye2,
         uploadedAt: new Date('2024-04-15'),
         type: 'fundus',
         eyeSide: 'left',
@@ -240,7 +246,7 @@ const initialPatients: Patient[] = [
       {
         id: 's1d',
         name: 'Follow-up (Right)',
-        imageUrl: fundus_DR171,
+        imageUrl: fundus_righteye2,
         uploadedAt: new Date('2024-04-15'),
         type: 'fundus',
         eyeSide: 'right',
@@ -253,36 +259,6 @@ const initialPatients: Patient[] = [
           { name: 'Diabetic Macular Edema', probability: 52, severity: 'medium', description: 'New onset macular edema in right eye.', detectedFrom: 'both', justification: 'OCT reveals new intraretinal cysts near fovea. Central thickness 310μm.', references: ['DRCR.net Protocol T, NEJM 2015'] },
         ],
         summary: 'DR progression in right eye with new DME. Initiate anti-VEGF treatment.',
-      },
-      // Visit 3 - August 2024 (no OCT)
-      {
-        id: 's1e',
-        name: 'Check-up (Left)',
-        imageUrl: fundus_DR172,
-        uploadedAt: new Date('2024-08-20'),
-        type: 'fundus',
-        eyeSide: 'left',
-        visitNumber: 3,
-        visitDate: new Date('2024-08-20'),
-        diseases: [
-          { name: 'Diabetic Retinopathy', probability: 55, severity: 'medium', description: 'Continued improvement with treatment.', detectedFrom: 'fundus', justification: 'Reduction in hemorrhages and microaneurysms. Hard exudates resolving.', references: ['ETDRS Study, 1991'] },
-        ],
-        summary: 'Good response to treatment. DR stable. Continue monitoring.',
-      },
-      {
-        id: 's1f',
-        name: 'Check-up (Right)',
-        imageUrl: fundus_DR173,
-        uploadedAt: new Date('2024-08-20'),
-        type: 'fundus',
-        eyeSide: 'right',
-        visitNumber: 3,
-        visitDate: new Date('2024-08-20'),
-        diseases: [
-          { name: 'Diabetic Retinopathy', probability: 62, severity: 'medium', description: 'Stabilized following anti-VEGF treatment.', detectedFrom: 'fundus', justification: 'No new hemorrhages. Previous hemorrhages resolving. Microaneurysms stable.', references: ['ETDRS Study, 1991'] },
-          { name: 'Diabetic Macular Edema', probability: 38, severity: 'low', description: 'Resolved macular edema.', detectedFrom: 'fundus', justification: 'Clinical examination suggests resolution. OCT recommended for confirmation.', references: ['DRCR.net Protocol T, NEJM 2015'] },
-        ],
-        summary: 'Good treatment response. DME likely resolved. Continue monitoring every 3-4 months.',
       },
     ],
   },
