@@ -260,16 +260,11 @@ export function TextualAnalysis({ scan, patient }: TextualAnalysisProps) {
                       borderRadius: '16px', 
                       fontSize: '14px', 
                       fontWeight: 600, 
-                      backgroundColor: getBgColor(disease.probability), 
-                      color: getColor(disease.probability) 
+                      backgroundColor: '#f3f4f6', 
+                      color: '#111' 
                     }}>
                       {Math.floor(Math.random() * 15) + 85}% confidence
                     </span>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div style={{ height: '8px', backgroundColor: '#e5e7eb', borderRadius: '4px', overflow: 'hidden', marginBottom: '12px' }}>
-                    <div style={{ width: `${disease.probability}%`, height: '100%', backgroundColor: getColor(disease.probability), borderRadius: '4px' }} />
                   </div>
 
                   {/* Description */}
