@@ -36,5 +36,11 @@ export async function getImagePreviewUrl(file: File): Promise<string> {
   if (isTifFile(file)) {
     return await convertTifToDataUrl(file);
   }
-  return URL.createObjectURL(file);
+  // For non-TIF images, read as a data URL so it persists across reloads
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
 }
