@@ -1,46 +1,94 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ImageTabs } from "@/components/ImageTabs";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { AnalysisPanel } from "@/components/AnalysisPanel";
 import { UploadModal } from "@/components/UploadModal";
 import { useScanContext } from "@/contexts/ScanContext";
 import { ViewMode } from "@/types/scan";
-import { FolderOpen, FileText, BarChart3, GitCompare, Microscope } from "lucide-react";
+import { FolderOpen, FileText, BarChart3, GitCompare, Microscope, ChevronDown, User } from "lucide-react";
 import Logo from "@/components/Logo";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<ViewMode>('textual');
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(320);
   const [chatHeight, setChatHeight] = useState(400);
+  const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
   
   const {
-    scans,
     patients,
     activeScan,
     activeTabId,
     chatHistory,
+    currentPatientId,
     setActiveTabId,
-    addScan,
-    addPatient,
+    setCurrentPatientId,
+    addScanToPatient,
     removeScan,
     addChatMessage,
   } = useScanContext();
 
-  const handleUpload = (fundusFile: File, octFile?: File, patientId?: string, newPatientData?: { name: string; age: number; gender: 'male' | 'female' | 'other'; relevantInfo?: string }, eyeSide?: 'left' | 'right') => {
-    let assignPatientId = patientId;
-    
-    if (newPatientData) {
-      assignPatientId = addPatient(newPatientData.name, '', newPatientData.age, newPatientData.gender, newPatientData.relevantInfo);
+  // Sync currentPatientId with URL params
+  useEffect(() => {
+    const patientIdFromUrl = searchParams.get('patientId');
+    if (patientIdFromUrl && patientIdFromUrl !== currentPatientId) {
+      setCurrentPatientId(patientIdFromUrl);
+    } else if (!patientIdFromUrl && patients.length > 0 && !currentPatientId) {
+      // Default to first patient if none selected
+      setCurrentPatientId(patients[0].id);
+      setSearchParams({ patientId: patients[0].id });
     }
-    
-    addScan(fundusFile, octFile, assignPatientId, eyeSide);
+  }, [searchParams, patients, currentPatientId, setCurrentPatientId, setSearchParams]);
+
+  // Get current patient
+  const currentPatient = useMemo(() => 
+    patients.find(p => p.id === currentPatientId) || patients[0],
+    [patients, currentPatientId]
+  );
+
+  // Get scans for current patient only
+  const patientScans = useMemo(() => 
+    currentPatient?.scans || [],
+    [currentPatient]
+  );
+
+  // Update active tab when patient changes
+  useEffect(() => {
+    if (patientScans.length > 0 && !patientScans.find(s => s.id === activeTabId)) {
+      setActiveTabId(patientScans[0].id);
+    } else if (patientScans.length === 0) {
+      setActiveTabId(null);
+    }
+  }, [patientScans, activeTabId, setActiveTabId]);
+
+  const activeScanFromPatient = useMemo(() => 
+    patientScans.find(s => s.id === activeTabId) || null,
+    [patientScans, activeTabId]
+  );
+
+  const handlePatientChange = (patientId: string) => {
+    setCurrentPatientId(patientId);
+    setSearchParams({ patientId });
+    setPatientDropdownOpen(false);
+  };
+
+  const handleUpload = (fundusFile: File, octFile?: File, eyeSide?: 'left' | 'right', visitNumber?: number, visitDate?: Date) => {
+    if (currentPatientId) {
+      addScanToPatient(currentPatientId, fundusFile, octFile, eyeSide, visitNumber, visitDate);
+    }
   };
 
   const handleSendMessage = (message: string, selectedScanIds: string[]) => {
     addChatMessage(message, selectedScanIds);
+  };
+
+  const handleRemoveScan = (scanId: string) => {
+    if (currentPatientId) {
+      removeScan(scanId, currentPatientId);
+    }
   };
 
   const viewModes = [
@@ -61,11 +109,94 @@ const Index = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-        <div
-          onClick={() => navigate('/')}
-          style={{ cursor: 'pointer' }}
-        >
-          <Logo size={40} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div
+            onClick={() => navigate('/')}
+            style={{ cursor: 'pointer' }}
+          >
+            <Logo size={40} />
+          </div>
+          
+          {/* Patient Selector */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setPatientDropdownOpen(!patientDropdownOpen)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                backgroundColor: '#f9fafb',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '14px',
+                color: '#374151',
+              }}
+            >
+              <User size={16} style={{ color: '#0891b2' }} />
+              {currentPatient?.name || 'Select Patient'}
+              <ChevronDown size={16} style={{ color: '#6b7280' }} />
+            </button>
+            
+            {patientDropdownOpen && (
+              <>
+                <div 
+                  onClick={() => setPatientDropdownOpen(false)}
+                  style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  marginTop: '4px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                  minWidth: '220px',
+                  zIndex: 50,
+                  maxHeight: '300px',
+                  overflowY: 'auto',
+                }}>
+                  {patients.map(patient => (
+                    <button
+                      key={patient.id}
+                      onClick={() => handlePatientChange(patient.id)}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '10px 14px',
+                        border: 'none',
+                        backgroundColor: patient.id === currentPatientId ? '#ecfeff' : 'transparent',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        borderBottom: '1px solid #f3f4f6',
+                      }}
+                    >
+                      <User size={16} style={{ color: patient.id === currentPatientId ? '#0891b2' : '#9ca3af' }} />
+                      <div>
+                        <p style={{ 
+                          fontSize: '14px', 
+                          fontWeight: patient.id === currentPatientId ? 600 : 400,
+                          color: patient.id === currentPatientId ? '#0891b2' : '#374151',
+                          margin: 0,
+                        }}>
+                          {patient.name}
+                        </p>
+                        <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>
+                          {patient.scans.length} scan{patient.scans.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
         
         {/* View Mode Buttons + Patient Records */}
@@ -138,7 +269,7 @@ const Index = () => {
             position: 'relative',
           }}>
             <ChatSidebar
-              scans={scans}
+              scans={patientScans}
               chatHistory={chatHistory}
               onSendMessage={handleSendMessage}
             />
@@ -185,11 +316,11 @@ const Index = () => {
             minHeight: '100px',
           }}>
             <ImageTabs
-              scans={scans}
+              scans={patientScans}
               activeTab={activeTabId}
               onTabChange={setActiveTabId}
               onAddNew={() => setUploadModalOpen(true)}
-              onRemoveTab={removeScan}
+              onRemoveTab={handleRemoveScan}
               compact
             />
           </div>
@@ -232,9 +363,9 @@ const Index = () => {
         {/* Analysis Panel */}
         <main style={{ flex: 1, overflow: 'hidden' }}>
           <AnalysisPanel
-            scan={activeScan}
+            scan={activeScanFromPatient}
             viewMode={viewMode}
-            allScans={scans}
+            allScans={patientScans}
             onUploadClick={() => setUploadModalOpen(true)}
           />
         </main>
@@ -245,7 +376,7 @@ const Index = () => {
         isOpen={uploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
         onUpload={handleUpload}
-        patients={patients}
+        currentPatientScansCount={patientScans.length}
       />
     </div>
   );

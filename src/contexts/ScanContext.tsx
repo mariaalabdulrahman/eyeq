@@ -141,7 +141,8 @@ interface ScanContextType {
   setActiveTabId: (id: string | null) => void;
   setCurrentPatientId: (id: string | null) => void;
   addScan: (fundusFile: File, octFile?: File, patientId?: string, eyeSide?: 'left' | 'right') => void;
-  removeScan: (id: string) => void;
+  addScanToPatient: (patientId: string, fundusFile: File, octFile?: File, eyeSide?: 'left' | 'right', visitNumber?: number, visitDate?: Date) => void;
+  removeScan: (id: string, patientId?: string) => void;
   addPatient: (name: string, dateOfBirth: string, age?: number, gender?: 'male' | 'female' | 'other', relevantInfo?: string, medicalTags?: string[]) => string;
   updatePatient: (patientId: string, updates: Partial<Pick<Patient, 'name' | 'dateOfBirth' | 'age' | 'gender' | 'relevantInfo' | 'medicalTags'>>) => void;
   addChatMessage: (content: string, selectedScanIds: string[]) => void;
@@ -509,7 +510,47 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     }
   }, [patients]);
 
-  const removeScan = useCallback((id: string) => {
+  const addScanToPatient = useCallback(async (patientId: string, fundusFile: File, octFile?: File, eyeSide?: 'left' | 'right', visitNumber?: number, visitDate?: Date) => {
+    const fundusUrl = await getImagePreviewUrl(fundusFile);
+    const octUrl = octFile ? await getImagePreviewUrl(octFile) : undefined;
+    const diseases = generateMockDiseases(!!octFile);
+    const baseName = fundusFile.name.replace(/\.[^/.]+$/, "");
+    const eyeLabel = eyeSide === 'left' ? '(Left)' : '(Right)';
+    
+    const newScan: ScanAnalysis = {
+      id: crypto.randomUUID(),
+      name: `${baseName} ${eyeLabel}`,
+      imageUrl: fundusUrl,
+      uploadedAt: new Date(),
+      type: 'fundus',
+      diseases,
+      summary: generateSummary(diseases),
+      linkedOctUrl: octUrl,
+      linkedOctName: octFile ? octFile.name.replace(/\.[^/.]+$/, "") : undefined,
+      eyeSide: eyeSide || 'right',
+      visitNumber: visitNumber || 1,
+      visitDate: visitDate || new Date(),
+    };
+
+    setPatients(prev => prev.map(p => 
+      p.id === patientId 
+        ? { ...p, scans: [...p.scans, newScan] }
+        : p
+    ));
+    setActiveTabId(newScan.id);
+  }, []);
+
+  const removeScan = useCallback((id: string, patientId?: string) => {
+    if (patientId) {
+      // Remove from patient's scans
+      setPatients(prev => prev.map(p => 
+        p.id === patientId 
+          ? { ...p, scans: p.scans.filter(s => s.id !== id) }
+          : p
+      ));
+    }
+    
+    // Also remove from global scans if present
     setScans(prev => {
       const newScans = prev.filter(s => s.id !== id);
       if (activeTabId === id) {
@@ -640,6 +681,7 @@ Would you like more specific information about any particular systemic-ocular re
       setActiveTabId,
       setCurrentPatientId,
       addScan,
+      addScanToPatient,
       removeScan,
       addPatient,
       updatePatient,

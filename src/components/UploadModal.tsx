@@ -1,29 +1,33 @@
-import { useState, useCallback } from "react";
-import { Upload, X, Microscope, Eye, UserPlus, User, Plus } from "lucide-react";
-import { Patient } from "@/types/scan";
+import { useState, useCallback, useEffect } from "react";
+import { Upload, X, Microscope, Eye, Plus, Calendar } from "lucide-react";
 import { getImagePreviewUrl } from "@/lib/tifUtils";
-import { MedicalTagInput } from "./MedicalTagInput";
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (fundusFile: File, octFile?: File, patientId?: string, newPatientData?: { name: string; age: number; gender: 'male' | 'female' | 'other'; relevantInfo?: string; medicalTags?: string[] }, eyeSide?: 'left' | 'right') => void;
-  patients: Patient[];
+  onUpload: (fundusFile: File, octFile?: File, eyeSide?: 'left' | 'right', visitNumber?: number, visitDate?: Date) => void;
+  currentPatientScansCount: number; // Number of existing scans for current patient
 }
 
-export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModalProps) {
+export function UploadModal({ isOpen, onClose, onUpload, currentPatientScansCount }: UploadModalProps) {
   const [dragActive, setDragActive] = useState(false);
   const [fundusFile, setFundusFile] = useState<File | null>(null);
   const [octFile, setOctFile] = useState<File | null>(null);
   const [fundusPreview, setFundusPreview] = useState<string | null>(null);
   const [octPreview, setOctPreview] = useState<string | null>(null);
-  const [patientOption, setPatientOption] = useState<'none' | 'existing' | 'new'>('none');
-  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
-  const [newPatientName, setNewPatientName] = useState<string>('');
-  const [newPatientAge, setNewPatientAge] = useState<string>('');
-  const [newPatientGender, setNewPatientGender] = useState<'male' | 'female' | 'other'>('male');
-  const [newPatientMedicalTags, setNewPatientMedicalTags] = useState<string[]>([]);
   const [eyeSide, setEyeSide] = useState<'left' | 'right'>('right');
+  const [visitNumber, setVisitNumber] = useState<number>(1);
+  const [visitDate, setVisitDate] = useState<string>(new Date().toISOString().split('T')[0]);
+
+  // Set default visit number based on existing scans
+  useEffect(() => {
+    if (currentPatientScansCount === 0) {
+      setVisitNumber(1);
+    } else {
+      // Default to next visit for patients with existing scans
+      setVisitNumber(Math.ceil(currentPatientScansCount / 2) + 1);
+    }
+  }, [currentPatientScansCount, isOpen]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -73,15 +77,7 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
 
   const handleSubmit = () => {
     if (fundusFile) {
-      const patientId = patientOption === 'existing' ? selectedPatientId : undefined;
-      const newPatientData = patientOption === 'new' && newPatientName.trim() ? {
-        name: newPatientName.trim(),
-        age: parseInt(newPatientAge) || 0,
-        gender: newPatientGender,
-        relevantInfo: newPatientMedicalTags.length > 0 ? newPatientMedicalTags.join(', ') : undefined,
-        medicalTags: newPatientMedicalTags,
-      } : undefined;
-      onUpload(fundusFile, octFile || undefined, patientId, newPatientData, eyeSide);
+      onUpload(fundusFile, octFile || undefined, eyeSide, visitNumber, new Date(visitDate));
       resetForm();
       onClose();
     }
@@ -92,13 +88,8 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
     setOctFile(null);
     setFundusPreview(null);
     setOctPreview(null);
-    setPatientOption('none');
-    setSelectedPatientId('');
-    setNewPatientName('');
-    setNewPatientAge('');
-    setNewPatientGender('male');
-    setNewPatientMedicalTags([]);
     setEyeSide('right');
+    setVisitDate(new Date().toISOString().split('T')[0]);
   };
 
   const handleClose = () => {
@@ -108,10 +99,10 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
 
   if (!isOpen) return null;
 
-  const canSubmit = fundusFile && 
-    (patientOption === 'none' || 
-     (patientOption === 'existing' && selectedPatientId) || 
-     (patientOption === 'new' && newPatientName.trim()));
+  const canSubmit = fundusFile;
+
+  // Generate visit options (1-10)
+  const visitOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
   return (
     <div style={{
@@ -170,165 +161,53 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
           Fundus image is required. You can optionally add an OCT scan of the same eye.
         </p>
 
-        {/* Patient Assignment Options */}
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '12px', color: '#374151' }}>
-            Assign to Patient
-          </label>
-          
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-            <button
-              onClick={() => setPatientOption('none')}
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: patientOption === 'none' ? '2px solid #0891b2' : '1px solid #e5e7eb',
-                backgroundColor: patientOption === 'none' ? '#ecfeff' : '#f9fafb',
-                color: patientOption === 'none' ? '#0891b2' : '#6b7280',
-                cursor: 'pointer',
-                fontWeight: 500,
-                fontSize: '13px',
-              }}
-            >
-              <X size={16} />
-              None
-            </button>
-            <button
-              onClick={() => setPatientOption('existing')}
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: patientOption === 'existing' ? '2px solid #0891b2' : '1px solid #e5e7eb',
-                backgroundColor: patientOption === 'existing' ? '#ecfeff' : '#f9fafb',
-                color: patientOption === 'existing' ? '#0891b2' : '#6b7280',
-                cursor: 'pointer',
-                fontWeight: 500,
-                fontSize: '13px',
-              }}
-            >
-              <User size={16} />
-              Existing
-            </button>
-            <button
-              onClick={() => setPatientOption('new')}
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: patientOption === 'new' ? '2px solid #0891b2' : '1px solid #e5e7eb',
-                backgroundColor: patientOption === 'new' ? '#ecfeff' : '#f9fafb',
-                color: patientOption === 'new' ? '#0891b2' : '#6b7280',
-                cursor: 'pointer',
-                fontWeight: 500,
-                fontSize: '13px',
-              }}
-            >
-              <UserPlus size={16} />
-              New Patient
-            </button>
-          </div>
-
-          {patientOption === 'existing' && (
-            <select
-              value={selectedPatientId}
-              onChange={(e) => setSelectedPatientId(e.target.value)}
+        {/* Visit Information */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500, marginBottom: '8px', color: '#374151' }}>
+              <Calendar size={16} style={{ color: '#0891b2' }} />
+              Image Date
+            </label>
+            <input
+              type="date"
+              value={visitDate}
+              onChange={(e) => setVisitDate(e.target.value)}
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: '10px 12px',
                 borderRadius: '8px',
                 border: '1px solid #e5e7eb',
                 backgroundColor: '#f9fafb',
                 fontSize: '14px',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '8px', color: '#374151' }}>
+              Visit Number
+            </label>
+            <select
+              value={visitNumber}
+              onChange={(e) => setVisitNumber(Number(e.target.value))}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                backgroundColor: '#f9fafb',
+                fontSize: '14px',
+                boxSizing: 'border-box',
                 cursor: 'pointer',
               }}
             >
-              <option value="">-- Select a patient --</option>
-              {patients.map(patient => (
-                <option key={patient.id} value={patient.id}>{patient.name}</option>
+              {visitOptions.map(num => (
+                <option key={num} value={num}>
+                  {num === 1 ? 'First Visit' : num === 2 ? 'Second Visit' : num === 3 ? 'Third Visit' : `Visit ${num}`}
+                </option>
               ))}
             </select>
-          )}
-
-          {patientOption === 'new' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <input
-                type="text"
-                value={newPatientName}
-                onChange={(e) => setNewPatientName(e.target.value)}
-                placeholder="Patient name *"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid #e5e7eb',
-                  backgroundColor: '#f9fafb',
-                  fontSize: '14px',
-                  boxSizing: 'border-box',
-                }}
-              />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <input
-                  type="number"
-                  value={newPatientAge}
-                  onChange={(e) => setNewPatientAge(e.target.value)}
-                  placeholder="Age"
-                  min="0"
-                  max="150"
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    border: '1px solid #e5e7eb',
-                    backgroundColor: '#f9fafb',
-                    fontSize: '14px',
-                    boxSizing: 'border-box',
-                  }}
-                />
-                <select
-                  value={newPatientGender}
-                  onChange={(e) => setNewPatientGender(e.target.value as 'male' | 'female' | 'other')}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    border: '1px solid #e5e7eb',
-                    backgroundColor: '#f9fafb',
-                    fontSize: '14px',
-                    boxSizing: 'border-box',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#374151' }}>
-                  Medical History (optional)
-                </label>
-                <MedicalTagInput
-                  value={newPatientMedicalTags}
-                  onChange={setNewPatientMedicalTags}
-                  placeholder="Type to search conditions..."
-                />
-              </div>
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Eye Side Selection */}
