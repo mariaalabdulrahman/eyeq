@@ -7,6 +7,7 @@ import { useScanContext } from "@/contexts/ScanContext";
 import { PatientChatSidebar } from "@/components/PatientChatSidebar";
 import { PatientReport } from "@/components/PatientReport";
 import { PatientStatistics } from "@/components/PatientStatistics";
+import { MedicalTagInput } from "@/components/MedicalTagInput";
 
 type RecordsViewMode = 'home' | 'doctor-report' | 'patient-report' | 'statistics';
 
@@ -32,19 +33,30 @@ const PatientRecords = () => {
     age: 0,
     gender: 'other' as 'male' | 'female' | 'other',
     relevantInfo: '',
+    medicalTags: [] as string[],
+  });
+  
+  // New patient inline creation state
+  const [isCreatingNewPatient, setIsCreatingNewPatient] = useState(false);
+  const [newPatientData, setNewPatientData] = useState({
+    name: '',
+    dateOfBirth: '',
+    gender: 'other' as 'male' | 'female' | 'other',
+    medicalTags: [] as string[],
   });
 
   // Sync editPatientData when selectedPatient changes
   useEffect(() => {
-    if (selectedPatient) {
+    if (selectedPatient && !isCreatingNewPatient) {
       setEditPatientData({
         name: selectedPatient.name,
         age: selectedPatient.age || 0,
         gender: selectedPatient.gender || 'other',
         relevantInfo: selectedPatient.relevantInfo || '',
+        medicalTags: selectedPatient.medicalTags || [],
       });
     }
-  }, [selectedPatient]);
+  }, [selectedPatient, isCreatingNewPatient]);
 
   // Update selectedPatient when patients changes
   useEffect(() => {
@@ -90,6 +102,46 @@ const PatientRecords = () => {
       setNewPatientDob("");
       setShowNewPatientModal(false);
     }
+  };
+
+  // Start inline new patient creation
+  const startNewPatientInline = () => {
+    setIsCreatingNewPatient(true);
+    setSelectedPatient(null);
+    setNewPatientData({
+      name: '',
+      dateOfBirth: '',
+      gender: 'other',
+      medicalTags: [],
+    });
+    setViewMode('home');
+  };
+
+  // Save new patient from inline form
+  const saveNewPatientInline = () => {
+    if (newPatientData.name.trim() && newPatientData.dateOfBirth) {
+      const newPatientId = addPatient(newPatientData.name.trim(), newPatientData.dateOfBirth);
+      // Update the patient with additional data
+      if (newPatientId) {
+        updatePatient(newPatientId, {
+          gender: newPatientData.gender,
+          medicalTags: newPatientData.medicalTags,
+        });
+        // Select the new patient after state updates
+        setTimeout(() => {
+          const updated = patients.find(p => p.id === newPatientId);
+          if (updated) setSelectedPatient(updated);
+        }, 100);
+      }
+      setIsCreatingNewPatient(false);
+      setNewPatientData({ name: '', dateOfBirth: '', gender: 'other', medicalTags: [] });
+    }
+  };
+
+  // Cancel inline creation
+  const cancelNewPatientInline = () => {
+    setIsCreatingNewPatient(false);
+    setNewPatientData({ name: '', dateOfBirth: '', gender: 'other', medicalTags: [] });
   };
 
   const viewModes = [
@@ -159,7 +211,7 @@ const PatientRecords = () => {
             Back to Dashboard
           </button>
           <button
-            onClick={() => setShowNewPatientModal(true)}
+            onClick={startNewPatientInline}
             style={{
               padding: '10px 20px',
               borderRadius: '8px',
@@ -320,20 +372,132 @@ const PatientRecords = () => {
         <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#f8fafc' }}>
           {viewMode === 'statistics' ? (
             <PatientStatistics patients={patients} />
-          ) : viewMode === 'doctor-report' ? (
+          ) : viewMode === 'doctor-report' && !isCreatingNewPatient ? (
             <PatientReport 
               patient={selectedPatient} 
               reportType="doctor" 
               isEditMode={isEditMode}
               onRequestEdit={handleRequestEdit}
             />
-          ) : viewMode === 'patient-report' ? (
+          ) : viewMode === 'patient-report' && !isCreatingNewPatient ? (
             <PatientReport 
               patient={selectedPatient} 
               reportType="patient"
               isEditMode={false}
               onRequestEdit={() => {}}
             />
+          ) : isCreatingNewPatient ? (
+            // Inline New Patient Creation Form
+            <div style={{ padding: '24px' }}>
+              <div style={{ 
+                backgroundColor: 'white', 
+                borderRadius: '12px', 
+                padding: '24px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                  <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#111' }}>New Patient</h2>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button
+                      onClick={cancelNewPatientInline}
+                      style={{
+                        padding: '10px 20px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        backgroundColor: 'white',
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={saveNewPatientInline}
+                      disabled={!newPatientData.name.trim() || !newPatientData.dateOfBirth}
+                      style={{
+                        padding: '10px 20px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        backgroundColor: newPatientData.name.trim() && newPatientData.dateOfBirth ? '#0891b2' : '#d1d5db',
+                        color: 'white',
+                        cursor: newPatientData.name.trim() && newPatientData.dateOfBirth ? 'pointer' : 'not-allowed',
+                        fontWeight: 500,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}
+                    >
+                      <Save size={16} /> Create Patient
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gap: '20px', maxWidth: '600px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Full Name *</label>
+                    <input
+                      type="text"
+                      value={newPatientData.name}
+                      onChange={(e) => setNewPatientData({ ...newPatientData, name: e.target.value })}
+                      placeholder="Enter patient name"
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        fontSize: '14px',
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Date of Birth *</label>
+                      <input
+                        type="date"
+                        value={newPatientData.dateOfBirth}
+                        onChange={(e) => setNewPatientData({ ...newPatientData, dateOfBirth: e.target.value })}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #e5e7eb',
+                          fontSize: '14px',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Gender</label>
+                      <select
+                        value={newPatientData.gender}
+                        onChange={(e) => setNewPatientData({ ...newPatientData, gender: e.target.value as 'male' | 'female' | 'other' })}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #e5e7eb',
+                          fontSize: '14px',
+                          backgroundColor: 'white',
+                        }}
+                      >
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Medical History</label>
+                    <MedicalTagInput
+                      value={newPatientData.medicalTags}
+                      onChange={(tags) => setNewPatientData({ ...newPatientData, medicalTags: tags })}
+                      placeholder="Type to search conditions..."
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           ) : (
             // Home/Overview Mode - Original content
             selectedPatient ? (
@@ -398,18 +562,10 @@ const PatientRecords = () => {
                           </div>
                           <div>
                             <label style={{ display: 'block', fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Medical History</label>
-                            <textarea
-                              value={editPatientData.relevantInfo}
-                              onChange={(e) => setEditPatientData({ ...editPatientData, relevantInfo: e.target.value })}
-                              placeholder="Relevant medical history..."
-                              style={{
-                                padding: '8px 12px',
-                                borderRadius: '8px',
-                                border: '1px solid #e5e7eb',
-                                width: '100%',
-                                minHeight: '60px',
-                                resize: 'vertical',
-                              }}
+                            <MedicalTagInput
+                              value={editPatientData.medicalTags}
+                              onChange={(tags) => setEditPatientData({ ...editPatientData, medicalTags: tags })}
+                              placeholder="Type to search conditions..."
                             />
                           </div>
                         </div>
@@ -423,7 +579,29 @@ const PatientRecords = () => {
                             DOB: {new Date(selectedPatient.dateOfBirth).toLocaleDateString()} | 
                             Patient since: {selectedPatient.createdAt.toLocaleDateString()}
                           </p>
-                          {selectedPatient.relevantInfo && (
+                          {selectedPatient.medicalTags && selectedPatient.medicalTags.length > 0 && (
+                            <div style={{ marginTop: '12px' }}>
+                              <strong style={{ fontSize: '14px', color: '#374151' }}>Medical History:</strong>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                                {selectedPatient.medicalTags.map((tag, idx) => (
+                                  <span
+                                    key={idx}
+                                    style={{
+                                      padding: '4px 10px',
+                                      borderRadius: '16px',
+                                      backgroundColor: '#ecfeff',
+                                      color: '#0891b2',
+                                      fontSize: '12px',
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {selectedPatient.relevantInfo && !selectedPatient.medicalTags?.length && (
                             <p style={{ color: '#374151', marginTop: '8px', fontSize: '14px', padding: '8px 12px', backgroundColor: '#f9fafb', borderRadius: '6px' }}>
                               <strong>Medical History:</strong> {selectedPatient.relevantInfo}
                             </p>

@@ -142,7 +142,8 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
     const ranges: { name: string; min: number; max: number }[] = [];
     for (let i = 0; i < 100; i += ageInterval) {
       ranges.push({
-        name: `${i}-${i + ageInterval - 1}`,
+        // If interval is 1, just show the age, otherwise show range
+        name: ageInterval === 1 ? `${i}` : `${i}-${i + ageInterval - 1}`,
         min: i,
         max: i + ageInterval - 1,
       });
@@ -163,8 +164,56 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
     { name: 'Fundus Only', value: filteredPatients.reduce((sum, p) => sum + p.scans.filter(s => !s.linkedOctUrl).length, 0) },
   ];
 
-  // Download Statistics as PDF
-  const downloadStatisticsPDF = () => {
+  // Systemic disease distribution from medical tags
+  const systemicDiseaseData = useMemo(() => {
+    const systemicCounts: Record<string, number> = {};
+    
+    filteredPatients.forEach(p => {
+      if (p.medicalTags) {
+        p.medicalTags.forEach(tag => {
+          // Only count systemic conditions (not ocular diseases or symptoms)
+          const systemicKeywords = ['diabetes', 'hypertension', 'cardiovascular', 'heart', 'stroke', 
+            'cholesterol', 'obesity', 'thyroid', 'autoimmune', 'arthritis', 'lupus', 'sclerosis',
+            'anemia', 'kidney', 'liver', 'cancer', 'hiv', 'tuberculosis'];
+          const isSystemic = systemicKeywords.some(keyword => tag.toLowerCase().includes(keyword));
+          if (isSystemic) {
+            systemicCounts[tag] = (systemicCounts[tag] || 0) + 1;
+          }
+        });
+      }
+    });
+    
+    return Object.entries(systemicCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, value]) => ({ name, value }));
+  }, [filteredPatients]);
+
+  // Symptoms distribution from medical tags
+  const symptomsData = useMemo(() => {
+    const symptomCounts: Record<string, number> = {};
+    
+    filteredPatients.forEach(p => {
+      if (p.medicalTags) {
+        p.medicalTags.forEach(tag => {
+          const symptomKeywords = ['vision', 'pain', 'redness', 'itching', 'burning', 'tearing',
+            'dry', 'sensitivity', 'blindness', 'floaters', 'flashes', 'headache', 'nausea', 'dizziness', 'fatigue'];
+          const isSymptom = symptomKeywords.some(keyword => tag.toLowerCase().includes(keyword));
+          if (isSymptom) {
+            symptomCounts[tag] = (symptomCounts[tag] || 0) + 1;
+          }
+        });
+      }
+    });
+    
+    return Object.entries(symptomCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, value]) => ({ name, value }));
+  }, [filteredPatients]);
+
+  // Download Statistics as PDF with charts
+  const downloadStatisticsPDF = async () => {
     const doc = new jsPDF();
     
     // Header
@@ -238,28 +287,103 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
     });
     
     // Age Distribution
-    const finalY2 = (doc as any).lastAutoTable?.finalY || finalY1 + 80;
+    let finalY2 = (doc as any).lastAutoTable?.finalY || finalY1 + 80;
     if (finalY2 > 240) {
       doc.addPage();
+      finalY2 = 10;
+    }
+    doc.setFontSize(12);
+    doc.text("Age Distribution:", 20, finalY2 + 15);
+    autoTable(doc, {
+      startY: finalY2 + 20,
+      head: [['Age Range', 'Count']],
+      body: ageDistribution.map(d => [d.name, d.value.toString()]),
+      theme: 'striped',
+      headStyles: { fillColor: [8, 145, 178] },
+    });
+
+    // Systemic Diseases
+    let finalY3 = (doc as any).lastAutoTable?.finalY || finalY2 + 80;
+    if (finalY3 > 240) {
+      doc.addPage();
+      finalY3 = 10;
+    }
+    if (systemicDiseaseData.length > 0) {
       doc.setFontSize(12);
-      doc.text("Age Distribution:", 20, 20);
+      doc.text("Systemic Diseases Distribution:", 20, finalY3 + 15);
       autoTable(doc, {
-        startY: 25,
-        head: [['Age Range', 'Count']],
-        body: ageDistribution.map(d => [d.name, d.value.toString()]),
+        startY: finalY3 + 20,
+        head: [['Condition', 'Count']],
+        body: systemicDiseaseData.map(d => [d.name, d.value.toString()]),
         theme: 'striped',
-        headStyles: { fillColor: [8, 145, 178] },
+        headStyles: { fillColor: [245, 158, 11] },
       });
-    } else {
+    }
+
+    // Symptoms
+    let finalY4 = (doc as any).lastAutoTable?.finalY || finalY3 + 80;
+    if (finalY4 > 240) {
+      doc.addPage();
+      finalY4 = 10;
+    }
+    if (symptomsData.length > 0) {
       doc.setFontSize(12);
-      doc.text("Age Distribution:", 20, finalY2 + 15);
+      doc.text("Symptoms Distribution:", 20, finalY4 + 15);
       autoTable(doc, {
-        startY: finalY2 + 20,
-        head: [['Age Range', 'Count']],
-        body: ageDistribution.map(d => [d.name, d.value.toString()]),
+        startY: finalY4 + 20,
+        head: [['Symptom', 'Count']],
+        body: symptomsData.map(d => [d.name, d.value.toString()]),
         theme: 'striped',
-        headStyles: { fillColor: [8, 145, 178] },
+        headStyles: { fillColor: [139, 92, 246] },
       });
+    }
+
+    // Capture charts as images
+    const chartContainers = document.querySelectorAll('[data-chart-container]');
+    if (chartContainers.length > 0) {
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text("Visual Charts", 20, 20);
+      
+      let chartY = 30;
+      for (const container of chartContainers) {
+        try {
+          const svgElement = container.querySelector('svg');
+          if (svgElement) {
+            const svgData = new XMLSerializer().serializeToString(svgElement);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            await new Promise<void>((resolve) => {
+              img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx?.drawImage(img, 0, 0);
+                const imgData = canvas.toDataURL('image/png');
+                
+                const maxWidth = 170;
+                const maxHeight = 80;
+                const ratio = Math.min(maxWidth / img.width, maxHeight / img.height);
+                const imgWidth = img.width * ratio;
+                const imgHeight = img.height * ratio;
+                
+                if (chartY + imgHeight > 280) {
+                  doc.addPage();
+                  chartY = 20;
+                }
+                
+                doc.addImage(imgData, 'PNG', 20, chartY, imgWidth, imgHeight);
+                chartY += imgHeight + 15;
+                resolve();
+              };
+              img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+            });
+          }
+        } catch (e) {
+          console.log('Could not capture chart:', e);
+        }
+      }
     }
     
     doc.save('patient_statistics.pdf');
@@ -685,7 +809,7 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
         </div>
 
         {/* Scan Types */}
-        <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} data-chart-container>
           <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Scan Types</h4>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={scanTypeData} layout="vertical">
@@ -696,6 +820,36 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        {/* Systemic Diseases */}
+        {systemicDiseaseData.length > 0 && (
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} data-chart-container>
+            <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Systemic Diseases</h4>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={systemicDiseaseData} layout="vertical">
+                <XAxis type="number" tick={{ fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={120} />
+                <Tooltip />
+                <Bar dataKey="value" fill="#f59e0b" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Symptoms */}
+        {symptomsData.length > 0 && (
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} data-chart-container>
+            <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Symptoms Distribution</h4>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={symptomsData} layout="vertical">
+                <XAxis type="number" tick={{ fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={120} />
+                <Tooltip />
+                <Bar dataKey="value" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
     </div>
   );
