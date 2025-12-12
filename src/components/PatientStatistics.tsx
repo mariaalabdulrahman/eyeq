@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Patient } from "@/types/scan";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { Filter, Users, Activity, AlertTriangle, TrendingUp, X } from "lucide-react";
+import { Filter, Users, Activity, AlertTriangle, TrendingUp, Download, Calendar, X, Check } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface PatientStatisticsProps {
   patients: Patient[];
@@ -10,9 +12,21 @@ interface PatientStatisticsProps {
 const COLORS = ['#0891b2', '#06b6d4', '#22d3ee', '#ef4444', '#f59e0b', '#22c55e', '#8b5cf6', '#ec4899'];
 
 export function PatientStatistics({ patients }: PatientStatisticsProps) {
-  const [ageFilter, setAgeFilter] = useState<string>('all');
-  const [diseaseFilter, setDiseaseFilter] = useState<string>('all');
   const [selectedPatientIds, setSelectedPatientIds] = useState<string[]>([]);
+  const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
+  const [diseaseFilter, setDiseaseFilter] = useState<string>('all');
+  const [genderFilter, setGenderFilter] = useState<string>('all');
+  
+  // Age range filter - custom slider
+  const [ageMin, setAgeMin] = useState<number>(0);
+  const [ageMax, setAgeMax] = useState<number>(100);
+  
+  // Date range filter
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+  
+  // Age distribution interval
+  const [ageInterval, setAgeInterval] = useState<number>(20);
 
   // Calculate age from DOB
   const getAge = (dob: string) => {
@@ -51,25 +65,46 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
   };
 
   // Filter patients
-  const filteredPatients = patients.filter(p => {
-    // Patient name filter
-    if (selectedPatientIds.length > 0 && !selectedPatientIds.includes(p.id)) {
-      return false;
-    }
+  const filteredPatients = useMemo(() => {
+    return patients.filter(p => {
+      // Patient name filter
+      if (selectedPatientIds.length > 0 && !selectedPatientIds.includes(p.id)) {
+        return false;
+      }
 
-    const age = getAge(p.dateOfBirth);
-    const patientDiseases = p.scans.flatMap(s => s.diseases.map(d => d.name));
-    
-    let ageMatch = true;
-    if (ageFilter === '0-20') ageMatch = age >= 0 && age <= 20;
-    else if (ageFilter === '21-40') ageMatch = age >= 21 && age <= 40;
-    else if (ageFilter === '41-60') ageMatch = age >= 41 && age <= 60;
-    else if (ageFilter === '60+') ageMatch = age > 60;
-    
-    const diseaseMatch = diseaseFilter === 'all' || patientDiseases.includes(diseaseFilter);
-    
-    return ageMatch && diseaseMatch;
-  });
+      const age = getAge(p.dateOfBirth);
+      const patientDiseases = p.scans.flatMap(s => s.diseases.map(d => d.name));
+      
+      // Age range filter
+      if (age < ageMin || age > ageMax) {
+        return false;
+      }
+      
+      // Gender filter
+      if (genderFilter !== 'all' && p.gender !== genderFilter) {
+        return false;
+      }
+      
+      // Date filter - check if any scan is within the date range
+      if (dateFrom || dateTo) {
+        const hasScansInRange = p.scans.some(s => {
+          const scanDate = s.visitDate || s.uploadedAt;
+          const scanDateStr = scanDate instanceof Date 
+            ? scanDate.toISOString().split('T')[0]
+            : new Date(scanDate).toISOString().split('T')[0];
+          
+          if (dateFrom && scanDateStr < dateFrom) return false;
+          if (dateTo && scanDateStr > dateTo) return false;
+          return true;
+        });
+        if (!hasScansInRange) return false;
+      }
+      
+      const diseaseMatch = diseaseFilter === 'all' || patientDiseases.includes(diseaseFilter);
+      
+      return diseaseMatch;
+    });
+  }, [patients, selectedPatientIds, ageMin, ageMax, genderFilter, dateFrom, dateTo, diseaseFilter]);
 
   // Disease distribution data
   const diseaseDistribution = filteredPatients.reduce((acc, p) => {
@@ -102,19 +137,133 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
     }).length, color: '#22c55e' },
   ];
 
-  // Age distribution
-  const ageDistribution = [
-    { name: '0-20', value: filteredPatients.filter(p => getAge(p.dateOfBirth) <= 20).length },
-    { name: '21-40', value: filteredPatients.filter(p => { const a = getAge(p.dateOfBirth); return a >= 21 && a <= 40; }).length },
-    { name: '41-60', value: filteredPatients.filter(p => { const a = getAge(p.dateOfBirth); return a >= 41 && a <= 60; }).length },
-    { name: '60+', value: filteredPatients.filter(p => getAge(p.dateOfBirth) > 60).length },
-  ];
+  // Dynamic age distribution based on interval
+  const ageDistribution = useMemo(() => {
+    const ranges: { name: string; min: number; max: number }[] = [];
+    for (let i = 0; i < 100; i += ageInterval) {
+      ranges.push({
+        name: `${i}-${i + ageInterval - 1}`,
+        min: i,
+        max: i + ageInterval - 1,
+      });
+    }
+    
+    return ranges.map(range => ({
+      name: range.name,
+      value: filteredPatients.filter(p => {
+        const age = getAge(p.dateOfBirth);
+        return age >= range.min && age <= range.max;
+      }).length,
+    })).filter(d => d.value > 0 || ranges.length <= 10);
+  }, [filteredPatients, ageInterval]);
 
-  // Scan type distribution - count fundus with OCT vs fundus only
+  // Scan type distribution
   const scanTypeData = [
     { name: 'Fundus + OCT', value: filteredPatients.reduce((sum, p) => sum + p.scans.filter(s => s.linkedOctUrl).length, 0) },
     { name: 'Fundus Only', value: filteredPatients.reduce((sum, p) => sum + p.scans.filter(s => !s.linkedOctUrl).length, 0) },
   ];
+
+  // Download Statistics as PDF
+  const downloadStatisticsPDF = () => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(8, 145, 178);
+    doc.text("EyeQ by LucidEye", 20, 20);
+    
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Patient Statistics Report", 20, 35);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 42);
+    
+    // Filters Applied
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Filters Applied:", 20, 55);
+    doc.setFontSize(10);
+    let filterY = 62;
+    if (selectedPatientIds.length > 0) {
+      doc.text(`Patients: ${selectedPatientIds.length} selected`, 25, filterY);
+      filterY += 6;
+    }
+    doc.text(`Age Range: ${ageMin} - ${ageMax}`, 25, filterY);
+    filterY += 6;
+    if (genderFilter !== 'all') {
+      doc.text(`Gender: ${genderFilter}`, 25, filterY);
+      filterY += 6;
+    }
+    if (dateFrom || dateTo) {
+      doc.text(`Date Range: ${dateFrom || 'Start'} to ${dateTo || 'End'}`, 25, filterY);
+      filterY += 6;
+    }
+    
+    // Summary Stats
+    filterY += 8;
+    doc.setFontSize(12);
+    doc.text("Summary Statistics:", 20, filterY);
+    filterY += 8;
+    
+    autoTable(doc, {
+      startY: filterY,
+      head: [['Metric', 'Value']],
+      body: [
+        ['Total Patients', filteredPatients.length.toString()],
+        ['High Risk Patients', riskData[0].value.toString()],
+        ['Moderate Risk Patients', riskData[1].value.toString()],
+        ['Low Risk Patients', riskData[2].value.toString()],
+        ['Total Scans', filteredPatients.reduce((sum, p) => sum + p.scans.length, 0).toString()],
+        ['Conditions Found', Object.keys(diseaseDistribution).length.toString()],
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [8, 145, 178] },
+    });
+    
+    // Disease Distribution
+    const finalY1 = (doc as any).lastAutoTable?.finalY || filterY + 60;
+    doc.setFontSize(12);
+    doc.text("Disease Distribution:", 20, finalY1 + 15);
+    
+    autoTable(doc, {
+      startY: finalY1 + 20,
+      head: [['Disease', 'Count']],
+      body: Object.entries(diseaseDistribution)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, count]) => [name, count.toString()]),
+      theme: 'striped',
+      headStyles: { fillColor: [8, 145, 178] },
+    });
+    
+    // Age Distribution
+    const finalY2 = (doc as any).lastAutoTable?.finalY || finalY1 + 80;
+    if (finalY2 > 240) {
+      doc.addPage();
+      doc.setFontSize(12);
+      doc.text("Age Distribution:", 20, 20);
+      autoTable(doc, {
+        startY: 25,
+        head: [['Age Range', 'Count']],
+        body: ageDistribution.map(d => [d.name, d.value.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [8, 145, 178] },
+      });
+    } else {
+      doc.setFontSize(12);
+      doc.text("Age Distribution:", 20, finalY2 + 15);
+      autoTable(doc, {
+        startY: finalY2 + 20,
+        head: [['Age Range', 'Count']],
+        body: ageDistribution.map(d => [d.name, d.value.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [8, 145, 178] },
+      });
+    }
+    
+    doc.save('patient_statistics.pdf');
+  };
 
   return (
     <div style={{ padding: '24px', overflowY: 'auto', height: '100%' }}>
@@ -126,31 +275,39 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
         marginBottom: '24px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-          <Filter size={20} style={{ color: '#0891b2' }} />
-          <h3 style={{ fontSize: '16px', fontWeight: 600 }}>Filters</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Filter size={20} style={{ color: '#0891b2' }} />
+            <h3 style={{ fontSize: '16px', fontWeight: 600 }}>Filters</h3>
+          </div>
+          <button
+            onClick={downloadStatisticsPDF}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: '#0891b2',
+              color: 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: 500,
+              fontSize: '13px',
+            }}
+          >
+            <Download size={16} /> Download PDF
+          </button>
         </div>
+        
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          {/* Patient Name Filter - Dropdown */}
-          <div>
+          {/* Patient Multi-Select Dropdown */}
+          <div style={{ position: 'relative' }}>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '6px', color: '#6b7280' }}>
               Patients
             </label>
-            <select
-              value={selectedPatientIds.length === 0 ? 'all' : selectedPatientIds.length === 1 ? selectedPatientIds[0] : 'multiple'}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === 'all') {
-                  setSelectedPatientIds([]);
-                } else if (val === 'multiple') {
-                  // Ignore - this is just a display value
-                } else {
-                  // Toggle single selection
-                  setSelectedPatientIds(prev => 
-                    prev.includes(val) ? prev.filter(id => id !== val) : [val]
-                  );
-                }
-              }}
+            <button
+              onClick={() => setPatientDropdownOpen(!patientDropdownOpen)}
               style={{
                 padding: '8px 12px',
                 borderRadius: '8px',
@@ -159,52 +316,183 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
                 minWidth: '200px',
                 backgroundColor: 'white',
                 cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px',
               }}
             >
-              <option value="all">All Patients</option>
-              {patients.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-            {selectedPatientIds.length > 0 && (
-              <button
-                onClick={clearPatientSelection}
-                style={{
-                  marginLeft: '8px',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  border: '1px solid #e5e7eb',
-                  backgroundColor: 'white',
-                  color: '#374151',
-                  fontSize: '12px',
-                  cursor: 'pointer',
+              <span>
+                {selectedPatientIds.length === 0 
+                  ? 'All Patients' 
+                  : `${selectedPatientIds.length} selected`}
+              </span>
+              <X 
+                size={14} 
+                style={{ 
+                  color: '#6b7280',
+                  visibility: selectedPatientIds.length > 0 ? 'visible' : 'hidden',
                 }}
-              >
-                Clear
-              </button>
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearPatientSelection();
+                }}
+              />
+            </button>
+            
+            {patientDropdownOpen && (
+              <>
+                <div 
+                  onClick={() => setPatientDropdownOpen(false)}
+                  style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  marginTop: '4px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                  minWidth: '250px',
+                  zIndex: 50,
+                  maxHeight: '300px',
+                  overflowY: 'auto',
+                }}>
+                  {/* Select All / Clear */}
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '8px', 
+                    padding: '8px 12px', 
+                    borderBottom: '1px solid #e5e7eb',
+                    backgroundColor: '#f9fafb',
+                  }}>
+                    <button
+                      onClick={selectAllPatients}
+                      style={{
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        border: '1px solid #e5e7eb',
+                        backgroundColor: 'white',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                      }}
+                    >
+                      Select All
+                    </button>
+                    <button
+                      onClick={clearPatientSelection}
+                      style={{
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        border: '1px solid #e5e7eb',
+                        backgroundColor: 'white',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  
+                  {patients.map(p => (
+                    <div
+                      key={p.id}
+                      onClick={() => togglePatient(p.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '10px 14px',
+                        cursor: 'pointer',
+                        backgroundColor: selectedPatientIds.includes(p.id) ? '#ecfeff' : 'transparent',
+                        borderBottom: '1px solid #f3f4f6',
+                      }}
+                    >
+                      <div style={{
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '4px',
+                        border: selectedPatientIds.includes(p.id) ? '2px solid #0891b2' : '2px solid #d1d5db',
+                        backgroundColor: selectedPatientIds.includes(p.id) ? '#0891b2' : 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        {selectedPatientIds.includes(p.id) && <Check size={12} style={{ color: 'white' }} />}
+                      </div>
+                      <span style={{ fontSize: '14px' }}>{p.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
+          {/* Age Range - Dual Slider with inputs */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '6px', color: '#6b7280' }}>Age Range</label>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '6px', color: '#6b7280' }}>
+              Age Range
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                type="number"
+                value={ageMin}
+                onChange={(e) => setAgeMin(Math.max(0, Math.min(Number(e.target.value), ageMax)))}
+                style={{
+                  width: '60px',
+                  padding: '8px',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
+                  fontSize: '14px',
+                  textAlign: 'center',
+                }}
+                min={0}
+                max={100}
+              />
+              <span style={{ color: '#6b7280' }}>to</span>
+              <input
+                type="number"
+                value={ageMax}
+                onChange={(e) => setAgeMax(Math.max(ageMin, Math.min(Number(e.target.value), 100)))}
+                style={{
+                  width: '60px',
+                  padding: '8px',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
+                  fontSize: '14px',
+                  textAlign: 'center',
+                }}
+                min={0}
+                max={100}
+              />
+            </div>
+          </div>
+
+          {/* Gender Filter */}
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '6px', color: '#6b7280' }}>Gender</label>
             <select
-              value={ageFilter}
-              onChange={(e) => setAgeFilter(e.target.value)}
+              value={genderFilter}
+              onChange={(e) => setGenderFilter(e.target.value)}
               style={{
                 padding: '8px 12px',
                 borderRadius: '8px',
                 border: '1px solid #e5e7eb',
                 fontSize: '14px',
                 minWidth: '120px',
+                backgroundColor: 'white',
               }}
             >
-              <option value="all">All Ages</option>
-              <option value="0-20">0-20 years</option>
-              <option value="21-40">21-40 years</option>
-              <option value="41-60">41-60 years</option>
-              <option value="60+">60+ years</option>
+              <option value="all">All</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
             </select>
           </div>
+
+          {/* Disease Filter */}
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '6px', color: '#6b7280' }}>Disease</label>
             <select
@@ -216,6 +504,7 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
                 border: '1px solid #e5e7eb',
                 fontSize: '14px',
                 minWidth: '180px',
+                backgroundColor: 'white',
               }}
             >
               <option value="all">All Diseases</option>
@@ -223,6 +512,41 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
                 <option key={d} value={d}>{d}</option>
               ))}
             </select>
+          </div>
+
+          {/* Date Range Filter */}
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '6px', color: '#6b7280' }}>
+              <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} />
+              Date From
+            </label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                fontSize: '14px',
+              }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, marginBottom: '6px', color: '#6b7280' }}>
+              Date To
+            </label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                fontSize: '14px',
+              }}
+            />
           </div>
         </div>
       </div>
@@ -326,12 +650,33 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
           </ResponsiveContainer>
         </div>
 
-        {/* Age Distribution */}
+        {/* Age Distribution - Customizable Interval */}
         <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Age Distribution</h4>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h4 style={{ fontSize: '16px', fontWeight: 600 }}>Age Distribution</h4>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '12px', color: '#6b7280' }}>Interval:</span>
+              <select
+                value={ageInterval}
+                onChange={(e) => setAgeInterval(Number(e.target.value))}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid #e5e7eb',
+                  fontSize: '12px',
+                  backgroundColor: 'white',
+                }}
+              >
+                <option value={1}>1 year</option>
+                <option value={5}>5 years</option>
+                <option value={10}>10 years</option>
+                <option value={20}>20 years</option>
+              </select>
+            </div>
+          </div>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={ageDistribution}>
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-45} textAnchor="end" height={60} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
               <Bar dataKey="value" fill="#0891b2" radius={[4, 4, 0, 0]} />
@@ -345,7 +690,7 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={scanTypeData} layout="vertical">
               <XAxis type="number" tick={{ fontSize: 12 }} />
-              <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={60} />
+              <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={80} />
               <Tooltip />
               <Bar dataKey="value" fill="#06b6d4" radius={[0, 4, 4, 0]} />
             </BarChart>

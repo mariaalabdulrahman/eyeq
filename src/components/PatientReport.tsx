@@ -308,6 +308,9 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
     );
   }
 
+  // Filter out low risk diseases for patient report
+  const significantDiseases = diseases.filter(d => d.probability >= 40);
+
   // Patient-friendly report
   return (
     <div style={{ padding: '24px', overflowY: 'auto', height: '100%' }}>
@@ -376,7 +379,7 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
         </div>
       </div>
 
-      {/* Findings */}
+      {/* Findings - Only show medium and high risk */}
       <div style={{ 
         backgroundColor: 'white', 
         borderRadius: '12px', 
@@ -385,15 +388,15 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
       }}>
         <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>What We Found</h3>
-        {diseases.length === 0 ? (
+        {significantDiseases.length === 0 ? (
           <p style={{ color: '#6b7280' }}>No concerning findings detected. Keep up the great work with your eye health!</p>
         ) : (
-          diseases.map((disease, idx) => (
+          significantDiseases.map((disease, idx) => (
             <div key={idx} style={{ 
               padding: '16px',
-              marginBottom: idx < diseases.length - 1 ? '12px' : 0,
+              marginBottom: idx < significantDiseases.length - 1 ? '12px' : 0,
               borderRadius: '10px',
-              backgroundColor: disease.probability >= 70 ? '#fef2f2' : disease.probability >= 40 ? '#fffbeb' : '#f0fdf4',
+              backgroundColor: disease.probability >= 70 ? '#fef2f2' : '#fffbeb',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <span style={{ fontWeight: 600, fontSize: '16px' }}>{disease.name}</span>
@@ -403,9 +406,9 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
                   fontSize: '13px',
                   fontWeight: 600,
                   backgroundColor: 'white',
-                  color: disease.probability >= 70 ? '#ef4444' : disease.probability >= 40 ? '#f59e0b' : '#22c55e',
+                  color: disease.probability >= 70 ? '#ef4444' : '#f59e0b',
                 }}>
-                  {disease.probability >= 70 ? '⚠️ Needs Attention' : disease.probability >= 40 ? '👀 Monitor' : '✓ Looking Good'}
+                  {disease.probability >= 70 ? '⚠️ Needs Attention' : '👀 Monitor'}
                 </span>
               </div>
               <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.6 }}>

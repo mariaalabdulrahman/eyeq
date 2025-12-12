@@ -160,6 +160,31 @@ const Index = () => {
                   maxHeight: '300px',
                   overflowY: 'auto',
                 }}>
+                  {/* Add New Patient Option */}
+                  <button
+                    onClick={() => {
+                      setPatientDropdownOpen(false);
+                      navigate('/');
+                    }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px 14px',
+                      border: 'none',
+                      backgroundColor: '#f0fdf4',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      borderBottom: '2px solid #e5e7eb',
+                      color: '#22c55e',
+                      fontWeight: 500,
+                    }}
+                  >
+                    <span style={{ fontSize: '16px' }}>+</span>
+                    <span style={{ fontSize: '14px' }}>Add New Patient</span>
+                  </button>
+                  
                   {patients.map(patient => (
                     <button
                       key={patient.id}
