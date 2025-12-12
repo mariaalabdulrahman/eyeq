@@ -4,6 +4,12 @@ import { getImagePreviewUrl } from "@/lib/tifUtils";
 
 // Import local fundus images
 import fundus_DR165 from "@/assets/fundus/DR165.jpg";
+import fundus_DR161 from "@/assets/fundus/DR161.jpg";
+import fundus_DR164 from "@/assets/fundus/DR164.jpg";
+import fundus_DR168 from "@/assets/fundus/DR168.jpg";
+import fundus_DR171 from "@/assets/fundus/DR171.jpg";
+import fundus_DR172 from "@/assets/fundus/DR172.jpg";
+import fundus_DR173 from "@/assets/fundus/DR173.jpg";
 import fundus_Glaucoma117 from "@/assets/fundus/Glaucoma117.jpg";
 import fundus_Myopia12 from "@/assets/fundus/Myopia12.jpg";
 import fundus_Retinitis from "@/assets/fundus/Retinitis_Pigmentosa138.jpg";
@@ -159,56 +165,109 @@ const initialPatients: Patient[] = [
     dateOfBirth: '1965-03-15',
     age: 59,
     gender: 'male',
-    relevantInfo: 'Type 2 diabetes for 15 years, hypertension',
+    relevantInfo: 'Type 2 diabetes for 15 years, hypertension, cardiovascular disease',
+    medicalTags: ['Diabetes Type 2', 'Hypertension', 'Cardiovascular Disease', 'Obesity', 'High Cholesterol', 'Blurred Vision', 'Floaters'],
     createdAt: new Date('2024-01-10'),
     scans: [
+      // Visit 1 - January 2024
       {
-        id: 's1',
+        id: 's1a',
         name: 'DR Fundus (Left)',
-        imageUrl: fundus_DR165,
+        imageUrl: fundus_DR161,
         uploadedAt: new Date('2024-01-10'),
         type: 'fundus',
         eyeSide: 'left',
         visitNumber: 1,
         visitDate: new Date('2024-01-10'),
         linkedOctUrl: fundus_Myopia12,
-        linkedOctName: 'OCT Scan Left Eye',
+        linkedOctName: 'OCT Scan Left Eye V1',
         diseases: [
-          { name: 'Diabetic Macular Edema', probability: 45, severity: 'medium', description: 'Fluid accumulation detected.', detectedFrom: 'both', justification: 'Fundus reveals hard exudates and macular thickening; OCT confirms intraretinal fluid pockets.', references: ['DRCR.net Protocol T, NEJM 2015'] },
-          { name: 'Diabetic Retinopathy', probability: 65, severity: 'medium', description: 'Microaneurysms and hard exudates visible in fundus.', detectedFrom: 'fundus', justification: 'Multiple microaneurysms and hard exudates detected in the posterior pole of the fundus image.', references: ['ETDRS Study, 1991'] },
+          { name: 'Diabetic Retinopathy', probability: 72, severity: 'high', description: 'Moderate non-proliferative diabetic retinopathy with microaneurysms and hemorrhages.', detectedFrom: 'fundus', justification: 'Multiple microaneurysms, dot-blot hemorrhages, and hard exudates detected in the posterior pole. The pattern is consistent with moderate NPDR.', references: ['ETDRS Study, 1991', 'AAO Preferred Practice Pattern: Diabetic Retinopathy, 2019'] },
+          { name: 'Diabetic Macular Edema', probability: 58, severity: 'medium', description: 'Center-involving macular edema confirmed on OCT.', detectedFrom: 'both', justification: 'Fundus reveals hard exudates approaching fovea; OCT confirms intraretinal fluid pockets with central subfield thickness of 340μm.', references: ['DRCR.net Protocol T, NEJM 2015'] },
         ],
-        summary: 'Moderate diabetic retinopathy detected with macular edema confirmed on OCT. Follow-up recommended.',
+        summary: 'Moderate NPDR with center-involving DME detected. Anti-VEGF treatment recommended.',
       },
       {
         id: 's1b',
-        name: 'Macular Scan (Right)',
-        imageUrl: fundus_MacularScar,
+        name: 'DR Fundus (Right)',
+        imageUrl: fundus_DR164,
         uploadedAt: new Date('2024-01-10'),
         type: 'fundus',
         eyeSide: 'right',
         visitNumber: 1,
         visitDate: new Date('2024-01-10'),
+        linkedOctUrl: fundus_CSCR99,
+        linkedOctName: 'OCT Scan Right Eye V1',
         diseases: [
-          { name: 'Macular Scar', probability: 72, severity: 'high', description: 'Macular scarring visible affecting central vision.', detectedFrom: 'fundus', justification: 'Fundus shows well-defined macular scar with pigmentary changes.', references: ['Gass JD. Stereoscopic Atlas of Macular Diseases, 1997'] },
+          { name: 'Diabetic Retinopathy', probability: 65, severity: 'medium', description: 'Mild to moderate NPDR with scattered microaneurysms.', detectedFrom: 'fundus', justification: 'Scattered microaneurysms and few dot hemorrhages visible. Less severe than left eye.', references: ['ETDRS Study, 1991'] },
+          { name: 'Hard Exudates', probability: 48, severity: 'medium', description: 'Lipid deposits in outer retinal layers.', detectedFrom: 'both', justification: 'Yellow-white deposits visible temporal to macula consistent with lipid exudation from leaky microaneurysms.', references: ['AAO Preferred Practice Pattern: Diabetic Retinopathy, 2019'] },
         ],
-        summary: 'Macular scarring detected. Vision assessment recommended.',
+        summary: 'Mild-moderate NPDR in right eye. Monitor closely and optimize glycemic control.',
       },
+      // Visit 2 - April 2024
       {
         id: 's1c',
-        name: 'Follow-up Left Eye',
-        imageUrl: fundus_DR165,
-        uploadedAt: new Date('2024-03-15'),
+        name: 'Follow-up (Left)',
+        imageUrl: fundus_DR168,
+        uploadedAt: new Date('2024-04-15'),
         type: 'fundus',
         eyeSide: 'left',
         visitNumber: 2,
-        visitDate: new Date('2024-03-15'),
-        linkedOctUrl: fundus_Myopia12,
-        linkedOctName: 'OCT Follow-up',
+        visitDate: new Date('2024-04-15'),
+        linkedOctUrl: fundus_MacularScar,
+        linkedOctName: 'OCT Follow-up Left V2',
         diseases: [
-          { name: 'Diabetic Macular Edema', probability: 38, severity: 'low', description: 'Reduced fluid accumulation.', detectedFrom: 'both', justification: 'Improvement noted with anti-VEGF treatment.', references: ['DRCR.net Protocol T, NEJM 2015'] },
-          { name: 'Diabetic Retinopathy', probability: 55, severity: 'medium', description: 'Stable microaneurysms.', detectedFrom: 'fundus', justification: 'No new hemorrhages detected. Existing microaneurysms stable.', references: ['ETDRS Study, 1991'] },
+          { name: 'Diabetic Retinopathy', probability: 68, severity: 'medium', description: 'Stable NPDR following treatment.', detectedFrom: 'fundus', justification: 'Microaneurysms stable, no new hemorrhages. Partial resolution of hard exudates after anti-VEGF.', references: ['DRCR.net Protocol T, NEJM 2015'] },
+          { name: 'Diabetic Macular Edema', probability: 42, severity: 'medium', description: 'Reduced macular edema.', detectedFrom: 'both', justification: 'OCT shows reduced central subfield thickness to 285μm. Intraretinal fluid decreased.', references: ['DRCR.net Protocol T, NEJM 2015'] },
         ],
-        summary: 'Improvement in macular edema following treatment. Diabetic retinopathy stable.',
+        summary: 'Improvement in DME following anti-VEGF therapy. Continue treatment.',
+      },
+      {
+        id: 's1d',
+        name: 'Follow-up (Right)',
+        imageUrl: fundus_DR171,
+        uploadedAt: new Date('2024-04-15'),
+        type: 'fundus',
+        eyeSide: 'right',
+        visitNumber: 2,
+        visitDate: new Date('2024-04-15'),
+        linkedOctUrl: fundus_DiscEdema6,
+        linkedOctName: 'OCT Follow-up Right V2',
+        diseases: [
+          { name: 'Diabetic Retinopathy', probability: 70, severity: 'high', description: 'Progression to moderate NPDR with new hemorrhages.', detectedFrom: 'fundus', justification: 'New intraretinal hemorrhages noted. Microaneurysms increased in number.', references: ['ETDRS Study, 1991'] },
+          { name: 'Diabetic Macular Edema', probability: 52, severity: 'medium', description: 'New onset macular edema in right eye.', detectedFrom: 'both', justification: 'OCT reveals new intraretinal cysts near fovea. Central thickness 310μm.', references: ['DRCR.net Protocol T, NEJM 2015'] },
+        ],
+        summary: 'DR progression in right eye with new DME. Initiate anti-VEGF treatment.',
+      },
+      // Visit 3 - August 2024 (no OCT)
+      {
+        id: 's1e',
+        name: 'Check-up (Left)',
+        imageUrl: fundus_DR172,
+        uploadedAt: new Date('2024-08-20'),
+        type: 'fundus',
+        eyeSide: 'left',
+        visitNumber: 3,
+        visitDate: new Date('2024-08-20'),
+        diseases: [
+          { name: 'Diabetic Retinopathy', probability: 55, severity: 'medium', description: 'Continued improvement with treatment.', detectedFrom: 'fundus', justification: 'Reduction in hemorrhages and microaneurysms. Hard exudates resolving.', references: ['ETDRS Study, 1991'] },
+        ],
+        summary: 'Good response to treatment. DR stable. Continue monitoring.',
+      },
+      {
+        id: 's1f',
+        name: 'Check-up (Right)',
+        imageUrl: fundus_DR173,
+        uploadedAt: new Date('2024-08-20'),
+        type: 'fundus',
+        eyeSide: 'right',
+        visitNumber: 3,
+        visitDate: new Date('2024-08-20'),
+        diseases: [
+          { name: 'Diabetic Retinopathy', probability: 62, severity: 'medium', description: 'Stabilized following anti-VEGF treatment.', detectedFrom: 'fundus', justification: 'No new hemorrhages. Previous hemorrhages resolving. Microaneurysms stable.', references: ['ETDRS Study, 1991'] },
+          { name: 'Diabetic Macular Edema', probability: 38, severity: 'low', description: 'Resolved macular edema.', detectedFrom: 'fundus', justification: 'Clinical examination suggests resolution. OCT recommended for confirmation.', references: ['DRCR.net Protocol T, NEJM 2015'] },
+        ],
+        summary: 'Good treatment response. DME likely resolved. Continue monitoring every 3-4 months.',
       },
     ],
   },
@@ -218,7 +277,8 @@ const initialPatients: Patient[] = [
     dateOfBirth: '1978-08-22',
     age: 46,
     gender: 'female',
-    relevantInfo: 'Family history of glaucoma',
+    relevantInfo: 'Family history of glaucoma, elevated IOP',
+    medicalTags: ['Glaucoma Family History', 'Elevated Intraocular Pressure', 'Migraine', 'Anxiety', 'Peripheral Vision Loss'],
     createdAt: new Date('2024-01-12'),
     scans: [
       {
@@ -260,6 +320,7 @@ const initialPatients: Patient[] = [
     age: 72,
     gender: 'male',
     relevantInfo: 'Age-related macular degeneration in family, smoker for 30 years',
+    medicalTags: ['AMD Family History', 'Smoking History', 'Hypertension', 'Coronary Artery Disease', 'Stroke History', 'Central Vision Loss', 'Difficulty Reading'],
     createdAt: new Date('2024-01-15'),
     scans: [
       {
@@ -299,7 +360,8 @@ const initialPatients: Patient[] = [
     dateOfBirth: '1980-05-20',
     age: 44,
     gender: 'female',
-    relevantInfo: 'Recent headaches, vision changes reported',
+    relevantInfo: 'Recent headaches, vision changes reported, possible idiopathic intracranial hypertension',
+    medicalTags: ['Headache', 'Obesity', 'Idiopathic Intracranial Hypertension', 'Nausea', 'Transient Visual Obscurations', 'Depression'],
     createdAt: new Date('2024-01-20'),
     scans: [
       {
@@ -337,6 +399,12 @@ const initialPatients: Patient[] = [
 // Map of fundus image keys to actual imports for restoring from localStorage
 const fundusImageMap: Record<string, string> = {
   'fundus_DR165': fundus_DR165,
+  'fundus_DR161': fundus_DR161,
+  'fundus_DR164': fundus_DR164,
+  'fundus_DR168': fundus_DR168,
+  'fundus_DR171': fundus_DR171,
+  'fundus_DR172': fundus_DR172,
+  'fundus_DR173': fundus_DR173,
   'fundus_Glaucoma117': fundus_Glaucoma117,
   'fundus_Myopia12': fundus_Myopia12,
   'fundus_Retinitis': fundus_Retinitis,

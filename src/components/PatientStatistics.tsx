@@ -174,7 +174,7 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
           // Only count systemic conditions (not ocular diseases or symptoms)
           const systemicKeywords = ['diabetes', 'hypertension', 'cardiovascular', 'heart', 'stroke', 
             'cholesterol', 'obesity', 'thyroid', 'autoimmune', 'arthritis', 'lupus', 'sclerosis',
-            'anemia', 'kidney', 'liver', 'cancer', 'hiv', 'tuberculosis'];
+            'anemia', 'kidney', 'liver', 'cancer', 'hiv', 'tuberculosis', 'coronary'];
           const isSystemic = systemicKeywords.some(keyword => tag.toLowerCase().includes(keyword));
           if (isSystemic) {
             systemicCounts[tag] = (systemicCounts[tag] || 0) + 1;
@@ -189,6 +189,55 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
       .map(([name, value]) => ({ name, value }));
   }, [filteredPatients]);
 
+  // Neurological & Mental Health conditions
+  const neurologicalData = useMemo(() => {
+    const neuroCounts: Record<string, number> = {};
+    
+    filteredPatients.forEach(p => {
+      if (p.medicalTags) {
+        p.medicalTags.forEach(tag => {
+          const neuroKeywords = ['parkinson', 'alzheimer', 'dementia', 'neurological', 'neurodegenerative',
+            'multiple sclerosis', 'migraine', 'seizure', 'epilepsy', 'neuropathy', 'stroke history',
+            'depression', 'anxiety', 'bipolar', 'schizophrenia', 'mental', 'psychiatric',
+            'intracranial', 'brain'];
+          const isNeuro = neuroKeywords.some(keyword => tag.toLowerCase().includes(keyword));
+          if (isNeuro) {
+            neuroCounts[tag] = (neuroCounts[tag] || 0) + 1;
+          }
+        });
+      }
+    });
+    
+    return Object.entries(neuroCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, value]) => ({ name, value }));
+  }, [filteredPatients]);
+
+  // Cardiovascular conditions (more specific)
+  const cardiovascularData = useMemo(() => {
+    const cvdCounts: Record<string, number> = {};
+    
+    filteredPatients.forEach(p => {
+      if (p.medicalTags) {
+        p.medicalTags.forEach(tag => {
+          const cvdKeywords = ['cardiovascular', 'heart', 'coronary', 'artery', 'hypertension',
+            'stroke', 'atrial', 'arrhythmia', 'cholesterol', 'atherosclerosis', 'aneurysm',
+            'thrombosis', 'embolism', 'peripheral vascular'];
+          const isCVD = cvdKeywords.some(keyword => tag.toLowerCase().includes(keyword));
+          if (isCVD) {
+            cvdCounts[tag] = (cvdCounts[tag] || 0) + 1;
+          }
+        });
+      }
+    });
+    
+    return Object.entries(cvdCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, value]) => ({ name, value }));
+  }, [filteredPatients]);
+
   // Symptoms distribution from medical tags
   const symptomsData = useMemo(() => {
     const symptomCounts: Record<string, number> = {};
@@ -197,7 +246,8 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
       if (p.medicalTags) {
         p.medicalTags.forEach(tag => {
           const symptomKeywords = ['vision', 'pain', 'redness', 'itching', 'burning', 'tearing',
-            'dry', 'sensitivity', 'blindness', 'floaters', 'flashes', 'headache', 'nausea', 'dizziness', 'fatigue'];
+            'dry', 'sensitivity', 'blindness', 'floaters', 'flashes', 'headache', 'nausea', 
+            'dizziness', 'fatigue', 'loss', 'blurred', 'difficulty', 'obscuration'];
           const isSymptom = symptomKeywords.some(keyword => tag.toLowerCase().includes(keyword));
           if (isSymptom) {
             symptomCounts[tag] = (symptomCounts[tag] || 0) + 1;
@@ -210,6 +260,66 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
       .map(([name, value]) => ({ name, value }));
+  }, [filteredPatients]);
+
+  // Linked systemic diseases based on detected ocular conditions
+  const linkedSystemicData = useMemo(() => {
+    const linkedCounts: Record<string, { count: number; link: string }> = {};
+    
+    // Map ocular diseases to systemic conditions
+    const ocularToSystemic: Record<string, { condition: string; link: string }[]> = {
+      'Diabetic Retinopathy': [
+        { condition: 'Diabetes Mellitus', link: 'Direct microvascular complication of chronic hyperglycemia' },
+        { condition: 'Cardiovascular Disease', link: 'Shared risk factors - endothelial dysfunction and atherosclerosis' },
+        { condition: 'Nephropathy', link: 'Both are microvascular complications of diabetes' },
+      ],
+      'Diabetic Macular Edema': [
+        { condition: 'Diabetes Mellitus', link: 'Vascular leakage due to blood-retinal barrier breakdown' },
+        { condition: 'Hypertension', link: 'Accelerates progression and severity of DME' },
+      ],
+      'Glaucoma': [
+        { condition: 'Cardiovascular Disease', link: 'Vascular dysregulation affects optic nerve perfusion' },
+        { condition: 'Hypertension', link: 'Both elevated and low blood pressure affect optic nerve' },
+        { condition: 'Sleep Apnea', link: 'Nocturnal hypoxia and IOP fluctuations' },
+      ],
+      'Hypertensive Retinopathy': [
+        { condition: 'Hypertension', link: 'Direct manifestation of systemic hypertension' },
+        { condition: 'Stroke Risk', link: 'Marker of target organ damage' },
+        { condition: 'Kidney Disease', link: 'Shared vascular pathology' },
+      ],
+      'Optic Disc Edema': [
+        { condition: 'Intracranial Hypertension', link: 'Papilledema from increased ICP' },
+        { condition: 'Brain Tumors', link: 'Space-occupying lesions causing raised ICP' },
+        { condition: 'Cerebral Venous Thrombosis', link: 'Impaired venous drainage' },
+      ],
+      'Retinitis Pigmentosa': [
+        { condition: 'Hearing Loss (Usher Syndrome)', link: 'Shared genetic mutations affecting sensory systems' },
+        { condition: 'Neurological Disorders', link: 'Some RP genes affect CNS function' },
+      ],
+    };
+    
+    filteredPatients.forEach(p => {
+      p.scans.forEach(s => {
+        s.diseases.forEach(d => {
+          if (d.probability >= 40) { // Only medium+ risk
+            const systemic = ocularToSystemic[d.name];
+            if (systemic) {
+              systemic.forEach(({ condition, link }) => {
+                if (!linkedCounts[condition]) {
+                  linkedCounts[condition] = { count: 0, link };
+                }
+                linkedCounts[condition].count++;
+              });
+            }
+          }
+        });
+      });
+    });
+    
+    return Object.entries(linkedCounts)
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 8)
+      .map(([name, { count, link }]) => ({ name, value: count, link }));
   }, [filteredPatients]);
 
   // Download Statistics as PDF with charts
@@ -821,18 +931,88 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
           </ResponsiveContainer>
         </div>
 
-        {/* Systemic Diseases */}
+        {/* Systemic Diseases from Medical History */}
         {systemicDiseaseData.length > 0 && (
           <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} data-chart-container>
-            <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Systemic Diseases</h4>
+            <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Systemic Diseases (Medical History)</h4>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={systemicDiseaseData} layout="vertical">
                 <XAxis type="number" tick={{ fontSize: 12 }} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={120} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={140} />
                 <Tooltip />
                 <Bar dataKey="value" fill="#f59e0b" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Cardiovascular Conditions */}
+        {cardiovascularData.length > 0 && (
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} data-chart-container>
+            <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Cardiovascular Conditions</h4>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={cardiovascularData} layout="vertical">
+                <XAxis type="number" tick={{ fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={140} />
+                <Tooltip />
+                <Bar dataKey="value" fill="#ef4444" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Neurological & Mental Health */}
+        {neurologicalData.length > 0 && (
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} data-chart-container>
+            <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Neurological & Mental Health Conditions</h4>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={neurologicalData} layout="vertical">
+                <XAxis type="number" tick={{ fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={160} />
+                <Tooltip />
+                <Bar dataKey="value" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Linked Systemic Diseases (from Ocular Findings) */}
+        {linkedSystemicData.length > 0 && (
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} data-chart-container>
+            <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Linked Systemic Diseases (from Ocular Findings)</h4>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={linkedSystemicData} layout="vertical">
+                <XAxis type="number" tick={{ fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={140} />
+                <Tooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div style={{ 
+                          backgroundColor: 'white', 
+                          padding: '12px', 
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                          maxWidth: '300px',
+                        }}>
+                          <p style={{ fontWeight: 600, marginBottom: '6px' }}>{data.name}</p>
+                          <p style={{ fontSize: '12px', color: '#6b7280' }}>Patients: {data.value}</p>
+                          <p style={{ fontSize: '11px', color: '#0891b2', marginTop: '6px', lineHeight: 1.4 }}>
+                            <strong>Link:</strong> {data.link}
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="value" fill="#22c55e" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+            <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '8px', fontStyle: 'italic' }}>
+              Hover over bars to see the link between ocular findings and systemic conditions
+            </p>
           </div>
         )}
 
@@ -843,9 +1023,9 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={symptomsData} layout="vertical">
                 <XAxis type="number" tick={{ fontSize: 12 }} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={120} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={160} />
                 <Tooltip />
-                <Bar dataKey="value" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="value" fill="#ec4899" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
