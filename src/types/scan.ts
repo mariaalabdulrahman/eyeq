@@ -3,6 +3,9 @@ export interface Disease {
   probability: number;
   severity: 'low' | 'medium' | 'high';
   description: string;
+  detectedFrom?: 'fundus' | 'oct' | 'both';
+  justification?: string;
+  references?: string[];
 }
 
 export interface ScanAnalysis {
@@ -10,9 +13,12 @@ export interface ScanAnalysis {
   name: string;
   imageUrl: string;
   uploadedAt: Date;
-  type: 'oct' | 'fundus';
+  type: 'fundus';
   diseases: Disease[];
   summary: string;
+  linkedOctId?: string; // Optional linked OCT scan
+  linkedOctUrl?: string;
+  linkedOctName?: string;
 }
 
 export interface Patient {

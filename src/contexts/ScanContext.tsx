@@ -1,24 +1,102 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
 import { ScanAnalysis, ChatMessage, Disease, Patient } from "@/types/scan";
 
-const generateMockDiseases = (type: 'oct' | 'fundus'): Disease[] => {
-  const octDiseases: Disease[] = [
-    { name: "Diabetic Macular Edema", probability: Math.floor(Math.random() * 40) + 10, severity: 'low', description: "Fluid accumulation in the macula detected via cross-sectional imaging." },
-    { name: "Age-Related Macular Degeneration", probability: Math.floor(Math.random() * 50) + 20, severity: 'medium', description: "Drusen deposits and RPE changes visible in OCT layers." },
-    { name: "Epiretinal Membrane", probability: Math.floor(Math.random() * 30) + 5, severity: 'low', description: "Thin membrane on retinal surface causing mild distortion." },
-    { name: "Vitreomacular Traction", probability: Math.floor(Math.random() * 25), severity: 'low', description: "Vitreous attachment causing tractional forces on macula." },
-  ];
-
+const generateMockDiseases = (hasOct: boolean): Disease[] => {
   const fundusDiseases: Disease[] = [
-    { name: "Diabetic Retinopathy", probability: Math.floor(Math.random() * 45) + 15, severity: 'medium', description: "Microaneurysms and hemorrhages visible in fundus photography." },
-    { name: "Glaucoma", probability: Math.floor(Math.random() * 35) + 10, severity: 'low', description: "Optic disc cupping and nerve fiber layer changes detected." },
-    { name: "Hypertensive Retinopathy", probability: Math.floor(Math.random() * 30) + 5, severity: 'low', description: "Arteriovenous nicking and vessel wall changes observed." },
-    { name: "Papilledema", probability: Math.floor(Math.random() * 20), severity: 'low', description: "Optic disc swelling potentially indicating increased intracranial pressure." },
+    { 
+      name: "Diabetic Retinopathy", 
+      probability: Math.floor(Math.random() * 45) + 15, 
+      severity: 'medium', 
+      description: "Microaneurysms and hemorrhages visible in fundus photography.",
+      detectedFrom: 'fundus',
+      justification: "The AI detected multiple microaneurysms and dot-blot hemorrhages in the posterior pole region of the fundus image. The pattern and distribution are consistent with early non-proliferative diabetic retinopathy.",
+      references: [
+        "Early Treatment Diabetic Retinopathy Study (ETDRS), Ophthalmology 1991",
+        "AAO Preferred Practice Pattern: Diabetic Retinopathy, 2019"
+      ]
+    },
+    { 
+      name: "Glaucoma", 
+      probability: Math.floor(Math.random() * 35) + 10, 
+      severity: 'low', 
+      description: "Optic disc cupping and nerve fiber layer changes detected.",
+      detectedFrom: hasOct ? 'both' : 'fundus',
+      justification: hasOct 
+        ? "The fundus image shows an increased cup-to-disc ratio (0.7), and the OCT confirms retinal nerve fiber layer (RNFL) thinning in the inferior and superior quadrants."
+        : "The fundus image reveals an increased cup-to-disc ratio with associated peripapillary atrophy. OCT imaging would provide additional RNFL thickness measurements for confirmation.",
+      references: [
+        "American Academy of Ophthalmology Glaucoma Guidelines, 2020",
+        "European Glaucoma Society Terminology and Guidelines, 5th Ed"
+      ]
+    },
+    { 
+      name: "Hypertensive Retinopathy", 
+      probability: Math.floor(Math.random() * 30) + 5, 
+      severity: 'low', 
+      description: "Arteriovenous nicking and vessel wall changes observed.",
+      detectedFrom: 'fundus',
+      justification: "Arteriovenous nicking at multiple crossing points and focal arteriolar narrowing are visible in the fundus image, consistent with Grade II hypertensive retinopathy according to the Keith-Wagener-Barker classification.",
+      references: [
+        "Keith NM, Wagener HP, Barker NW. Hypertensive Retinopathy. Am J Med Sci 1939",
+        "Wong TY, Mitchell P. Hypertensive Retinopathy. NEJM 2004"
+      ]
+    },
+    { 
+      name: "Papilledema", 
+      probability: Math.floor(Math.random() * 20), 
+      severity: 'low', 
+      description: "Optic disc swelling potentially indicating increased intracranial pressure.",
+      detectedFrom: 'fundus',
+      justification: "The fundus image shows blurring of the optic disc margins with obscuration of blood vessels at the disc edge. The disc appears hyperemic with mild elevation.",
+      references: [
+        "Friedman DI, Jacobson DM. Papilledema. UpToDate 2023",
+        "OCT Substudy Committee for NORDIC Idiopathic Intracranial Hypertension Study Group, 2015"
+      ]
+    },
   ];
 
-  const diseases = type === 'oct' ? octDiseases : fundusDiseases;
-  
-  return diseases
+  if (hasOct) {
+    fundusDiseases.push(
+      { 
+        name: "Diabetic Macular Edema", 
+        probability: Math.floor(Math.random() * 40) + 10, 
+        severity: 'low', 
+        description: "Fluid accumulation in the macula detected via cross-sectional imaging.",
+        detectedFrom: 'oct',
+        justification: "The OCT B-scan reveals intraretinal fluid pockets and cystoid spaces in the macular region. Central retinal thickness is elevated above normal limits (>300μm), confirming center-involving diabetic macular edema.",
+        references: [
+          "DRCR.net Protocol T: Anti-VEGF Treatment for DME, NEJM 2015",
+          "International Council of Ophthalmology DME Guidelines, 2017"
+        ]
+      },
+      { 
+        name: "Age-Related Macular Degeneration", 
+        probability: Math.floor(Math.random() * 50) + 20, 
+        severity: 'medium', 
+        description: "Drusen deposits and RPE changes visible in OCT layers.",
+        detectedFrom: 'both',
+        justification: "Multiple soft drusen are visible in the fundus image as yellow-white deposits. The OCT confirms these as RPE-basal laminar deposits with associated RPE irregularity. No subretinal fluid or CNV is detected, consistent with intermediate dry AMD.",
+        references: [
+          "Age-Related Eye Disease Study (AREDS) Classification, Ophthalmology 2001",
+          "Ferris FL et al. Clinical Classification of AMD. Ophthalmology 2013"
+        ]
+      },
+      { 
+        name: "Epiretinal Membrane", 
+        probability: Math.floor(Math.random() * 30) + 5, 
+        severity: 'low', 
+        description: "Thin membrane on retinal surface causing mild distortion.",
+        detectedFrom: 'oct',
+        justification: "The OCT clearly demonstrates a hyperreflective line on the inner retinal surface with associated retinal wrinkling and loss of the foveal depression, consistent with an epiretinal membrane.",
+        references: [
+          "Govetto A et al. OCT Analysis of the Epiretinal Membrane. Ophthalmology 2018",
+          "Duker JS. Epiretinal Membranes. Retina, 5th Ed, Elsevier 2013"
+        ]
+      }
+    );
+  }
+
+  return fundusDiseases
     .sort(() => Math.random() - 0.5)
     .slice(0, Math.floor(Math.random() * 3) + 2)
     .map(d => ({
@@ -48,7 +126,7 @@ interface ScanContextType {
   currentPatientId: string | null;
   setActiveTabId: (id: string | null) => void;
   setCurrentPatientId: (id: string | null) => void;
-  addScan: (file: File, type: 'oct' | 'fundus', patientId?: string) => void;
+  addScan: (fundusFile: File, octFile?: File, patientId?: string) => void;
   removeScan: (id: string) => void;
   addPatient: (name: string, dateOfBirth: string) => string;
   addChatMessage: (content: string, selectedScanIds: string[]) => void;
@@ -67,26 +145,17 @@ const initialPatients: Patient[] = [
     scans: [
       {
         id: 's1',
-        name: 'Left Eye OCT',
+        name: 'Left Eye',
         imageUrl: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400',
         uploadedAt: new Date('2024-01-10'),
-        type: 'oct',
+        type: 'fundus',
+        linkedOctUrl: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400',
+        linkedOctName: 'Left Eye OCT',
         diseases: [
-          { name: 'Diabetic Macular Edema', probability: 45, severity: 'medium', description: 'Fluid accumulation detected.' },
-          { name: 'Epiretinal Membrane', probability: 20, severity: 'low', description: 'Thin membrane on retinal surface.' },
+          { name: 'Diabetic Macular Edema', probability: 45, severity: 'medium', description: 'Fluid accumulation detected.', detectedFrom: 'oct', justification: 'OCT reveals intraretinal fluid pockets in the macular region.', references: ['DRCR.net Protocol T, NEJM 2015'] },
+          { name: 'Diabetic Retinopathy', probability: 55, severity: 'medium', description: 'Microaneurysms visible in fundus.', detectedFrom: 'fundus', justification: 'Multiple microaneurysms detected in the posterior pole of the fundus image.', references: ['ETDRS Study, 1991'] },
         ],
         summary: 'Moderate risk findings detected. Follow-up recommended.',
-      },
-      {
-        id: 's2',
-        name: 'Right Eye Fundus',
-        imageUrl: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400',
-        uploadedAt: new Date('2024-01-10'),
-        type: 'fundus',
-        diseases: [
-          { name: 'Diabetic Retinopathy', probability: 62, severity: 'medium', description: 'Early signs of diabetic changes.' },
-        ],
-        summary: 'Early diabetic retinopathy signs. Regular monitoring advised.',
       },
     ],
   },
@@ -98,12 +167,12 @@ const initialPatients: Patient[] = [
     scans: [
       {
         id: 's3',
-        name: 'Left Eye Fundus',
+        name: 'Left Eye',
         imageUrl: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400',
         uploadedAt: new Date('2024-01-12'),
         type: 'fundus',
         diseases: [
-          { name: 'Glaucoma', probability: 78, severity: 'high', description: 'Significant optic nerve changes detected.' },
+          { name: 'Glaucoma', probability: 78, severity: 'high', description: 'Significant optic nerve changes detected.', detectedFrom: 'fundus', justification: 'Increased cup-to-disc ratio (0.8) with peripapillary atrophy visible in fundus.', references: ['AAO Glaucoma Guidelines, 2020'] },
         ],
         summary: 'High glaucoma risk detected. Specialist referral recommended.',
       },
@@ -117,13 +186,15 @@ const initialPatients: Patient[] = [
     scans: [
       {
         id: 's4',
-        name: 'Right Eye OCT',
+        name: 'Right Eye',
         imageUrl: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400',
         uploadedAt: new Date('2024-01-15'),
-        type: 'oct',
+        type: 'fundus',
+        linkedOctUrl: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400',
+        linkedOctName: 'Right Eye OCT',
         diseases: [
-          { name: 'Age-Related Macular Degeneration', probability: 55, severity: 'medium', description: 'Drusen deposits visible.' },
-          { name: 'Vitreomacular Traction', probability: 30, severity: 'low', description: 'Mild tractional changes.' },
+          { name: 'Age-Related Macular Degeneration', probability: 55, severity: 'medium', description: 'Drusen deposits visible.', detectedFrom: 'both', justification: 'Drusen visible in fundus, confirmed by OCT showing RPE irregularity.', references: ['AREDS Classification, 2001'] },
+          { name: 'Epiretinal Membrane', probability: 30, severity: 'low', description: 'Thin membrane on retinal surface.', detectedFrom: 'oct', justification: 'OCT shows hyperreflective line on inner retinal surface.', references: ['Govetto et al. Ophthalmology 2018'] },
         ],
         summary: 'AMD with moderate probability. Consider anti-VEGF evaluation.',
       },
@@ -140,24 +211,27 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     {
       id: crypto.randomUUID(),
       role: 'assistant',
-      content: 'Welcome to EyeQ! Upload OCT or Fundus scans to begin analysis. Select images when asking questions for contextual answers.',
+      content: 'Welcome to EyeQ! Upload fundus scans (with optional OCT) to begin analysis. Select images when asking questions for contextual answers.',
       timestamp: new Date(),
       selectedScanIds: [],
     }
   ]);
 
-  const addScan = useCallback((file: File, type: 'oct' | 'fundus', patientId?: string) => {
-    const imageUrl = URL.createObjectURL(file);
-    const diseases = generateMockDiseases(type);
+  const addScan = useCallback((fundusFile: File, octFile?: File, patientId?: string) => {
+    const fundusUrl = URL.createObjectURL(fundusFile);
+    const octUrl = octFile ? URL.createObjectURL(octFile) : undefined;
+    const diseases = generateMockDiseases(!!octFile);
     
     const newScan: ScanAnalysis = {
       id: crypto.randomUUID(),
-      name: file.name.replace(/\.[^/.]+$/, ""),
-      imageUrl,
+      name: fundusFile.name.replace(/\.[^/.]+$/, ""),
+      imageUrl: fundusUrl,
       uploadedAt: new Date(),
-      type,
+      type: 'fundus',
       diseases,
       summary: generateSummary(diseases),
+      linkedOctUrl: octUrl,
+      linkedOctName: octFile ? octFile.name.replace(/\.[^/.]+$/, "") : undefined,
     };
 
     setScans(prev => [...prev, newScan]);

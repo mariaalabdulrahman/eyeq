@@ -85,10 +85,10 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
     { name: '60+', value: filteredPatients.filter(p => getAge(p.dateOfBirth) > 60).length },
   ];
 
-  // Scan type distribution
+  // Scan type distribution - count fundus with OCT vs fundus only
   const scanTypeData = [
-    { name: 'OCT', value: filteredPatients.reduce((sum, p) => sum + p.scans.filter(s => s.type === 'oct').length, 0) },
-    { name: 'Fundus', value: filteredPatients.reduce((sum, p) => sum + p.scans.filter(s => s.type === 'fundus').length, 0) },
+    { name: 'Fundus + OCT', value: filteredPatients.reduce((sum, p) => sum + p.scans.filter(s => s.linkedOctUrl).length, 0) },
+    { name: 'Fundus Only', value: filteredPatients.reduce((sum, p) => sum + p.scans.filter(s => !s.linkedOctUrl).length, 0) },
   ];
 
   return (

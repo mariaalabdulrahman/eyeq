@@ -117,13 +117,28 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
       };
     }
 
-    // Default response
+    // Default response with both text and chart
+    const avgRisk = relevantPatients.length > 0 
+      ? Math.round(relevantPatients.reduce((sum, p) => {
+          const maxProb = Math.max(...p.scans.flatMap(s => s.diseases.map(d => d.probability)), 0);
+          return sum + maxProb;
+        }, 0) / relevantPatients.length)
+      : 0;
+
     return {
       id: Date.now().toString(),
       role: 'assistant',
-      content: `I analyzed ${relevantPatients.length} patient record(s). They have a total of ${relevantPatients.reduce((sum, p) => sum + p.scans.length, 0)} scans. The most common condition is "${sortedDiseases[0]?.[0] || 'N/A'}" detected ${sortedDiseases[0]?.[1] || 0} times. You can ask about specific conditions, risk levels, or distribution patterns.`,
+      content: `I analyzed ${relevantPatients.length} patient record(s) with a total of ${relevantPatients.reduce((sum, p) => sum + p.scans.length, 0)} scans.\n\n**Key findings:**\n- Most common condition: "${sortedDiseases[0]?.[0] || 'N/A'}" (detected ${sortedDiseases[0]?.[1] || 0} times)\n- Average max risk level: ${avgRisk}%\n- Total conditions detected: ${allDiseases.length}\n\nYou can ask about specific conditions, risk levels, or distribution patterns.`,
       timestamp: new Date(),
       selectedPatientIds,
+      chartData: sortedDiseases.length > 0 ? {
+        type: 'bar',
+        data: sortedDiseases.slice(0, 5).map(([name, value], i) => ({ 
+          name: name.length > 15 ? name.slice(0, 12) + '...' : name, 
+          value, 
+          color: COLORS[i % COLORS.length] 
+        })),
+      } : undefined,
     };
   };
 

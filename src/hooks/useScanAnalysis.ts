@@ -1,24 +1,23 @@
 import { useState, useCallback } from "react";
 import { ScanAnalysis, ChatMessage, Disease, Patient } from "@/types/scan";
 
-const generateMockDiseases = (type: 'oct' | 'fundus'): Disease[] => {
-  const octDiseases: Disease[] = [
-    { name: "Diabetic Macular Edema", probability: Math.floor(Math.random() * 40) + 10, severity: 'low', description: "Fluid accumulation in the macula detected via cross-sectional imaging." },
-    { name: "Age-Related Macular Degeneration", probability: Math.floor(Math.random() * 50) + 20, severity: 'medium', description: "Drusen deposits and RPE changes visible in OCT layers." },
-    { name: "Epiretinal Membrane", probability: Math.floor(Math.random() * 30) + 5, severity: 'low', description: "Thin membrane on retinal surface causing mild distortion." },
-    { name: "Vitreomacular Traction", probability: Math.floor(Math.random() * 25), severity: 'low', description: "Vitreous attachment causing tractional forces on macula." },
-  ];
-
+const generateMockDiseases = (hasOct: boolean): Disease[] => {
   const fundusDiseases: Disease[] = [
-    { name: "Diabetic Retinopathy", probability: Math.floor(Math.random() * 45) + 15, severity: 'medium', description: "Microaneurysms and hemorrhages visible in fundus photography." },
-    { name: "Glaucoma", probability: Math.floor(Math.random() * 35) + 10, severity: 'low', description: "Optic disc cupping and nerve fiber layer changes detected." },
-    { name: "Hypertensive Retinopathy", probability: Math.floor(Math.random() * 30) + 5, severity: 'low', description: "Arteriovenous nicking and vessel wall changes observed." },
-    { name: "Papilledema", probability: Math.floor(Math.random() * 20), severity: 'low', description: "Optic disc swelling potentially indicating increased intracranial pressure." },
+    { name: "Diabetic Retinopathy", probability: Math.floor(Math.random() * 45) + 15, severity: 'medium', description: "Microaneurysms and hemorrhages visible in fundus photography.", detectedFrom: 'fundus' },
+    { name: "Glaucoma", probability: Math.floor(Math.random() * 35) + 10, severity: 'low', description: "Optic disc cupping and nerve fiber layer changes detected.", detectedFrom: 'fundus' },
+    { name: "Hypertensive Retinopathy", probability: Math.floor(Math.random() * 30) + 5, severity: 'low', description: "Arteriovenous nicking and vessel wall changes observed.", detectedFrom: 'fundus' },
+    { name: "Papilledema", probability: Math.floor(Math.random() * 20), severity: 'low', description: "Optic disc swelling potentially indicating increased intracranial pressure.", detectedFrom: 'fundus' },
   ];
 
-  const diseases = type === 'oct' ? octDiseases : fundusDiseases;
+  if (hasOct) {
+    fundusDiseases.push(
+      { name: "Diabetic Macular Edema", probability: Math.floor(Math.random() * 40) + 10, severity: 'low', description: "Fluid accumulation in the macula detected via cross-sectional imaging.", detectedFrom: 'oct' },
+      { name: "Age-Related Macular Degeneration", probability: Math.floor(Math.random() * 50) + 20, severity: 'medium', description: "Drusen deposits and RPE changes visible in OCT layers.", detectedFrom: 'both' },
+      { name: "Epiretinal Membrane", probability: Math.floor(Math.random() * 30) + 5, severity: 'low', description: "Thin membrane on retinal surface causing mild distortion.", detectedFrom: 'oct' }
+    );
+  }
   
-  return diseases
+  return fundusDiseases
     .sort(() => Math.random() - 0.5)
     .slice(0, Math.floor(Math.random() * 3) + 2)
     .map(d => ({
@@ -48,24 +47,27 @@ export function useScanAnalysis() {
     {
       id: crypto.randomUUID(),
       role: 'assistant',
-      content: 'Welcome to EyeQ! Upload OCT or Fundus scans to begin analysis. Select images when asking questions for contextual answers.',
+      content: 'Welcome to EyeQ! Upload fundus scans (with optional OCT) to begin analysis. Select images when asking questions for contextual answers.',
       timestamp: new Date(),
       selectedScanIds: [],
     }
   ]);
 
-  const addScan = useCallback((file: File, type: 'oct' | 'fundus', patientId?: string) => {
-    const imageUrl = URL.createObjectURL(file);
-    const diseases = generateMockDiseases(type);
+  const addScan = useCallback((fundusFile: File, octFile?: File, patientId?: string) => {
+    const imageUrl = URL.createObjectURL(fundusFile);
+    const octUrl = octFile ? URL.createObjectURL(octFile) : undefined;
+    const diseases = generateMockDiseases(!!octFile);
     
     const newScan: ScanAnalysis = {
       id: crypto.randomUUID(),
-      name: file.name.replace(/\.[^/.]+$/, ""),
+      name: fundusFile.name.replace(/\.[^/.]+$/, ""),
       imageUrl,
       uploadedAt: new Date(),
-      type,
+      type: 'fundus',
       diseases,
       summary: generateSummary(diseases),
+      linkedOctUrl: octUrl,
+      linkedOctName: octFile ? octFile.name.replace(/\.[^/.]+$/, "") : undefined,
     };
 
     setScans(prev => [...prev, newScan]);
