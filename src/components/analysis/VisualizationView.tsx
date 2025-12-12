@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import UTIF from 'utif';
 import { ScanAnalysis } from "@/types/scan";
 import { cn } from "@/lib/utils";
 import { Circle, Eye, Microscope, Activity, Target, Flame } from "lucide-react";
@@ -159,11 +160,12 @@ const gaussianBlur = (input: Float32Array, width: number, height: number, sigma:
 export function VisualizationView({ scan }: VisualizationViewProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>('original');
   const [activeImage, setActiveImage] = useState<'fundus' | 'oct'>('fundus');
+  const [normalizedOctUrl, setNormalizedOctUrl] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const currentImageUrl = activeImage === 'fundus' ? scan.imageUrl : scan.linkedOctUrl;
+  const currentImageUrl = activeImage === 'fundus' ? scan.imageUrl : (normalizedOctUrl || scan.linkedOctUrl);
 
   // Memoized processing to avoid re-computation
   const processImage = useMemo(() => {
@@ -283,6 +285,54 @@ export function VisualizationView({ scan }: VisualizationViewProps) {
       });
     };
   }, []);
+
+  useEffect(() => {
+    // Normalize OCT URL so filters work even when original is a .tif file
+    if (!scan.linkedOctUrl) {
+      setNormalizedOctUrl(null);
+      return;
+    }
+
+    const src = scan.linkedOctUrl;
+    const isDataUrl = src.startsWith('data:');
+    const isTif = src.toLowerCase().endsWith('.tif') || src.toLowerCase().endsWith('.tiff');
+
+    if (isDataUrl || !isTif) {
+      setNormalizedOctUrl(src);
+      return;
+    }
+
+    const convertTifUrlToPng = async () => {
+      try {
+        const response = await fetch(src);
+        const arrayBuffer = await response.arrayBuffer();
+        const ifds = UTIF.decode(arrayBuffer);
+        if (!ifds || ifds.length === 0) {
+          setNormalizedOctUrl(src);
+          return;
+        }
+        UTIF.decodeImage(arrayBuffer, ifds[0]);
+        const rgba = UTIF.toRGBA8(ifds[0]);
+        const canvas = document.createElement('canvas');
+        canvas.width = ifds[0].width;
+        canvas.height = ifds[0].height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          setNormalizedOctUrl(src);
+          return;
+        }
+        const imageData = ctx.createImageData(canvas.width, canvas.height);
+        imageData.data.set(rgba);
+        ctx.putImageData(imageData, 0, 0);
+        setNormalizedOctUrl(canvas.toDataURL('image/png'));
+      } catch (err) {
+        console.error('Failed to normalize OCT TIF for visualization:', err);
+        setNormalizedOctUrl(src);
+      }
+    };
+
+    convertTifUrlToPng();
+  }, [scan.linkedOctUrl]);
 
   useEffect(() => {
     if (activeFilter === 'original' || !currentImageUrl) {
