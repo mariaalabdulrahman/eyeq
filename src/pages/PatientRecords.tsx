@@ -22,6 +22,7 @@ const PatientRecords = () => {
   const [passwordError, setPasswordError] = useState("");
   const [newPatientName, setNewPatientName] = useState("");
   const [newPatientDob, setNewPatientDob] = useState("");
+  const [sidebarWidth, setSidebarWidth] = useState(350);
 
   const calculateOverallRisk = (patient: Patient): { level: string; color: string } => {
     const allDiseases = patient.scans.flatMap(s => s.diseases);
@@ -147,12 +148,48 @@ const PatientRecords = () => {
       <div style={{ display: 'flex', height: 'calc(100vh - 65px)' }}>
         {/* Left Sidebar - Chat + Patient List */}
         <div style={{ 
-          width: '350px', 
+          width: `${sidebarWidth}px`,
+          minWidth: '280px',
+          maxWidth: '500px',
           backgroundColor: 'white', 
           borderRight: '1px solid #e5e7eb',
           display: 'flex',
           flexDirection: 'column',
+          position: 'relative',
         }}>
+          {/* Horizontal Resize Handle */}
+          <div 
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: '6px',
+              cursor: 'col-resize',
+              backgroundColor: 'transparent',
+              zIndex: 10,
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              const startX = e.clientX;
+              const startWidth = sidebarWidth;
+              
+              const onMouseMove = (e: MouseEvent) => {
+                const deltaX = e.clientX - startX;
+                setSidebarWidth(Math.min(500, Math.max(280, startWidth + deltaX)));
+              };
+              
+              const onMouseUp = () => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+              };
+              
+              document.addEventListener('mousemove', onMouseMove);
+              document.addEventListener('mouseup', onMouseUp);
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0891b2'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          />
           {/* Chat Section */}
           <div style={{ height: '50%', borderBottom: '1px solid #e5e7eb', overflow: 'hidden' }}>
             <PatientChatSidebar 

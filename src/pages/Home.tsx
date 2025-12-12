@@ -54,7 +54,7 @@ const Home = () => {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#ffffff",
+        backgroundColor: "#D3D3D3",
         display: "flex",
         flexDirection: "column",
         position: "relative",
