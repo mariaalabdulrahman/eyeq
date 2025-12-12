@@ -498,7 +498,7 @@ const Home = () => {
         <button
           onClick={() => setActiveModal("analyze")}
           style={{
-            marginTop: "50px",
+            marginTop: "10px",
             padding: "14px 36px",
             fontSize: "16px",
             fontWeight: 600,
