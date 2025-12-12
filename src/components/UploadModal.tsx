@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Upload, X, Microscope, Eye, Plus, Calendar } from "lucide-react";
 import { getImagePreviewUrl } from "@/lib/tifUtils";
 
@@ -16,18 +16,10 @@ export function UploadModal({ isOpen, onClose, onUpload, currentPatientScansCoun
   const [fundusPreview, setFundusPreview] = useState<string | null>(null);
   const [octPreview, setOctPreview] = useState<string | null>(null);
   const [eyeSide, setEyeSide] = useState<'left' | 'right'>('right');
-  const [visitNumber, setVisitNumber] = useState<number>(1);
   const [visitDate, setVisitDate] = useState<string>(new Date().toISOString().split('T')[0]);
-
-  // Set default visit number based on existing scans
-  useEffect(() => {
-    if (currentPatientScansCount === 0) {
-      setVisitNumber(1);
-    } else {
-      // Default to next visit for patients with existing scans
-      setVisitNumber(Math.ceil(currentPatientScansCount / 2) + 1);
-    }
-  }, [currentPatientScansCount, isOpen]);
+  
+  // Visit is always 1 for new patients
+  const visitNumber = 1;
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -101,8 +93,6 @@ export function UploadModal({ isOpen, onClose, onUpload, currentPatientScansCoun
 
   const canSubmit = fundusFile;
 
-  // Generate visit options (1-10)
-  const visitOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
   return (
     <div style={{
@@ -187,26 +177,20 @@ export function UploadModal({ isOpen, onClose, onUpload, currentPatientScansCoun
             <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '8px', color: '#374151' }}>
               Visit Number
             </label>
-            <select
-              value={visitNumber}
-              onChange={(e) => setVisitNumber(Number(e.target.value))}
+            <div
               style={{
                 width: '100%',
                 padding: '10px 12px',
                 borderRadius: '8px',
                 border: '1px solid #e5e7eb',
-                backgroundColor: '#f9fafb',
+                backgroundColor: '#e5e7eb',
                 fontSize: '14px',
                 boxSizing: 'border-box',
-                cursor: 'pointer',
+                color: '#6b7280',
               }}
             >
-              {visitOptions.map(num => (
-                <option key={num} value={num}>
-                  {num === 1 ? 'First Visit' : num === 2 ? 'Second Visit' : num === 3 ? 'Third Visit' : `Visit ${num}`}
-                </option>
-              ))}
-            </select>
+              First Visit
+            </div>
           </div>
         </div>
 
