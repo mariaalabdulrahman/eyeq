@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { Upload, X, Microscope, Eye, UserPlus, User, Plus } from "lucide-react";
 import { Patient } from "@/types/scan";
+import { getImagePreviewUrl } from "@/lib/tifUtils";
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
     }
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -37,23 +38,26 @@ export function UploadModal({ isOpen, onClose, onUpload, patients }: UploadModal
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       setFundusFile(file);
-      setFundusPreview(URL.createObjectURL(file));
+      const previewUrl = await getImagePreviewUrl(file);
+      setFundusPreview(previewUrl);
     }
   }, []);
 
-  const handleFundusSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFundusSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setFundusFile(file);
-      setFundusPreview(URL.createObjectURL(file));
+      const previewUrl = await getImagePreviewUrl(file);
+      setFundusPreview(previewUrl);
     }
   };
 
-  const handleOctSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOctSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setOctFile(file);
-      setOctPreview(URL.createObjectURL(file));
+      const previewUrl = await getImagePreviewUrl(file);
+      setOctPreview(previewUrl);
     }
   };
 

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
 import { ScanAnalysis, ChatMessage, Disease, Patient } from "@/types/scan";
+import { getImagePreviewUrl } from "@/lib/tifUtils";
 
 const generateMockDiseases = (hasOct: boolean): Disease[] => {
   const fundusDiseases: Disease[] = [
@@ -217,9 +218,9 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     }
   ]);
 
-  const addScan = useCallback((fundusFile: File, octFile?: File, patientId?: string) => {
-    const fundusUrl = URL.createObjectURL(fundusFile);
-    const octUrl = octFile ? URL.createObjectURL(octFile) : undefined;
+  const addScan = useCallback(async (fundusFile: File, octFile?: File, patientId?: string) => {
+    const fundusUrl = await getImagePreviewUrl(fundusFile);
+    const octUrl = octFile ? await getImagePreviewUrl(octFile) : undefined;
     const diseases = generateMockDiseases(!!octFile);
     
     const newScan: ScanAnalysis = {
