@@ -3,65 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Patient, Disease } from "@/types/scan";
 import { ArrowLeft, UserPlus, Camera, Stethoscope, User, Lightbulb, FileText } from "lucide-react";
 import Logo from "@/components/Logo";
-
-// Mock patient data
-const mockPatients: Patient[] = [
-  {
-    id: '1',
-    name: 'John Smith',
-    dateOfBirth: '1965-03-15',
-    createdAt: new Date('2024-01-10'),
-    scans: [
-      {
-        id: 's1',
-        name: 'Left Eye OCT',
-        imageUrl: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400',
-        uploadedAt: new Date('2024-01-10'),
-        type: 'oct',
-        diseases: [
-          { name: 'Diabetic Macular Edema', probability: 45, severity: 'medium', description: 'Fluid accumulation detected.' },
-          { name: 'Epiretinal Membrane', probability: 20, severity: 'low', description: 'Thin membrane on retinal surface.' },
-        ],
-        summary: 'Moderate risk findings detected. Follow-up recommended.',
-      },
-      {
-        id: 's2',
-        name: 'Right Eye Fundus',
-        imageUrl: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400',
-        uploadedAt: new Date('2024-01-10'),
-        type: 'fundus',
-        diseases: [
-          { name: 'Diabetic Retinopathy', probability: 55, severity: 'medium', description: 'Microaneurysms visible.' },
-        ],
-        summary: 'Signs of diabetic retinopathy present.',
-      },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Mary Johnson',
-    dateOfBirth: '1978-08-22',
-    createdAt: new Date('2024-02-05'),
-    scans: [
-      {
-        id: 's3',
-        name: 'Bilateral OCT',
-        imageUrl: 'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400',
-        uploadedAt: new Date('2024-02-05'),
-        type: 'oct',
-        diseases: [
-          { name: 'Age-Related Macular Degeneration', probability: 35, severity: 'low', description: 'Early drusen deposits.' },
-        ],
-        summary: 'Low risk findings. Routine monitoring advised.',
-      },
-    ],
-  },
-];
+import { useScanContext } from "@/contexts/ScanContext";
 
 const PatientRecords = () => {
   const navigate = useNavigate();
-  const [patients] = useState<Patient[]>(mockPatients);
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const { patients } = useScanContext();
+  const [selectedPatient, setSelectedPatient] = useState<typeof patients[0] | null>(null);
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
 
   const calculateOverallRisk = (patient: Patient): { level: string; color: string } => {
@@ -112,9 +59,13 @@ const PatientRecords = () => {
               backgroundColor: 'white',
               cursor: 'pointer',
               fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              whiteSpace: 'nowrap',
             }}
           >
-            <ArrowLeft size={16} style={{ marginRight: '6px' }} /> Back to Dashboard
+            <ArrowLeft size={16} style={{ marginRight: '6px', flexShrink: 0 }} />
+            Back to Dashboard
           </button>
           <button
             onClick={() => setShowNewPatientModal(true)}
