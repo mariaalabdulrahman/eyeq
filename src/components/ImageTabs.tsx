@@ -49,45 +49,59 @@ export function ImageTabs({ scans, activeTab, onTabChange, onAddNew, onRemoveTab
             <p style={{ fontSize: '12px' }}>No images uploaded</p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {scans.map((scan) => (
               <div
                 key={scan.id}
                 onClick={() => onTabChange(scan.id)}
                 style={{
-                  position: 'relative',
-                  width: '60px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '8px',
                   cursor: 'pointer',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   border: activeTab === scan.id ? '2px solid #0891b2' : '1px solid #e5e7eb',
-                  overflow: 'hidden',
+                  backgroundColor: activeTab === scan.id ? '#ecfeff' : '#f9fafb',
                 }}
               >
                 <img
                   src={scan.imageUrl}
                   alt={scan.name}
-                  style={{ width: '100%', height: '50px', objectFit: 'cover' }}
+                  style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }}
                 />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ 
+                    fontSize: '13px', 
+                    fontWeight: activeTab === scan.id ? 600 : 500, 
+                    color: activeTab === scan.id ? '#0891b2' : '#374151',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {scan.name}
+                  </p>
+                  <p style={{ fontSize: '10px', color: '#9ca3af' }}>
+                    {scan.linkedOctUrl ? 'Fundus + OCT' : 'Fundus'}
+                  </p>
+                </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); onRemoveTab(scan.id); }}
                   style={{
-                    position: 'absolute',
-                    top: '2px',
-                    right: '2px',
-                    width: '14px',
-                    height: '14px',
+                    width: '20px',
+                    height: '20px',
                     borderRadius: '50%',
                     border: 'none',
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    color: 'white',
+                    backgroundColor: 'transparent',
+                    color: '#9ca3af',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '10px',
+                    flexShrink: 0,
                   }}
                 >
-                  <X size={8} />
+                  <X size={14} />
                 </button>
               </div>
             ))}
