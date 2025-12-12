@@ -168,7 +168,9 @@ const initialPatients: Patient[] = [
         uploadedAt: new Date('2024-01-10'),
         type: 'fundus',
         eyeSide: 'left',
-        linkedOctUrl: fundus_Myopia12, // Using as demo OCT
+        visitNumber: 1,
+        visitDate: new Date('2024-01-10'),
+        linkedOctUrl: fundus_Myopia12,
         linkedOctName: 'OCT Scan Left Eye',
         diseases: [
           { name: 'Diabetic Macular Edema', probability: 45, severity: 'medium', description: 'Fluid accumulation detected.', detectedFrom: 'both', justification: 'Fundus reveals hard exudates and macular thickening; OCT confirms intraretinal fluid pockets.', references: ['DRCR.net Protocol T, NEJM 2015'] },
@@ -180,13 +182,32 @@ const initialPatients: Patient[] = [
         id: 's1b',
         name: 'Macular Scan (Right)',
         imageUrl: fundus_MacularScar,
-        uploadedAt: new Date('2024-01-15'),
+        uploadedAt: new Date('2024-01-10'),
         type: 'fundus',
         eyeSide: 'right',
+        visitNumber: 1,
+        visitDate: new Date('2024-01-10'),
         diseases: [
           { name: 'Macular Scar', probability: 72, severity: 'high', description: 'Macular scarring visible affecting central vision.', detectedFrom: 'fundus', justification: 'Fundus shows well-defined macular scar with pigmentary changes.', references: ['Gass JD. Stereoscopic Atlas of Macular Diseases, 1997'] },
         ],
         summary: 'Macular scarring detected. Vision assessment recommended.',
+      },
+      {
+        id: 's1c',
+        name: 'Follow-up Left Eye',
+        imageUrl: fundus_DR165,
+        uploadedAt: new Date('2024-03-15'),
+        type: 'fundus',
+        eyeSide: 'left',
+        visitNumber: 2,
+        visitDate: new Date('2024-03-15'),
+        linkedOctUrl: fundus_Myopia12,
+        linkedOctName: 'OCT Follow-up',
+        diseases: [
+          { name: 'Diabetic Macular Edema', probability: 38, severity: 'low', description: 'Reduced fluid accumulation.', detectedFrom: 'both', justification: 'Improvement noted with anti-VEGF treatment.', references: ['DRCR.net Protocol T, NEJM 2015'] },
+          { name: 'Diabetic Retinopathy', probability: 55, severity: 'medium', description: 'Stable microaneurysms.', detectedFrom: 'fundus', justification: 'No new hemorrhages detected. Existing microaneurysms stable.', references: ['ETDRS Study, 1991'] },
+        ],
+        summary: 'Improvement in macular edema following treatment. Diabetic retinopathy stable.',
       },
     ],
   },
@@ -206,7 +227,9 @@ const initialPatients: Patient[] = [
         uploadedAt: new Date('2024-01-12'),
         type: 'fundus',
         eyeSide: 'left',
-        linkedOctUrl: fundus_CSCR99, // Using as demo OCT
+        visitNumber: 1,
+        visitDate: new Date('2024-01-12'),
+        linkedOctUrl: fundus_CSCR99,
         linkedOctName: 'OCT RNFL Analysis',
         diseases: [
           { name: 'Glaucoma', probability: 78, severity: 'high', description: 'Significant optic nerve changes detected.', detectedFrom: 'both', justification: 'Increased cup-to-disc ratio (0.8) with peripapillary atrophy visible in fundus. OCT shows RNFL thinning in superior and inferior quadrants.', references: ['AAO Glaucoma Guidelines, 2020'] },
@@ -217,9 +240,11 @@ const initialPatients: Patient[] = [
         id: 's3b',
         name: 'CSCR Scan (Right)',
         imageUrl: fundus_CSCR99,
-        uploadedAt: new Date('2024-01-14'),
+        uploadedAt: new Date('2024-01-12'),
         type: 'fundus',
         eyeSide: 'right',
+        visitNumber: 1,
+        visitDate: new Date('2024-01-12'),
         diseases: [
           { name: 'Central Serous Chorioretinopathy', probability: 55, severity: 'medium', description: 'Serous detachment of neurosensory retina.', detectedFrom: 'fundus', justification: 'Fundus shows characteristic dome-shaped elevation at macula consistent with CSCR.', references: ['Daruich A. et al. Prog Retin Eye Res 2015'] },
         ],
@@ -243,6 +268,8 @@ const initialPatients: Patient[] = [
         uploadedAt: new Date('2024-01-15'),
         type: 'fundus',
         eyeSide: 'right',
+        visitNumber: 1,
+        visitDate: new Date('2024-01-15'),
         diseases: [
           { name: 'Pathological Myopia', probability: 68, severity: 'medium', description: 'Myopic degeneration with tessellation visible.', detectedFrom: 'fundus', justification: 'Fundus shows tigroid/tessellated appearance with visible choroidal vessels.', references: ['Ohno-Matsui K. Asia Pac J Ophthalmol 2016'] },
           { name: 'Lacquer Cracks', probability: 35, severity: 'low', description: 'Linear breaks in Bruch membrane.', detectedFrom: 'fundus', justification: 'Yellowish linear lesions visible consistent with lacquer cracks.', references: ['Ohno-Matsui K. Retina 2003'] },
@@ -253,9 +280,11 @@ const initialPatients: Patient[] = [
         id: 's4b',
         name: 'Retinitis Pigmentosa (Left)',
         imageUrl: fundus_Retinitis,
-        uploadedAt: new Date('2024-01-18'),
+        uploadedAt: new Date('2024-01-15'),
         type: 'fundus',
         eyeSide: 'left',
+        visitNumber: 1,
+        visitDate: new Date('2024-01-15'),
         diseases: [
           { name: 'Retinitis Pigmentosa', probability: 85, severity: 'high', description: 'Bone spicule pigmentation and attenuated vessels.', detectedFrom: 'fundus', justification: 'Classic bone spicule pigmentation pattern visible in mid-periphery with vessel attenuation.', references: ['Hartong DT. Lancet 2006'] },
         ],
@@ -279,6 +308,8 @@ const initialPatients: Patient[] = [
         uploadedAt: new Date('2024-01-20'),
         type: 'fundus',
         eyeSide: 'left',
+        visitNumber: 1,
+        visitDate: new Date('2024-01-20'),
         diseases: [
           { name: 'Optic Disc Edema', probability: 82, severity: 'high', description: 'Swelling of the optic disc with blurred margins.', detectedFrom: 'fundus', justification: 'Fundus shows optic disc swelling with hemorrhages at disc margin, suggestive of papilledema.', references: ['Friedman DI. UpToDate 2023'] },
         ],
@@ -291,6 +322,8 @@ const initialPatients: Patient[] = [
         uploadedAt: new Date('2024-01-20'),
         type: 'fundus',
         eyeSide: 'right',
+        visitNumber: 1,
+        visitDate: new Date('2024-01-20'),
         diseases: [
           { name: 'Optic Disc Edema', probability: 78, severity: 'high', description: 'Bilateral optic disc swelling observed.', detectedFrom: 'fundus', justification: 'Right eye also shows disc swelling confirming bilateral papilledema.', references: ['Friedman DI. UpToDate 2023'] },
         ],
@@ -431,6 +464,23 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     const baseName = fundusFile.name.replace(/\.[^/.]+$/, "");
     const eyeLabel = eyeSide === 'left' ? '(Left)' : '(Right)';
     
+    // Calculate visit number for this patient
+    let visitNumber = 1;
+    if (patientId) {
+      const patient = patients.find(p => p.id === patientId);
+      if (patient) {
+        const maxVisit = Math.max(0, ...patient.scans.map(s => s.visitNumber || 0));
+        // Check if there are scans from today
+        const today = new Date().toDateString();
+        const todayScans = patient.scans.filter(s => new Date(s.uploadedAt).toDateString() === today);
+        if (todayScans.length > 0) {
+          visitNumber = todayScans[0].visitNumber || maxVisit + 1;
+        } else {
+          visitNumber = maxVisit + 1;
+        }
+      }
+    }
+    
     const newScan: ScanAnalysis = {
       id: crypto.randomUUID(),
       name: `${baseName} ${eyeLabel}`,
@@ -442,6 +492,8 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       linkedOctUrl: octUrl,
       linkedOctName: octFile ? octFile.name.replace(/\.[^/.]+$/, "") : undefined,
       eyeSide: eyeSide || 'right',
+      visitNumber,
+      visitDate: new Date(),
     };
 
     setScans(prev => [...prev, newScan]);
@@ -455,7 +507,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
           : p
       ));
     }
-  }, []);
+  }, [patients]);
 
   const removeScan = useCallback((id: string) => {
     setScans(prev => {
