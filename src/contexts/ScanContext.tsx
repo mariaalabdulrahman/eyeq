@@ -142,8 +142,8 @@ interface ScanContextType {
   setCurrentPatientId: (id: string | null) => void;
   addScan: (fundusFile: File, octFile?: File, patientId?: string, eyeSide?: 'left' | 'right') => void;
   removeScan: (id: string) => void;
-  addPatient: (name: string, dateOfBirth: string, age?: number, gender?: 'male' | 'female' | 'other', relevantInfo?: string) => string;
-  updatePatient: (patientId: string, updates: Partial<Pick<Patient, 'name' | 'dateOfBirth' | 'age' | 'gender' | 'relevantInfo'>>) => void;
+  addPatient: (name: string, dateOfBirth: string, age?: number, gender?: 'male' | 'female' | 'other', relevantInfo?: string, medicalTags?: string[]) => string;
+  updatePatient: (patientId: string, updates: Partial<Pick<Patient, 'name' | 'dateOfBirth' | 'age' | 'gender' | 'relevantInfo' | 'medicalTags'>>) => void;
   addChatMessage: (content: string, selectedScanIds: string[]) => void;
   assignScansToPatient: (patientId: string, scanIds: string[]) => void;
 }
@@ -467,7 +467,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     });
   }, [activeTabId]);
 
-  const addPatient = useCallback((name: string, dateOfBirth: string, age?: number, gender?: 'male' | 'female' | 'other', relevantInfo?: string) => {
+  const addPatient = useCallback((name: string, dateOfBirth: string, age?: number, gender?: 'male' | 'female' | 'other', relevantInfo?: string, medicalTags?: string[]) => {
     const newPatient: Patient = {
       id: crypto.randomUUID(),
       name,
@@ -475,6 +475,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       age: age || 0,
       gender: gender || 'other',
       relevantInfo,
+      medicalTags,
       scans: [],
       createdAt: new Date(),
     };
@@ -482,7 +483,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     return newPatient.id;
   }, []);
 
-  const updatePatient = useCallback((patientId: string, updates: Partial<Pick<Patient, 'name' | 'dateOfBirth' | 'age' | 'gender' | 'relevantInfo'>>) => {
+  const updatePatient = useCallback((patientId: string, updates: Partial<Pick<Patient, 'name' | 'dateOfBirth' | 'age' | 'gender' | 'relevantInfo' | 'medicalTags'>>) => {
     setPatients(prev => prev.map(p => 
       p.id === patientId ? { ...p, ...updates } : p
     ));

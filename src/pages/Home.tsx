@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Upload, ScanLine, FolderOpen, GitCompare, BarChart3, Stethoscope } from "lucide-react";
 import Logo from "@/components/Logo";
-import { NewPatientModal } from "@/components/NewPatientModal";
+import { AnalyzePatientModal } from "@/components/AnalyzePatientModal";
 import { useScanContext } from "@/contexts/ScanContext";
 import kkeshLogo from "@/assets/kkesh-logo.png";
 
@@ -13,10 +13,10 @@ import mlNetworkImg from "@/assets/ml-network.png";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { addPatient } = useScanContext();
+  const { patients, addPatient, setCurrentPatientId } = useScanContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const [pupilPosition, setPupilPosition] = useState({ x: 0, y: 0 });
-  const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
+  const [isAnalyzeModalOpen, setIsAnalyzeModalOpen] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -55,12 +55,21 @@ const Home = () => {
     { src: mlNetworkImg, size: 190, x: 82, y: 70, duration: 13, delay: 0.5 },
   ];
 
-  const handleNewPatientSubmit = (data: { name: string; age: number; gender: 'male' | 'female' | 'other'; relevantInfo?: string }) => {
+  const handleSelectExistingPatient = (patientId: string) => {
+    setCurrentPatientId(patientId);
+    navigate(`/dashboard?patientId=${patientId}`);
+  };
+
+  const handleCreateNewPatient = (data: { name: string; age: number; gender: 'male' | 'female' | 'other'; medicalTags: string[] }) => {
     const today = new Date();
     const birthYear = today.getFullYear() - data.age;
     const dateOfBirth = `${birthYear}-01-01`;
     
-    const patientId = addPatient(data.name, dateOfBirth, data.age, data.gender, data.relevantInfo);
+    // Convert medicalTags array to comma-separated string for relevantInfo
+    const relevantInfo = data.medicalTags.length > 0 ? data.medicalTags.join(', ') : undefined;
+    
+    const patientId = addPatient(data.name, dateOfBirth, data.age, data.gender, relevantInfo, data.medicalTags);
+    setCurrentPatientId(patientId);
     navigate(`/dashboard?patientId=${patientId}`);
   };
 
@@ -170,7 +179,7 @@ const Home = () => {
         <img 
           src={kkeshLogo} 
           alt="King Khaled Eye Specialist Hospital" 
-          style={{ height: "50px", objectFit: "contain" }}
+          style={{ height: "80px", objectFit: "contain" }}
         />
       </header>
 
@@ -450,7 +459,7 @@ const Home = () => {
 
         {/* CTA Button */}
         <button
-          onClick={() => setIsNewPatientModalOpen(true)}
+          onClick={() => setIsAnalyzeModalOpen(true)}
           style={{
             marginTop: "50px",
             padding: "14px 36px",
@@ -475,15 +484,17 @@ const Home = () => {
             e.currentTarget.style.transform = "translateY(0)";
           }}
         >
-          New Analysis
+          Analyze Patient
         </button>
       </main>
 
-      {/* New Patient Modal */}
-      <NewPatientModal
-        isOpen={isNewPatientModalOpen}
-        onClose={() => setIsNewPatientModalOpen(false)}
-        onSubmit={handleNewPatientSubmit}
+      {/* Analyze Patient Modal */}
+      <AnalyzePatientModal
+        isOpen={isAnalyzeModalOpen}
+        onClose={() => setIsAnalyzeModalOpen(false)}
+        onSelectExisting={handleSelectExistingPatient}
+        onCreateNew={handleCreateNewPatient}
+        patients={patients}
       />
 
       {/* Footer */}
