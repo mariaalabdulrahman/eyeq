@@ -164,63 +164,6 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
     { name: 'Fundus Only', value: filteredPatients.reduce((sum, p) => sum + p.scans.filter(s => !s.linkedOctUrl).length, 0) },
   ];
 
-  // Systemic disease distribution from medical tags
-  const systemicDiseaseData = useMemo(() => {
-    const systemicCounts: Record<string, { count: number; patientIds: Set<string> }> = {};
-    
-    filteredPatients.forEach(p => {
-      if (!p.medicalTags) return;
-      p.medicalTags.forEach(tag => {
-        // Only count systemic conditions (not ocular diseases or symptoms)
-        const systemicKeywords = [
-          'diabetes',
-          'hypertension',
-          'cardiovascular',
-          'heart',
-          'stroke', 
-          'cholesterol',
-          'obesity',
-          'thyroid',
-          'autoimmune',
-          'arthritis',
-          'lupus',
-          'sclerosis',
-          'anemia',
-          'liver',
-          'cancer',
-          'hiv',
-          'tuberculosis',
-          'coronary',
-        ];
-        const isSystemic = systemicKeywords.some(keyword => tag.toLowerCase().includes(keyword));
-        if (isSystemic) {
-          if (!systemicCounts[tag]) {
-            systemicCounts[tag] = { count: 0, patientIds: new Set<string>() };
-          }
-          systemicCounts[tag].count += 1;
-          systemicCounts[tag].patientIds.add(p.id);
-        }
-      });
-    });
-    
-    const totalPatients = filteredPatients.length || 1;
-    
-    return Object.entries(systemicCounts)
-      .sort((a, b) => b[1].count - a[1].count)
-      .slice(0, 8)
-      .map(([name, data], index) => {
-        // Create varied percentages based on patient count, position, and some randomization
-        const basePercent = (data.patientIds.size / totalPatients) * 100;
-        const positionMultiplier = 1 - (index * 0.08); // Decrease for later items
-        const variance = (name.length % 17) * 2.5; // Pseudo-random variance based on name
-        const value = Math.round(Math.min(88, Math.max(8, basePercent * positionMultiplier + variance)));
-        return { 
-          name, 
-          value,
-          patientCount: data.patientIds.size,
-        };
-      });
-  }, [filteredPatients]);
 
   // Neurological & Mental Health conditions
   const neurologicalData = useMemo(() => {
@@ -331,62 +274,6 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
       });
   }, [filteredPatients]);
 
-  // Symptoms distribution from medical tags
-  const symptomsData = useMemo(() => {
-    const symptomCounts: Record<string, { count: number; patientIds: Set<string> }> = {};
-    
-    filteredPatients.forEach(p => {
-      if (!p.medicalTags) return;
-      p.medicalTags.forEach(tag => {
-        const symptomKeywords = [
-          'vision',
-          'pain',
-          'redness',
-          'itching',
-          'burning',
-          'tearing',
-          'dry',
-          'sensitivity',
-          'blindness',
-          'floaters',
-          'flashes',
-          'headache',
-          'nausea', 
-          'dizziness',
-          'fatigue',
-          'loss',
-          'blurred',
-          'difficulty',
-          'obscuration',
-        ];
-        const isSymptom = symptomKeywords.some(keyword => tag.toLowerCase().includes(keyword));
-        if (isSymptom) {
-          if (!symptomCounts[tag]) {
-            symptomCounts[tag] = { count: 0, patientIds: new Set<string>() };
-          }
-          symptomCounts[tag].count += 1;
-          symptomCounts[tag].patientIds.add(p.id);
-        }
-      });
-    });
-    
-    const totalPatients = filteredPatients.length || 1;
-    
-    return Object.entries(symptomCounts)
-      .sort((a, b) => b[1].count - a[1].count)
-      .slice(0, 8)
-      .map(([name, data], index) => {
-        const basePercent = (data.patientIds.size / totalPatients) * 100;
-        const positionMultiplier = 1 - (index * 0.09);
-        const variance = ((name.length * 3 + (name.charCodeAt(1) || 70)) % 21) * 2.1;
-        const value = Math.round(Math.min(85, Math.max(10, basePercent * positionMultiplier + variance)));
-        return { 
-          name, 
-          value,
-          patientCount: data.patientIds.size,
-        };
-      });
-  }, [filteredPatients]);
 
   // Linked systemic diseases based on detected ocular conditions
   const linkedSystemicData = useMemo(() => {
@@ -554,41 +441,6 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
       headStyles: { fillColor: [8, 145, 178] },
     });
 
-    // Systemic Diseases
-    let finalY3 = (doc as any).lastAutoTable?.finalY || finalY2 + 80;
-    if (finalY3 > 240) {
-      doc.addPage();
-      finalY3 = 10;
-    }
-    if (systemicDiseaseData.length > 0) {
-      doc.setFontSize(12);
-      doc.text("Systemic Diseases Distribution:", 20, finalY3 + 15);
-      autoTable(doc, {
-        startY: finalY3 + 20,
-        head: [['Condition', 'Count']],
-        body: systemicDiseaseData.map(d => [d.name, d.value.toString()]),
-        theme: 'striped',
-        headStyles: { fillColor: [245, 158, 11] },
-      });
-    }
-
-    // Symptoms
-    let finalY4 = (doc as any).lastAutoTable?.finalY || finalY3 + 80;
-    if (finalY4 > 240) {
-      doc.addPage();
-      finalY4 = 10;
-    }
-    if (symptomsData.length > 0) {
-      doc.setFontSize(12);
-      doc.text("Symptoms Distribution:", 20, finalY4 + 15);
-      autoTable(doc, {
-        startY: finalY4 + 20,
-        head: [['Symptom', 'Count']],
-        body: symptomsData.map(d => [d.name, d.value.toString()]),
-        theme: 'striped',
-        headStyles: { fillColor: [139, 92, 246] },
-      });
-    }
 
     // Capture charts as images
     const chartContainers = document.querySelectorAll('[data-chart-container]');
