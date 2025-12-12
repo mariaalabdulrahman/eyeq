@@ -35,12 +35,12 @@ const Home = () => {
   }, []);
 
   const features = [
-    { icon: Upload, label: "Upload Image", angle: -150, action: () => navigate("/dashboard") },
-    { icon: ScanLine, label: "Scan Analysis", angle: -110, action: () => navigate("/dashboard") },
-    { icon: FolderOpen, label: "Patient Records", angle: -70, action: () => navigate("/records") },
-    { icon: GitCompare, label: "Compare Scans", angle: 70, action: () => navigate("/dashboard") },
-    { icon: BarChart3, label: "Visual Reports", angle: 110, action: () => navigate("/dashboard") },
-    { icon: Stethoscope, label: "Doctor Tools", angle: 150, action: () => navigate("/dashboard") },
+    { icon: Upload, label: "Upload Image", side: 'left', index: 0, action: () => navigate("/dashboard") },
+    { icon: ScanLine, label: "Scan Analysis", side: 'left', index: 1, action: () => navigate("/dashboard") },
+    { icon: FolderOpen, label: "Patient Records", side: 'left', index: 2, action: () => navigate("/records") },
+    { icon: GitCompare, label: "Compare Scans", side: 'right', index: 0, action: () => navigate("/dashboard") },
+    { icon: BarChart3, label: "Visual Reports", side: 'right', index: 1, action: () => navigate("/dashboard") },
+    { icon: Stethoscope, label: "Doctor Tools", side: 'right', index: 2, action: () => navigate("/dashboard") },
   ];
 
   const floatingGraphics = [
@@ -222,7 +222,7 @@ const Home = () => {
               <path d="M 40 280 Q 80 265 105 290" stroke="#cc4444" strokeWidth="0.5" fill="none" />
             </svg>
 
-            {/* Iris - moves with cursor */}
+            {/* Iris - moves with cursor - BLUE */}
             <div
               style={{
                 position: "absolute",
@@ -231,7 +231,7 @@ const Home = () => {
                 width: "200px",
                 height: "200px",
                 borderRadius: "50%",
-                background: "radial-gradient(circle at 30% 30%, #ff6b35 0%, #c94a2e 15%, #8b2500 30%, #4a0e0e 50%, #1a0505 80%, #000 100%)",
+                background: "radial-gradient(circle at 30% 30%, #60a5fa 0%, #3b82f6 15%, #2563eb 30%, #1d4ed8 50%, #1e3a8a 80%, #172554 100%)",
                 boxShadow: "inset 0 0 50px rgba(0,0,0,0.6), 0 0 30px rgba(8, 145, 178, 0.3)",
                 transform: `translate(calc(-50% + ${pupilPosition.x}px), calc(-50% + ${pupilPosition.y}px))`,
                 transition: "transform 0.08s ease-out",
@@ -248,7 +248,7 @@ const Home = () => {
                     width: "2px",
                     height: "50%",
                     background:
-                      "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.15) 30%, rgba(45,212,191,0.2) 60%, transparent 100%)",
+                      "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.2) 30%, rgba(96,165,250,0.3) 60%, transparent 100%)",
                     transformOrigin: "top",
                     transform: `rotate(${i * 10}deg)`,
                   }}
@@ -261,7 +261,7 @@ const Home = () => {
                   position: "absolute",
                   inset: "-4px",
                   borderRadius: "50%",
-                  border: "4px solid rgba(12,74,110,0.8)",
+                  border: "4px solid rgba(30,58,138,0.9)",
                 }}
               />
 
@@ -321,23 +321,26 @@ const Home = () => {
             }}
           />
 
-          {/* Feature Buttons Around Eye */}
-          {features.map((feature, index) => {
-            const radius = 280;
-            const angleRad = (feature.angle * Math.PI) / 180;
-            const x = Math.cos(angleRad) * radius;
-            const y = Math.sin(angleRad) * radius;
-            const Icon = feature.icon;
+        </div>
 
+        {/* Feature Buttons - Left Side */}
+        <div style={{
+          position: "absolute",
+          left: "-220px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
+        }}>
+          {features.filter(f => f.side === 'left').map((feature, index) => {
+            const Icon = feature.icon;
             return (
               <button
                 key={index}
                 onClick={feature.action}
+                className={`float-btn float-btn-${index}`}
                 style={{
-                  position: "absolute",
-                  left: "50%",
-                  top: "50%",
-                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
@@ -353,19 +356,78 @@ const Home = () => {
                   color: "#374151",
                   whiteSpace: "nowrap",
                   backdropFilter: "blur(10px)",
+                  animation: `floatButton ${3 + index * 0.5}s ease-in-out infinite`,
+                  animationDelay: `${index * 0.3}s`,
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "#0891b2";
                   e.currentTarget.style.color = "white";
                   e.currentTarget.style.borderColor = "#0891b2";
-                  e.currentTarget.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1.1)`;
+                  e.currentTarget.style.transform = "scale(1.1)";
                   e.currentTarget.style.boxShadow = "0 8px 30px rgba(8, 145, 178, 0.4)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
                   e.currentTarget.style.color = "#374151";
                   e.currentTarget.style.borderColor = "rgba(8, 145, 178, 0.2)";
-                  e.currentTarget.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08), 0 0 20px rgba(8, 145, 178, 0.05)";
+                }}
+              >
+                <Icon size={18} />
+                <span>{feature.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Feature Buttons - Right Side */}
+        <div style={{
+          position: "absolute",
+          right: "-220px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
+        }}>
+          {features.filter(f => f.side === 'right').map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <button
+                key={index}
+                onClick={feature.action}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "12px 20px",
+                  borderRadius: "24px",
+                  border: "1px solid rgba(8, 145, 178, 0.2)",
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.08), 0 0 20px rgba(8, 145, 178, 0.05)",
+                  transition: "all 0.3s ease",
+                  fontWeight: 500,
+                  fontSize: "14px",
+                  color: "#374151",
+                  whiteSpace: "nowrap",
+                  backdropFilter: "blur(10px)",
+                  animation: `floatButton ${3.5 + index * 0.4}s ease-in-out infinite`,
+                  animationDelay: `${0.5 + index * 0.4}s`,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#0891b2";
+                  e.currentTarget.style.color = "white";
+                  e.currentTarget.style.borderColor = "#0891b2";
+                  e.currentTarget.style.transform = "scale(1.1)";
+                  e.currentTarget.style.boxShadow = "0 8px 30px rgba(8, 145, 178, 0.4)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
+                  e.currentTarget.style.color = "#374151";
+                  e.currentTarget.style.borderColor = "rgba(8, 145, 178, 0.2)";
+                  e.currentTarget.style.transform = "scale(1)";
                   e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08), 0 0 20px rgba(8, 145, 178, 0.05)";
                 }}
               >
@@ -428,6 +490,12 @@ const Home = () => {
           25% { transform: translateY(-20px) scale(1.02); }
           50% { transform: translateY(-10px) scale(0.98); }
           75% { transform: translateY(-25px) scale(1.01); }
+        }
+        @keyframes floatButton {
+          0%, 100% { transform: translateY(0px) translateX(0px); }
+          25% { transform: translateY(-8px) translateX(3px); }
+          50% { transform: translateY(-4px) translateX(-2px); }
+          75% { transform: translateY(-10px) translateX(2px); }
         }
         @keyframes pulse {
           0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
