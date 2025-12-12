@@ -358,10 +358,23 @@ const loadScansFromStorage = (): ScanAnalysis[] => {
     const stored = localStorage.getItem(SCANS_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      return parsed.map((s: any) => ({
+      const mapped = parsed.map((s: any) => ({
         ...s,
         uploadedAt: new Date(s.uploadedAt),
       }));
+
+      // If we detect old blob: URLs that are no longer valid, reset scans
+      const hasBlobUrls = mapped.some((s: any) =>
+        typeof s.imageUrl === 'string' && s.imageUrl.startsWith('blob:')
+      );
+
+      if (hasBlobUrls) {
+        console.warn('Detected legacy blob URLs in stored scans. Resetting scan storage.');
+        localStorage.removeItem(SCANS_STORAGE_KEY);
+        return [];
+      }
+
+      return mapped;
     }
   } catch (e) {
     console.error('Error loading scans from storage:', e);
