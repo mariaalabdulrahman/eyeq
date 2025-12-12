@@ -42,7 +42,6 @@ const SYSTEMIC_DISEASE_LINKS: Record<string, { systemicDiseases: { name: string;
     systemicDiseases: [
       { name: "Stroke", probability: 55, link: "Retinal arteriolar narrowing directly predicts cerebrovascular events" },
       { name: "Heart Failure", probability: 45, link: "Microvascular damage reflects cardiac stress and systemic vascular resistance" },
-      { name: "Chronic Kidney Disease", probability: 40, link: "Parallel target organ damage from chronic hypertension" },
     ]
   },
   "Papilledema": {

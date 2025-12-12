@@ -234,7 +234,60 @@ const Index = () => {
           </div>
         </div>
         
-        {/* View Mode Buttons + Patient Records */}
+        {/* Fixed Navigation Tabs */}
+        <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+          <button
+            onClick={() => {}}
+            style={{
+              padding: '8px 0',
+              border: 'none',
+              backgroundColor: 'transparent',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '14px',
+              color: '#0891b2',
+              borderBottom: '2px solid #0891b2',
+            }}
+          >
+            Image Analysis
+          </button>
+          <button
+            onClick={() => navigate('/records')}
+            style={{
+              padding: '8px 0',
+              border: 'none',
+              backgroundColor: 'transparent',
+              cursor: 'pointer',
+              fontWeight: 500,
+              fontSize: '14px',
+              color: '#6b7280',
+              borderBottom: '2px solid transparent',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#374151'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
+          >
+            Patient Records
+          </button>
+          <button
+            onClick={() => navigate('/llm')}
+            style={{
+              padding: '8px 0',
+              border: 'none',
+              backgroundColor: 'transparent',
+              cursor: 'pointer',
+              fontWeight: 500,
+              fontSize: '14px',
+              color: '#6b7280',
+              borderBottom: '2px solid transparent',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#374151'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
+          >
+            LLM
+          </button>
+        </div>
+        
+        {/* View Mode Buttons */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           {viewModes.map(({ mode, icon: Icon, label }) => (
             <button
@@ -258,26 +311,6 @@ const Index = () => {
               {label}
             </button>
           ))}
-          
-          <div style={{ width: '1px', height: '24px', backgroundColor: '#e5e7eb', margin: '0 8px' }} />
-          
-          <button
-            onClick={() => navigate('/records')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid #e5e7eb',
-              backgroundColor: 'white',
-              cursor: 'pointer',
-              fontWeight: 500,
-              fontSize: '13px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <FolderOpen size={16} /> Patient Records
-          </button>
         </div>
       </header>
 
