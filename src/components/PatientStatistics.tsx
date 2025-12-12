@@ -166,105 +166,207 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
 
   // Systemic disease distribution from medical tags
   const systemicDiseaseData = useMemo(() => {
-    const systemicCounts: Record<string, number> = {};
+    const systemicCounts: Record<string, { count: number; patientIds: Set<string> }> = {};
     
     filteredPatients.forEach(p => {
-      if (p.medicalTags) {
-        p.medicalTags.forEach(tag => {
-          // Only count systemic conditions (not ocular diseases or symptoms)
-          const systemicKeywords = ['diabetes', 'hypertension', 'cardiovascular', 'heart', 'stroke', 
-            'cholesterol', 'obesity', 'thyroid', 'autoimmune', 'arthritis', 'lupus', 'sclerosis',
-            'anemia', 'kidney', 'liver', 'cancer', 'hiv', 'tuberculosis', 'coronary'];
-          const isSystemic = systemicKeywords.some(keyword => tag.toLowerCase().includes(keyword));
-          if (isSystemic) {
-            systemicCounts[tag] = (systemicCounts[tag] || 0) + 1;
+      if (!p.medicalTags) return;
+      p.medicalTags.forEach(tag => {
+        // Only count systemic conditions (not ocular diseases or symptoms)
+        const systemicKeywords = [
+          'diabetes',
+          'hypertension',
+          'cardiovascular',
+          'heart',
+          'stroke', 
+          'cholesterol',
+          'obesity',
+          'thyroid',
+          'autoimmune',
+          'arthritis',
+          'lupus',
+          'sclerosis',
+          'anemia',
+          'kidney',
+          'liver',
+          'cancer',
+          'hiv',
+          'tuberculosis',
+          'coronary',
+        ];
+        const isSystemic = systemicKeywords.some(keyword => tag.toLowerCase().includes(keyword));
+        if (isSystemic) {
+          if (!systemicCounts[tag]) {
+            systemicCounts[tag] = { count: 0, patientIds: new Set<string>() };
           }
-        });
-      }
+          systemicCounts[tag].count += 1;
+          systemicCounts[tag].patientIds.add(p.id);
+        }
+      });
     });
     
+    const totalPatients = filteredPatients.length || 1;
+    
     return Object.entries(systemicCounts)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 8)
-      .map(([name, value]) => ({ name, value }));
+      .map(([name, data]) => ({ 
+        name, 
+        value: Math.round((data.patientIds.size / totalPatients) * 100),
+        patientCount: data.patientIds.size,
+      }));
   }, [filteredPatients]);
 
   // Neurological & Mental Health conditions
   const neurologicalData = useMemo(() => {
-    const neuroCounts: Record<string, number> = {};
+    const neuroCounts: Record<string, { count: number; patientIds: Set<string> }> = {};
     
     filteredPatients.forEach(p => {
-      if (p.medicalTags) {
-        p.medicalTags.forEach(tag => {
-          const neuroKeywords = ['parkinson', 'alzheimer', 'dementia', 'neurological', 'neurodegenerative',
-            'multiple sclerosis', 'migraine', 'seizure', 'epilepsy', 'neuropathy', 'stroke history',
-            'depression', 'anxiety', 'bipolar', 'schizophrenia', 'mental', 'psychiatric',
-            'intracranial', 'brain'];
-          const isNeuro = neuroKeywords.some(keyword => tag.toLowerCase().includes(keyword));
-          if (isNeuro) {
-            neuroCounts[tag] = (neuroCounts[tag] || 0) + 1;
+      if (!p.medicalTags) return;
+      p.medicalTags.forEach(tag => {
+        const neuroKeywords = [
+          'parkinson',
+          'alzheimer',
+          'dementia',
+          'neurological',
+          'neurodegenerative',
+          'multiple sclerosis',
+          'migraine',
+          'seizure',
+          'epilepsy',
+          'neuropathy',
+          'stroke history',
+          'depression',
+          'anxiety',
+          'bipolar',
+          'schizophrenia',
+          'mental',
+          'psychiatric',
+          'intracranial',
+          'brain',
+        ];
+        const isNeuro = neuroKeywords.some(keyword => tag.toLowerCase().includes(keyword));
+        if (isNeuro) {
+          if (!neuroCounts[tag]) {
+            neuroCounts[tag] = { count: 0, patientIds: new Set<string>() };
           }
-        });
-      }
+          neuroCounts[tag].count += 1;
+          neuroCounts[tag].patientIds.add(p.id);
+        }
+      });
     });
     
+    const totalPatients = filteredPatients.length || 1;
+    
     return Object.entries(neuroCounts)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 8)
-      .map(([name, value]) => ({ name, value }));
+      .map(([name, data]) => ({ 
+        name, 
+        value: Math.round((data.patientIds.size / totalPatients) * 100),
+        patientCount: data.patientIds.size,
+      }));
   }, [filteredPatients]);
 
   // Cardiovascular conditions (more specific)
   const cardiovascularData = useMemo(() => {
-    const cvdCounts: Record<string, number> = {};
+    const cvdCounts: Record<string, { count: number; patientIds: Set<string> }> = {};
     
     filteredPatients.forEach(p => {
-      if (p.medicalTags) {
-        p.medicalTags.forEach(tag => {
-          const cvdKeywords = ['cardiovascular', 'heart', 'coronary', 'artery', 'hypertension',
-            'stroke', 'atrial', 'arrhythmia', 'cholesterol', 'atherosclerosis', 'aneurysm',
-            'thrombosis', 'embolism', 'peripheral vascular'];
-          const isCVD = cvdKeywords.some(keyword => tag.toLowerCase().includes(keyword));
-          if (isCVD) {
-            cvdCounts[tag] = (cvdCounts[tag] || 0) + 1;
+      if (!p.medicalTags) return;
+      p.medicalTags.forEach(tag => {
+        const cvdKeywords = [
+          'cardiovascular',
+          'heart',
+          'coronary',
+          'artery',
+          'hypertension',
+          'stroke',
+          'atrial',
+          'arrhythmia',
+          'cholesterol',
+          'atherosclerosis',
+          'aneurysm',
+          'thrombosis',
+          'embolism',
+          'peripheral vascular',
+        ];
+        const isCVD = cvdKeywords.some(keyword => tag.toLowerCase().includes(keyword));
+        if (isCVD) {
+          if (!cvdCounts[tag]) {
+            cvdCounts[tag] = { count: 0, patientIds: new Set<string>() };
           }
-        });
-      }
+          cvdCounts[tag].count += 1;
+          cvdCounts[tag].patientIds.add(p.id);
+        }
+      });
     });
     
+    const totalPatients = filteredPatients.length || 1;
+    
     return Object.entries(cvdCounts)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 8)
-      .map(([name, value]) => ({ name, value }));
+      .map(([name, data]) => ({ 
+        name, 
+        value: Math.round((data.patientIds.size / totalPatients) * 100),
+        patientCount: data.patientIds.size,
+      }));
   }, [filteredPatients]);
 
   // Symptoms distribution from medical tags
   const symptomsData = useMemo(() => {
-    const symptomCounts: Record<string, number> = {};
+    const symptomCounts: Record<string, { count: number; patientIds: Set<string> }> = {};
     
     filteredPatients.forEach(p => {
-      if (p.medicalTags) {
-        p.medicalTags.forEach(tag => {
-          const symptomKeywords = ['vision', 'pain', 'redness', 'itching', 'burning', 'tearing',
-            'dry', 'sensitivity', 'blindness', 'floaters', 'flashes', 'headache', 'nausea', 
-            'dizziness', 'fatigue', 'loss', 'blurred', 'difficulty', 'obscuration'];
-          const isSymptom = symptomKeywords.some(keyword => tag.toLowerCase().includes(keyword));
-          if (isSymptom) {
-            symptomCounts[tag] = (symptomCounts[tag] || 0) + 1;
+      if (!p.medicalTags) return;
+      p.medicalTags.forEach(tag => {
+        const symptomKeywords = [
+          'vision',
+          'pain',
+          'redness',
+          'itching',
+          'burning',
+          'tearing',
+          'dry',
+          'sensitivity',
+          'blindness',
+          'floaters',
+          'flashes',
+          'headache',
+          'nausea', 
+          'dizziness',
+          'fatigue',
+          'loss',
+          'blurred',
+          'difficulty',
+          'obscuration',
+        ];
+        const isSymptom = symptomKeywords.some(keyword => tag.toLowerCase().includes(keyword));
+        if (isSymptom) {
+          if (!symptomCounts[tag]) {
+            symptomCounts[tag] = { count: 0, patientIds: new Set<string>() };
           }
-        });
-      }
+          symptomCounts[tag].count += 1;
+          symptomCounts[tag].patientIds.add(p.id);
+        }
+      });
     });
     
+    const totalPatients = filteredPatients.length || 1;
+    
     return Object.entries(symptomCounts)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 8)
-      .map(([name, value]) => ({ name, value }));
+      .map(([name, data]) => ({ 
+        name, 
+        value: Math.round((data.patientIds.size / totalPatients) * 100),
+        patientCount: data.patientIds.size,
+      }));
   }, [filteredPatients]);
 
   // Linked systemic diseases based on detected ocular conditions
   const linkedSystemicData = useMemo(() => {
-    const linkedCounts: Record<string, { count: number; link: string }> = {};
+    const linkedCounts: Record<string, { count: number; link: string; patientIds: Set<string> }> = {};
     
     // Map ocular diseases to systemic conditions
     const ocularToSystemic: Record<string, { condition: string; link: string }[]> = {
@@ -306,9 +408,10 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
             if (systemic) {
               systemic.forEach(({ condition, link }) => {
                 if (!linkedCounts[condition]) {
-                  linkedCounts[condition] = { count: 0, link };
+                  linkedCounts[condition] = { count: 0, link, patientIds: new Set<string>() };
                 }
-                linkedCounts[condition].count++;
+                linkedCounts[condition].count += 1;
+                linkedCounts[condition].patientIds.add(p.id);
               });
             }
           }
@@ -316,10 +419,17 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
       });
     });
     
+    const totalPatients = filteredPatients.length || 1;
+    
     return Object.entries(linkedCounts)
       .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 8)
-      .map(([name, { count, link }]) => ({ name, value: count, link }));
+      .map(([name, { count, link, patientIds }]) => ({ 
+        name, 
+        value: Math.round((patientIds.size / totalPatients) * 100),
+        patientCount: patientIds.size,
+        link,
+      }));
   }, [filteredPatients]);
 
   // Download Statistics as PDF with charts
@@ -987,17 +1097,18 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
                 <Tooltip 
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
-                      const data = payload[0].payload;
+                      const data = payload[0].payload as { name: string; value: number; patientCount: number; link: string };
                       return (
                         <div style={{ 
                           backgroundColor: 'white', 
                           padding: '12px', 
                           borderRadius: '8px',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                          maxWidth: '300px',
+                          maxWidth: '320px',
                         }}>
                           <p style={{ fontWeight: 600, marginBottom: '6px' }}>{data.name}</p>
-                          <p style={{ fontSize: '12px', color: '#6b7280' }}>Patients: {data.value}</p>
+                          <p style={{ fontSize: '12px', color: '#6b7280' }}>Patients: {data.patientCount}</p>
+                          <p style={{ fontSize: '12px', color: '#0f766e' }}>Prevalence: {data.value}% of filtered patients</p>
                           <p style={{ fontSize: '11px', color: '#0891b2', marginTop: '6px', lineHeight: 1.4 }}>
                             <strong>Link:</strong> {data.link}
                           </p>

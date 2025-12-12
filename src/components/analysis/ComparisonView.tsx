@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { ScanAnalysis } from "@/types/scan";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from "recharts";
 import { Download } from "lucide-react";
+import { TifImage } from "../TifImage";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -513,18 +514,40 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
           </h3>
           <div style={{ 
             display: 'flex', 
-            alignItems: 'center', 
+            flexDirection: 'column',
+            gap: '8px',
+            alignItems: 'stretch', 
             justifyContent: 'center', 
             backgroundColor: '#f3f4f6', 
             borderRadius: '8px', 
             marginBottom: '16px',
+            padding: '8px',
             minHeight: '180px',
           }}>
-            <img
-              src={currentScan.imageUrl}
-              alt={currentScan.name}
-              style={{ maxWidth: '100%', maxHeight: '180px', objectFit: 'contain' }}
-            />
+            <div style={{ fontSize: '12px', fontWeight: 500, color: '#4b5563', marginBottom: '4px' }}>
+              Fundus
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <img
+                src={currentScan.imageUrl}
+                alt={currentScan.name}
+                style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }}
+              />
+            </div>
+            {currentScan.linkedOctUrl && (
+              <div style={{ marginTop: '8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 500, color: '#4b5563', marginBottom: '4px' }}>
+                  {currentScan.linkedOctName || 'OCT Scan'}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <TifImage
+                    src={currentScan.linkedOctUrl}
+                    alt={currentScan.linkedOctName || 'OCT Scan'}
+                    style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
           <div style={{ overflowY: 'auto', maxHeight: '150px' }}>
             {currentScan.diseases.map((disease, i) => (
@@ -559,18 +582,40 @@ export function ComparisonView({ currentScan, allScans }: ComparisonViewProps) {
             </h3>
             <div style={{ 
               display: 'flex', 
-              alignItems: 'center', 
+              flexDirection: 'column',
+              gap: '8px',
+              alignItems: 'stretch', 
               justifyContent: 'center', 
               backgroundColor: '#f3f4f6', 
               borderRadius: '8px', 
               marginBottom: '16px',
+              padding: '8px',
               minHeight: '180px',
             }}>
-              <img
-                src={compareScan.imageUrl}
-                alt={compareScan.name}
-                style={{ maxWidth: '100%', maxHeight: '180px', objectFit: 'contain' }}
-              />
+              <div style={{ fontSize: '12px', fontWeight: 500, color: '#4b5563', marginBottom: '4px' }}>
+                Fundus
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <img
+                  src={compareScan.imageUrl}
+                  alt={compareScan.name}
+                  style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }}
+                />
+              </div>
+              {compareScan.linkedOctUrl && (
+                <div style={{ marginTop: '8px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: '#4b5563', marginBottom: '4px' }}>
+                    {compareScan.linkedOctName || 'OCT Scan'}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <TifImage
+                      src={compareScan.linkedOctUrl}
+                      alt={compareScan.linkedOctName || 'OCT Scan'}
+                      style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
             <div style={{ overflowY: 'auto', maxHeight: '150px' }}>
               {compareScan.diseases.map((disease, i) => {
