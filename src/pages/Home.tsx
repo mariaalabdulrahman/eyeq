@@ -35,12 +35,12 @@ const Home = () => {
   }, []);
 
   const features = [
-    { icon: Upload, label: "Upload Image", side: 'left', index: 0, action: () => navigate("/dashboard") },
-    { icon: ScanLine, label: "Scan Analysis", side: 'left', index: 1, action: () => navigate("/dashboard") },
-    { icon: FolderOpen, label: "Patient Records", side: 'left', index: 2, action: () => navigate("/records") },
-    { icon: GitCompare, label: "Compare Scans", side: 'right', index: 0, action: () => navigate("/dashboard") },
-    { icon: BarChart3, label: "Visual Reports", side: 'right', index: 1, action: () => navigate("/dashboard") },
-    { icon: Stethoscope, label: "Doctor Tools", side: 'right', index: 2, action: () => navigate("/dashboard") },
+    { icon: Upload, label: "Upload Image", angle: -140, action: () => navigate("/dashboard") },
+    { icon: ScanLine, label: "Scan Analysis", angle: -180, action: () => navigate("/dashboard") },
+    { icon: FolderOpen, label: "Patient Records", angle: -220, action: () => navigate("/records") },
+    { icon: GitCompare, label: "Compare Scans", angle: -40, action: () => navigate("/dashboard") },
+    { icon: BarChart3, label: "Visual Reports", angle: 0, action: () => navigate("/dashboard") },
+    { icon: Stethoscope, label: "Doctor Tools", angle: 40, action: () => navigate("/dashboard") },
   ];
 
   const floatingGraphics = [
@@ -321,26 +321,25 @@ const Home = () => {
             }}
           />
 
-        </div>
-
-        {/* Feature Buttons - Left Side */}
-        <div style={{
-          position: "absolute",
-          left: "-220px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-        }}>
-          {features.filter(f => f.side === 'left').map((feature, index) => {
+          {/* Feature Buttons Around Eye - Left and Right sides */}
+          {features.map((feature, index) => {
+            const radius = 280;
+            const angleRad = (feature.angle * Math.PI) / 180;
+            const x = Math.cos(angleRad) * radius;
+            const y = Math.sin(angleRad) * radius;
             const Icon = feature.icon;
+            const floatDelay = index * 0.4;
+            const floatDuration = 3 + (index % 3) * 0.5;
+
             return (
               <button
                 key={index}
                 onClick={feature.action}
-                className={`float-btn float-btn-${index}`}
                 style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "50%",
+                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
@@ -350,84 +349,25 @@ const Home = () => {
                   backgroundColor: "rgba(255, 255, 255, 0.95)",
                   cursor: "pointer",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.08), 0 0 20px rgba(8, 145, 178, 0.05)",
-                  transition: "all 0.3s ease",
+                  transition: "background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease",
                   fontWeight: 500,
                   fontSize: "14px",
                   color: "#374151",
                   whiteSpace: "nowrap",
                   backdropFilter: "blur(10px)",
-                  animation: `floatButton ${3 + index * 0.5}s ease-in-out infinite`,
-                  animationDelay: `${index * 0.3}s`,
+                  animation: `floatButtonOrbit ${floatDuration}s ease-in-out infinite`,
+                  animationDelay: `${floatDelay}s`,
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "#0891b2";
                   e.currentTarget.style.color = "white";
                   e.currentTarget.style.borderColor = "#0891b2";
-                  e.currentTarget.style.transform = "scale(1.1)";
                   e.currentTarget.style.boxShadow = "0 8px 30px rgba(8, 145, 178, 0.4)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
                   e.currentTarget.style.color = "#374151";
                   e.currentTarget.style.borderColor = "rgba(8, 145, 178, 0.2)";
-                  e.currentTarget.style.transform = "scale(1)";
-                  e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08), 0 0 20px rgba(8, 145, 178, 0.05)";
-                }}
-              >
-                <Icon size={18} />
-                <span>{feature.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Feature Buttons - Right Side */}
-        <div style={{
-          position: "absolute",
-          right: "-220px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-        }}>
-          {features.filter(f => f.side === 'right').map((feature, index) => {
-            const Icon = feature.icon;
-            return (
-              <button
-                key={index}
-                onClick={feature.action}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "12px 20px",
-                  borderRadius: "24px",
-                  border: "1px solid rgba(8, 145, 178, 0.2)",
-                  backgroundColor: "rgba(255, 255, 255, 0.95)",
-                  cursor: "pointer",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08), 0 0 20px rgba(8, 145, 178, 0.05)",
-                  transition: "all 0.3s ease",
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  color: "#374151",
-                  whiteSpace: "nowrap",
-                  backdropFilter: "blur(10px)",
-                  animation: `floatButton ${3.5 + index * 0.4}s ease-in-out infinite`,
-                  animationDelay: `${0.5 + index * 0.4}s`,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#0891b2";
-                  e.currentTarget.style.color = "white";
-                  e.currentTarget.style.borderColor = "#0891b2";
-                  e.currentTarget.style.transform = "scale(1.1)";
-                  e.currentTarget.style.boxShadow = "0 8px 30px rgba(8, 145, 178, 0.4)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
-                  e.currentTarget.style.color = "#374151";
-                  e.currentTarget.style.borderColor = "rgba(8, 145, 178, 0.2)";
-                  e.currentTarget.style.transform = "scale(1)";
                   e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08), 0 0 20px rgba(8, 145, 178, 0.05)";
                 }}
               >
@@ -491,11 +431,23 @@ const Home = () => {
           50% { transform: translateY(-10px) scale(0.98); }
           75% { transform: translateY(-25px) scale(1.01); }
         }
-        @keyframes floatButton {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          25% { transform: translateY(-8px) translateX(3px); }
-          50% { transform: translateY(-4px) translateX(-2px); }
-          75% { transform: translateY(-10px) translateX(2px); }
+        @keyframes floatButtonOrbit {
+          0%, 100% { 
+            margin-top: 0px; 
+            margin-left: 0px; 
+          }
+          25% { 
+            margin-top: -10px; 
+            margin-left: 5px; 
+          }
+          50% { 
+            margin-top: -5px; 
+            margin-left: -3px; 
+          }
+          75% { 
+            margin-top: -12px; 
+            margin-left: 3px; 
+          }
         }
         @keyframes pulse {
           0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }

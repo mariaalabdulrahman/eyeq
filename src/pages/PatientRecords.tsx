@@ -22,6 +22,7 @@ const PatientRecords = () => {
   const [passwordError, setPasswordError] = useState("");
   const [newPatientName, setNewPatientName] = useState("");
   const [newPatientDob, setNewPatientDob] = useState("");
+  const [chatHeight, setChatHeight] = useState(300);
 
   const calculateOverallRisk = (patient: Patient): { level: string; color: string } => {
     const allDiseases = patient.scans.flatMap(s => s.diseases);
@@ -153,14 +154,53 @@ const PatientRecords = () => {
           display: 'flex',
           flexDirection: 'column',
         }}>
-          {/* Chat Section */}
-          <div style={{ height: '50%', borderBottom: '1px solid #e5e7eb', overflow: 'hidden' }}>
+          {/* Chat Section - Resizable */}
+          <div style={{ 
+            height: `${chatHeight}px`, 
+            minHeight: '150px',
+            borderBottom: '1px solid #e5e7eb', 
+            overflow: 'hidden',
+            position: 'relative',
+          }}>
             <PatientChatSidebar 
               patients={patients} 
               onPatientSelect={(id) => {
                 const p = patients.find(p => p.id === id);
                 if (p) setSelectedPatient(p);
               }}
+            />
+            
+            {/* Vertical Resize Handle for Chat */}
+            <div 
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: '6px',
+                cursor: 'row-resize',
+                backgroundColor: 'transparent',
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                const startY = e.clientY;
+                const startHeight = chatHeight;
+                
+                const onMouseMove = (e: MouseEvent) => {
+                  const deltaY = e.clientY - startY;
+                  setChatHeight(Math.max(150, startHeight + deltaY));
+                };
+                
+                const onMouseUp = () => {
+                  document.removeEventListener('mousemove', onMouseMove);
+                  document.removeEventListener('mouseup', onMouseUp);
+                };
+                
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0891b2'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             />
           </div>
 
