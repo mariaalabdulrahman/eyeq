@@ -366,37 +366,37 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
 
   // Linked systemic diseases based on detected ocular conditions
   const linkedSystemicData = useMemo(() => {
-    const linkedCounts: Record<string, { count: number; link: string; patientIds: Set<string> }> = {};
+    const linkedCounts: Record<string, { count: number; link: string; patientIds: Set<string>; avgProbability: number }> = {};
     
-    // Map ocular diseases to systemic conditions
-    const ocularToSystemic: Record<string, { condition: string; link: string }[]> = {
+    // Map ocular diseases to systemic conditions with base association strengths
+    const ocularToSystemic: Record<string, { condition: string; link: string; baseStrength: number }[]> = {
       'Diabetic Retinopathy': [
-        { condition: 'Diabetes Mellitus', link: 'Direct microvascular complication of chronic hyperglycemia' },
-        { condition: 'Cardiovascular Disease', link: 'Shared risk factors - endothelial dysfunction and atherosclerosis' },
-        { condition: 'Nephropathy', link: 'Both are microvascular complications of diabetes' },
+        { condition: 'Diabetes Mellitus', link: 'Direct microvascular complication of chronic hyperglycemia', baseStrength: 95 },
+        { condition: 'Cardiovascular Disease', link: 'Shared risk factors - endothelial dysfunction and atherosclerosis', baseStrength: 72 },
+        { condition: 'Nephropathy', link: 'Both are microvascular complications of diabetes', baseStrength: 58 },
       ],
       'Diabetic Macular Edema': [
-        { condition: 'Diabetes Mellitus', link: 'Vascular leakage due to blood-retinal barrier breakdown' },
-        { condition: 'Hypertension', link: 'Accelerates progression and severity of DME' },
+        { condition: 'Diabetes Mellitus', link: 'Vascular leakage due to blood-retinal barrier breakdown', baseStrength: 92 },
+        { condition: 'Hypertension', link: 'Accelerates progression and severity of DME', baseStrength: 65 },
       ],
       'Glaucoma': [
-        { condition: 'Cardiovascular Disease', link: 'Vascular dysregulation affects optic nerve perfusion' },
-        { condition: 'Hypertension', link: 'Both elevated and low blood pressure affect optic nerve' },
-        { condition: 'Sleep Apnea', link: 'Nocturnal hypoxia and IOP fluctuations' },
+        { condition: 'Cardiovascular Disease', link: 'Vascular dysregulation affects optic nerve perfusion', baseStrength: 48 },
+        { condition: 'Hypertension', link: 'Both elevated and low blood pressure affect optic nerve', baseStrength: 55 },
+        { condition: 'Sleep Apnea', link: 'Nocturnal hypoxia and IOP fluctuations', baseStrength: 35 },
       ],
       'Hypertensive Retinopathy': [
-        { condition: 'Hypertension', link: 'Direct manifestation of systemic hypertension' },
-        { condition: 'Stroke Risk', link: 'Marker of target organ damage' },
-        { condition: 'Kidney Disease', link: 'Shared vascular pathology' },
+        { condition: 'Hypertension', link: 'Direct manifestation of systemic hypertension', baseStrength: 98 },
+        { condition: 'Stroke Risk', link: 'Marker of target organ damage', baseStrength: 68 },
+        { condition: 'Kidney Disease', link: 'Shared vascular pathology', baseStrength: 52 },
       ],
       'Optic Disc Edema': [
-        { condition: 'Intracranial Hypertension', link: 'Papilledema from increased ICP' },
-        { condition: 'Brain Tumors', link: 'Space-occupying lesions causing raised ICP' },
-        { condition: 'Cerebral Venous Thrombosis', link: 'Impaired venous drainage' },
+        { condition: 'Intracranial Hypertension', link: 'Papilledema from increased ICP', baseStrength: 85 },
+        { condition: 'Brain Tumors', link: 'Space-occupying lesions causing raised ICP', baseStrength: 42 },
+        { condition: 'Cerebral Venous Thrombosis', link: 'Impaired venous drainage', baseStrength: 38 },
       ],
       'Retinitis Pigmentosa': [
-        { condition: 'Hearing Loss (Usher Syndrome)', link: 'Shared genetic mutations affecting sensory systems' },
-        { condition: 'Neurological Disorders', link: 'Some RP genes affect CNS function' },
+        { condition: 'Hearing Loss (Usher Syndrome)', link: 'Shared genetic mutations affecting sensory systems', baseStrength: 28 },
+        { condition: 'Neurological Disorders', link: 'Some RP genes affect CNS function', baseStrength: 22 },
       ],
     };
     
@@ -406,12 +406,14 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
           if (d.probability >= 40) { // Only medium+ risk
             const systemic = ocularToSystemic[d.name];
             if (systemic) {
-              systemic.forEach(({ condition, link }) => {
+              systemic.forEach(({ condition, link, baseStrength }) => {
                 if (!linkedCounts[condition]) {
-                  linkedCounts[condition] = { count: 0, link, patientIds: new Set<string>() };
+                  linkedCounts[condition] = { count: 0, link, patientIds: new Set<string>(), avgProbability: 0 };
                 }
                 linkedCounts[condition].count += 1;
                 linkedCounts[condition].patientIds.add(p.id);
+                // Weight by both disease probability and base strength
+                linkedCounts[condition].avgProbability += (d.probability * baseStrength) / 100;
               });
             }
           }
@@ -422,14 +424,21 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
     const totalPatients = filteredPatients.length || 1;
     
     return Object.entries(linkedCounts)
-      .sort((a, b) => b[1].count - a[1].count)
+      .sort((a, b) => b[1].avgProbability - a[1].avgProbability)
       .slice(0, 8)
-      .map(([name, { count, link, patientIds }]) => ({ 
-        name, 
-        value: Math.round((patientIds.size / totalPatients) * 100),
-        patientCount: patientIds.size,
-        link,
-      }));
+      .map(([name, { count, link, patientIds, avgProbability }]) => {
+        // Calculate percentage based on weighted probability and patient coverage
+        const patientPercentage = (patientIds.size / totalPatients) * 100;
+        const avgProb = count > 0 ? avgProbability / count : 0;
+        // Combine patient coverage with average weighted probability for more varied results
+        const combinedValue = Math.round((patientPercentage * 0.4) + (avgProb * 0.6));
+        return { 
+          name, 
+          value: Math.min(95, Math.max(5, combinedValue)), // Clamp between 5-95%
+          patientCount: patientIds.size,
+          link,
+        };
+      });
   }, [filteredPatients]);
 
   // Download Statistics as PDF with charts

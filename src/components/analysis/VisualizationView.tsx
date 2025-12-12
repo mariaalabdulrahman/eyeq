@@ -406,12 +406,22 @@ export function VisualizationView({ scan }: VisualizationViewProps) {
                   <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   <span className="text-sm text-muted-foreground">Processing...</span>
                 </div>
-              ) : activeFilter === 'original' && activeImage === 'oct' && scan.linkedOctUrl ? (
-                <TifImage
-                  src={scan.linkedOctUrl}
-                  alt={scan.name}
-                  className="max-w-full max-h-full object-contain transition-all duration-300"
-                />
+        ) : activeImage === 'oct' && scan.linkedOctUrl ? (
+                // For OCT images (TIF files), use TifImage component
+                // When filter is applied, show the processed image, otherwise show original TIF
+                processedImageUrl ? (
+                  <img
+                    src={processedImageUrl}
+                    alt={scan.name}
+                    className="max-w-full max-h-full object-contain transition-all duration-300"
+                  />
+                ) : (
+                  <TifImage
+                    src={scan.linkedOctUrl}
+                    alt={scan.name}
+                    className="max-w-full max-h-full object-contain transition-all duration-300"
+                  />
+                )
               ) : (
                 <img
                   src={processedImageUrl || currentImageUrl}

@@ -250,16 +250,13 @@ const LLMChat = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
             <Logo size={40} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Logo size={28} />
-            <div>
-              <h1 style={{ fontSize: '16px', fontWeight: 600, color: '#111', margin: 0 }}>Eye-GPT</h1>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Ocular-Systemic Disease Links</p>
-            </div>
+          <div>
+            <h1 style={{ fontSize: '16px', fontWeight: 600, color: '#111', margin: 0 }}>Eye-GPT</h1>
+            <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Ocular-Systemic Disease Links</p>
           </div>
         </div>
         
