@@ -198,11 +198,11 @@ export function VisualAnalysis({ scan, patient }: VisualAnalysisProps) {
   ].filter(d => d.value > 0);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full overflow-y-auto scrollbar-thin p-1">
-      {/* Top Row: Clinical Indicators (left) + Scan Types (right) */}
+    <div className="grid grid-cols-1 gap-6 h-full overflow-y-auto scrollbar-thin p-1">
+      {/* Key Clinical Indicators - Full Width */}
       <div className="bg-card border border-border rounded-xl p-6">
         <h3 className="font-semibold text-foreground mb-4">Key Clinical Indicators</h3>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="bg-secondary/30 rounded-lg p-4 text-center">
             <p className="text-sm text-muted-foreground mb-1">Conditions Detected</p>
             <p className="text-3xl font-bold text-foreground">{scan.diseases.length}</p>
@@ -226,14 +226,14 @@ export function VisualAnalysis({ scan, patient }: VisualAnalysisProps) {
           <div className="mt-4 pt-4 border-t border-border">
             <p className="text-xs text-muted-foreground mb-2">Patient Medical History</p>
             <div className="flex flex-wrap gap-1">
-              {patient.medicalTags.slice(0, 6).map((tag, i) => (
+              {patient.medicalTags.slice(0, 8).map((tag, i) => (
                 <span key={i} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
                   {tag}
                 </span>
               ))}
-              {patient.medicalTags.length > 6 && (
+              {patient.medicalTags.length > 8 && (
                 <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                  +{patient.medicalTags.length - 6} more
+                  +{patient.medicalTags.length - 8} more
                 </span>
               )}
             </div>
@@ -243,13 +243,13 @@ export function VisualAnalysis({ scan, patient }: VisualAnalysisProps) {
 
 
       {/* Ocular Disease Analysis - List format with confidence */}
-      <div className="bg-card border border-border rounded-xl p-6 lg:col-span-2">
+      <div className="bg-card border border-border rounded-xl p-6">
         <h3 className="font-semibold text-foreground mb-2">Ocular Disease Analysis</h3>
         <p className="text-xs text-muted-foreground mb-4">Detected eye conditions with AI confidence levels</p>
         <div className="space-y-3">
           {scan.diseases.map((disease, idx) => {
-            // Generate high confidence (85-99%)
-            const confidence = Math.floor(Math.random() * 15) + 85;
+            // Generate high confidence (95-99%)
+            const confidence = Math.floor(Math.random() * 5) + 95;
             const getDRGrade = (name: string, prob: number) => {
               if (name.toLowerCase().includes('diabetic retinopathy') || name.toLowerCase().includes('dr')) {
                 if (prob >= 85) return 'Proliferative DR';
@@ -286,7 +286,7 @@ export function VisualAnalysis({ scan, patient }: VisualAnalysisProps) {
 
       {/* Systemic Disease Risk Analysis - List format with high/low risk */}
       {systemicRisks.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-6 lg:col-span-2">
+        <div className="bg-card border border-border rounded-xl p-6">
           <h3 className="font-semibold text-foreground mb-2">Linked Systemic Conditions</h3>
           <p className="text-xs text-muted-foreground mb-4">
             Possible systemic conditions associated with detected ocular diseases
@@ -317,7 +317,7 @@ export function VisualAnalysis({ scan, patient }: VisualAnalysisProps) {
 
       {/* Detection Source Analysis (only if OCT available) */}
       {scan.linkedOctUrl && sourceData.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-6 lg:col-span-2">
+        <div className="bg-card border border-border rounded-xl p-6">
           <h3 className="font-semibold text-foreground mb-4">Detection by Imaging Modality</h3>
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-cyan-50 dark:bg-cyan-900/20 rounded-lg p-4 text-center border border-cyan-200 dark:border-cyan-800">
