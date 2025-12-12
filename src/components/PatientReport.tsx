@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Patient, Disease } from "@/types/scan";
-import { Download, Stethoscope, User, Camera, AlertTriangle, CheckCircle, Clock, Lightbulb, Lock, Unlock, Link2 } from "lucide-react";
+import { Patient, Disease, ScanAnalysis } from "@/types/scan";
+import { Download, Stethoscope, User, Camera, AlertTriangle, CheckCircle, Clock, Lightbulb, Lock, Unlock, Link2, X, Microscope, Eye } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { TifImage } from "./TifImage";
 
 interface PatientReportProps {
   patient: Patient | null;
@@ -91,6 +92,7 @@ const getSystemicAssociations = (diseases: Disease[]) => {
 
 export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }: PatientReportProps) {
   const [editedNotes, setEditedNotes] = useState<Record<string, string>>({});
+  const [expandedScan, setExpandedScan] = useState<ScanAnalysis | null>(null);
 
   if (!patient) {
     return (
@@ -298,22 +300,173 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
           <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Camera size={20} /> Imaging Studies ({patient.scans.length})
           </h3>
+          <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>Click on an image to expand and view associated OCT scan</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
             {patient.scans.map((scan) => (
-              <div key={scan.id} style={{ 
-                border: '1px solid #e5e7eb', 
-                borderRadius: '8px', 
-                overflow: 'hidden',
-              }}>
+              <div 
+                key={scan.id} 
+                onClick={() => setExpandedScan(scan)}
+                style={{ 
+                  border: '1px solid #e5e7eb', 
+                  borderRadius: '8px', 
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = '#0891b2';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(8, 145, 178, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '#e5e7eb';
+                  e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                }}
+              >
                 <img src={scan.imageUrl} alt={scan.name} style={{ width: '100%', height: '120px', objectFit: 'cover' }} />
                 <div style={{ padding: '10px' }}>
                   <p style={{ fontWeight: 500, fontSize: '13px' }}>{scan.name}</p>
                   <p style={{ fontSize: '11px', color: '#6b7280' }}>{scan.type.toUpperCase()} • {scan.uploadedAt.toLocaleDateString()}</p>
+                  {scan.linkedOctUrl && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                      <Microscope size={12} style={{ color: '#1d4ed8' }} />
+                      <span style={{ fontSize: '10px', color: '#1d4ed8', fontWeight: 500 }}>OCT Available</span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         </div>
+
+        {/* Expanded Scan Modal */}
+        {expandedScan && (
+          <div 
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '24px',
+            }}
+            onClick={() => setExpandedScan(null)}
+          >
+            <div 
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '16px',
+                maxWidth: '1200px',
+                maxHeight: '90vh',
+                width: '100%',
+                overflow: 'auto',
+                padding: '24px',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <div>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600 }}>{expandedScan.name}</h3>
+                  <p style={{ fontSize: '14px', color: '#6b7280' }}>
+                    {expandedScan.eyeSide ? `${expandedScan.eyeSide.charAt(0).toUpperCase() + expandedScan.eyeSide.slice(1)} Eye` : ''} 
+                    {expandedScan.visitNumber ? ` • Visit ${expandedScan.visitNumber}` : ''} 
+                    • {expandedScan.uploadedAt.toLocaleDateString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setExpandedScan(null)}
+                  style={{
+                    padding: '8px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: '#f3f4f6',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: expandedScan.linkedOctUrl ? '1fr 1fr' : '1fr', gap: '20px', marginBottom: '20px' }}>
+                {/* Fundus Image */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                    <Eye size={16} style={{ color: '#0891b2' }} />
+                    <span style={{ fontWeight: 600, fontSize: '14px' }}>Fundus Image</span>
+                  </div>
+                  <img 
+                    src={expandedScan.imageUrl} 
+                    alt={expandedScan.name} 
+                    style={{ 
+                      width: '100%', 
+                      borderRadius: '8px', 
+                      border: '1px solid #e5e7eb',
+                      maxHeight: '400px',
+                      objectFit: 'contain',
+                      backgroundColor: '#000',
+                    }} 
+                  />
+                </div>
+                
+                {/* OCT Image */}
+                {expandedScan.linkedOctUrl && (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                      <Microscope size={16} style={{ color: '#1d4ed8' }} />
+                      <span style={{ fontWeight: 600, fontSize: '14px' }}>{expandedScan.linkedOctName || 'OCT Scan'}</span>
+                    </div>
+                    <TifImage 
+                      src={expandedScan.linkedOctUrl} 
+                      alt={expandedScan.linkedOctName || 'OCT Scan'} 
+                      style={{ 
+                        width: '100%', 
+                        borderRadius: '8px', 
+                        border: '1px solid #e5e7eb',
+                        maxHeight: '400px',
+                        objectFit: 'contain',
+                        backgroundColor: '#000',
+                      }} 
+                    />
+                  </div>
+                )}
+              </div>
+              
+              {/* Scan Summary */}
+              <div style={{ padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', marginBottom: '16px' }}>
+                <p style={{ fontWeight: 600, marginBottom: '8px' }}>Summary</p>
+                <p style={{ fontSize: '14px', color: '#374151' }}>{expandedScan.summary}</p>
+              </div>
+              
+              {/* Detected Conditions */}
+              <div>
+                <p style={{ fontWeight: 600, marginBottom: '12px' }}>Detected Conditions</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {expandedScan.diseases.map((disease, idx) => (
+                    <div key={idx} style={{ 
+                      padding: '12px 16px', 
+                      borderRadius: '8px', 
+                      border: '1px solid #e5e7eb',
+                      backgroundColor: disease.probability >= 70 ? '#fef2f2' : disease.probability >= 40 ? '#fffbeb' : '#f0fdf4',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 600, fontSize: '14px' }}>{disease.name}</span>
+                        <span style={{ 
+                          fontWeight: 700, 
+                          color: disease.probability >= 70 ? '#ef4444' : disease.probability >= 40 ? '#f59e0b' : '#22c55e',
+                        }}>
+                          {disease.probability}%
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>{disease.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Clinical Findings */}
         <div style={{ 

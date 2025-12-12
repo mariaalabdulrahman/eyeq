@@ -1,5 +1,6 @@
 import { ScanAnalysis, Patient } from "@/types/scan";
 import { Eye, Microscope, BookOpen, ExternalLink, User, AlertCircle } from "lucide-react";
+import { TifImage } from "../TifImage";
 
 interface TextualAnalysisProps {
   scan: ScanAnalysis;
@@ -143,7 +144,7 @@ export function TextualAnalysis({ scan, patient }: TextualAnalysisProps) {
               overflow: 'hidden',
               minHeight: '200px',
             }}>
-              <img
+              <TifImage
                 src={scan.linkedOctUrl}
                 alt="OCT"
                 style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}

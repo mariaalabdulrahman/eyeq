@@ -11,6 +11,10 @@ import fundus_DR171 from "@/assets/fundus/DR171.jpg";
 import fundus_DR172 from "@/assets/fundus/DR172.jpg";
 import fundus_DR173 from "@/assets/fundus/DR173.jpg";
 import fundus_Glaucoma117 from "@/assets/fundus/Glaucoma117.jpg";
+import fundus_Glaucoma130 from "@/assets/fundus/Glaucoma130.jpg";
+import fundus_Glaucoma137 from "@/assets/fundus/Glaucoma137.jpg";
+import fundus_Glaucoma146 from "@/assets/fundus/Glaucoma146.jpg";
+import fundus_Glaucoma156 from "@/assets/fundus/Glaucoma156.jpg";
 import fundus_Myopia12 from "@/assets/fundus/Myopia12.jpg";
 import fundus_Retinitis from "@/assets/fundus/Retinitis_Pigmentosa138.jpg";
 import fundus_CSCR99 from "@/assets/fundus/CSCR99.jpg";
@@ -288,41 +292,75 @@ const initialPatients: Patient[] = [
     dateOfBirth: '1978-08-22',
     age: 46,
     gender: 'female',
-    relevantInfo: 'Family history of glaucoma, elevated IOP',
-    medicalTags: ['Glaucoma Family History', 'Elevated Intraocular Pressure', 'Migraine', 'Anxiety', 'Peripheral Vision Loss'],
+    relevantInfo: 'Primary open-angle glaucoma diagnosed 2 years ago, elevated IOP (22-26 mmHg), family history of glaucoma (mother)',
+    medicalTags: ['Primary Open-Angle Glaucoma', 'Glaucoma Family History', 'Elevated Intraocular Pressure', 'Hypertension', 'Sleep Apnea', 'Peripheral Vision Loss', 'Eye Drops (Latanoprost)'],
     createdAt: new Date('2024-01-12'),
     scans: [
+      // Visit 1 - January 2024
       {
-        id: 's3',
+        id: 's3a',
         name: 'Glaucoma Scan (Left)',
-        imageUrl: fundus_Glaucoma117,
+        imageUrl: fundus_Glaucoma130,
         uploadedAt: new Date('2024-01-12'),
         type: 'fundus',
         eyeSide: 'left',
         visitNumber: 1,
         visitDate: new Date('2024-01-12'),
         linkedOctUrl: oct_030,
-        linkedOctName: 'OCT RNFL Analysis',
+        linkedOctName: 'OCT RNFL Left V1',
         diseases: [
-          { name: 'Glaucoma', probability: 78, severity: 'high', description: 'Significant optic nerve changes detected.', detectedFrom: 'both', justification: 'Increased cup-to-disc ratio (0.8) with peripapillary atrophy visible in fundus. OCT shows RNFL thinning in superior and inferior quadrants.', references: ['AAO Glaucoma Guidelines, 2020'] },
+          { name: 'Glaucoma', probability: 78, severity: 'high', description: 'Significant optic nerve cupping with RNFL thinning.', detectedFrom: 'both', justification: 'Cup-to-disc ratio of 0.75 with vertical elongation visible on fundus. OCT confirms RNFL thinning in inferior quadrant (58μm) below normal limits.', references: ['AAO Preferred Practice Pattern: Primary Open-Angle Glaucoma, 2020', 'European Glaucoma Society Guidelines, 5th Ed'] },
         ],
-        summary: 'High glaucoma risk detected with RNFL loss on OCT. Specialist referral recommended.',
+        summary: 'Advanced glaucomatous optic neuropathy in left eye with significant RNFL loss. IOP control critical.',
       },
       {
         id: 's3b',
-        name: 'CSCR Scan (Right)',
-        imageUrl: fundus_CSCR99,
+        name: 'Glaucoma Scan (Right)',
+        imageUrl: fundus_Glaucoma137,
         uploadedAt: new Date('2024-01-12'),
         type: 'fundus',
         eyeSide: 'right',
         visitNumber: 1,
         visitDate: new Date('2024-01-12'),
         linkedOctUrl: oct_039,
-        linkedOctName: 'OCT Macula Right',
+        linkedOctName: 'OCT RNFL Right V1',
         diseases: [
-          { name: 'Central Serous Chorioretinopathy', probability: 55, severity: 'medium', description: 'Serous detachment of neurosensory retina.', detectedFrom: 'both', justification: 'Fundus shows characteristic dome-shaped elevation at macula. OCT confirms subretinal fluid accumulation.', references: ['Daruich A. et al. Prog Retin Eye Res 2015'] },
+          { name: 'Glaucoma', probability: 72, severity: 'high', description: 'Optic disc changes consistent with glaucoma.', detectedFrom: 'both', justification: 'Cup-to-disc ratio of 0.7 with notching at inferior neuroretinal rim. OCT shows borderline RNFL thickness inferiorly (72μm).', references: ['AAO Preferred Practice Pattern: Primary Open-Angle Glaucoma, 2020'] },
         ],
-        summary: 'CSCR detected and confirmed on OCT. Monitor for resolution.',
+        summary: 'Moderate glaucomatous changes in right eye. Continue current IOP-lowering therapy.',
+      },
+      // Visit 2 - June 2024
+      {
+        id: 's3c',
+        name: 'Follow-up (Left)',
+        imageUrl: fundus_Glaucoma146,
+        uploadedAt: new Date('2024-06-15'),
+        type: 'fundus',
+        eyeSide: 'left',
+        visitNumber: 2,
+        visitDate: new Date('2024-06-15'),
+        linkedOctUrl: oct_01_2,
+        linkedOctName: 'OCT RNFL Left V2',
+        diseases: [
+          { name: 'Glaucoma', probability: 75, severity: 'high', description: 'Stable glaucomatous changes with maintained IOP control.', detectedFrom: 'both', justification: 'Cup-to-disc ratio stable at 0.75. OCT RNFL thickness stable compared to baseline (57μm inferior). No progression detected.', references: ['Chauhan BC, et al. Ophthalmology 2008 - RNFL progression criteria'] },
+        ],
+        summary: 'Stable glaucoma in left eye on current therapy. Continue monitoring every 6 months.',
+      },
+      {
+        id: 's3d',
+        name: 'Follow-up (Right)',
+        imageUrl: fundus_Glaucoma156,
+        uploadedAt: new Date('2024-06-15'),
+        type: 'fundus',
+        eyeSide: 'right',
+        visitNumber: 2,
+        visitDate: new Date('2024-06-15'),
+        linkedOctUrl: oct_010,
+        linkedOctName: 'OCT RNFL Right V2',
+        diseases: [
+          { name: 'Glaucoma', probability: 70, severity: 'high', description: 'Glaucoma stable with good IOP response to treatment.', detectedFrom: 'both', justification: 'Cup-to-disc ratio unchanged at 0.7. RNFL thickness on OCT shows no significant change from baseline. IOP reduced to 16 mmHg on therapy.', references: ['Heijl A, et al. Arch Ophthalmol 2002 - Early Manifest Glaucoma Trial'] },
+        ],
+        summary: 'Good treatment response in right eye. Target IOP achieved. Continue current regimen.',
       },
     ],
   },
@@ -425,6 +463,10 @@ const fundusImageMap: Record<string, string> = {
   'fundus_DR172': fundus_DR172,
   'fundus_DR173': fundus_DR173,
   'fundus_Glaucoma117': fundus_Glaucoma117,
+  'fundus_Glaucoma130': fundus_Glaucoma130,
+  'fundus_Glaucoma137': fundus_Glaucoma137,
+  'fundus_Glaucoma146': fundus_Glaucoma146,
+  'fundus_Glaucoma156': fundus_Glaucoma156,
   'fundus_Myopia12': fundus_Myopia12,
   'fundus_Retinitis': fundus_Retinitis,
   'fundus_CSCR99': fundus_CSCR99,
