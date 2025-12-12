@@ -256,14 +256,14 @@ const Home = () => {
               <path d="M 75 185 Q 85 175 95 180" stroke="#ef4444" strokeWidth="0.4" fill="none" />
             </svg>
 
-            {/* Iris - moves with cursor - SMALLER relative to bigger eyeball */}
+            {/* Iris - moves with cursor */}
             <div
               style={{
                 position: "absolute",
                 top: "50%",
                 left: "50%",
-                width: "160px",
-                height: "160px",
+                width: "190px",
+                height: "190px",
                 borderRadius: "50%",
                 background: "radial-gradient(circle at 35% 35%, #93c5fd 0%, #60a5fa 12%, #3b82f6 25%, #2563eb 45%, #1d4ed8 70%, #1e40af 100%)",
                 boxShadow: "inset 0 0 50px rgba(0,0,0,0.5), inset 0 0 15px rgba(59,130,246,0.3), 0 0 20px rgba(8, 145, 178, 0.25)",

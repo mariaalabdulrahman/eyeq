@@ -2,6 +2,14 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 import { ScanAnalysis, ChatMessage, Disease, Patient } from "@/types/scan";
 import { getImagePreviewUrl } from "@/lib/tifUtils";
 
+// Import local fundus images
+import fundus_DR165 from "@/assets/fundus/DR165.jpg";
+import fundus_Glaucoma117 from "@/assets/fundus/Glaucoma117.jpg";
+import fundus_Myopia12 from "@/assets/fundus/Myopia12.jpg";
+import fundus_Retinitis from "@/assets/fundus/Retinitis_Pigmentosa138.jpg";
+import fundus_CSCR99 from "@/assets/fundus/CSCR99.jpg";
+import fundus_MacularScar from "@/assets/fundus/Macular_Scar27.jpg";
+
 const STORAGE_KEY = 'eyeq_patients';
 const SCANS_STORAGE_KEY = 'eyeq_scans';
 
@@ -139,7 +147,7 @@ interface ScanContextType {
 
 const ScanContext = createContext<ScanContextType | undefined>(undefined);
 
-// Initial mock patients data with real eye scan images
+// Initial mock patients data with local fundus images
 const initialPatients: Patient[] = [
   {
     id: '1',
@@ -152,18 +160,28 @@ const initialPatients: Patient[] = [
     scans: [
       {
         id: 's1',
-        name: 'Fundus Scan (Left)',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Fundus_photograph_of_normal_left_eye.jpg/640px-Fundus_photograph_of_normal_left_eye.jpg',
+        name: 'DR Fundus (Left)',
+        imageUrl: fundus_DR165,
         uploadedAt: new Date('2024-01-10'),
         type: 'fundus',
         eyeSide: 'left',
-        linkedOctUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/SD-OCT_Macula_Cross-Section.png/640px-SD-OCT_Macula_Cross-Section.png',
-        linkedOctName: 'Left Eye OCT',
         diseases: [
-          { name: 'Diabetic Macular Edema', probability: 45, severity: 'medium', description: 'Fluid accumulation detected.', detectedFrom: 'oct', justification: 'OCT reveals intraretinal fluid pockets in the macular region.', references: ['DRCR.net Protocol T, NEJM 2015'] },
-          { name: 'Diabetic Retinopathy', probability: 55, severity: 'medium', description: 'Microaneurysms visible in fundus.', detectedFrom: 'fundus', justification: 'Multiple microaneurysms detected in the posterior pole of the fundus image.', references: ['ETDRS Study, 1991'] },
+          { name: 'Diabetic Macular Edema', probability: 45, severity: 'medium', description: 'Fluid accumulation detected.', detectedFrom: 'fundus', justification: 'Fundus reveals hard exudates and macular thickening consistent with diabetic macular edema.', references: ['DRCR.net Protocol T, NEJM 2015'] },
+          { name: 'Diabetic Retinopathy', probability: 65, severity: 'medium', description: 'Microaneurysms and hard exudates visible in fundus.', detectedFrom: 'fundus', justification: 'Multiple microaneurysms and hard exudates detected in the posterior pole of the fundus image.', references: ['ETDRS Study, 1991'] },
         ],
-        summary: 'Moderate risk findings detected. Follow-up recommended.',
+        summary: 'Moderate diabetic retinopathy detected. Follow-up recommended.',
+      },
+      {
+        id: 's1b',
+        name: 'Macular Scan (Right)',
+        imageUrl: fundus_MacularScar,
+        uploadedAt: new Date('2024-01-15'),
+        type: 'fundus',
+        eyeSide: 'right',
+        diseases: [
+          { name: 'Macular Scar', probability: 72, severity: 'high', description: 'Macular scarring visible affecting central vision.', detectedFrom: 'fundus', justification: 'Fundus shows well-defined macular scar with pigmentary changes.', references: ['Gass JD. Stereoscopic Atlas of Macular Diseases, 1997'] },
+        ],
+        summary: 'Macular scarring detected. Vision assessment recommended.',
       },
     ],
   },
@@ -178,8 +196,8 @@ const initialPatients: Patient[] = [
     scans: [
       {
         id: 's3',
-        name: 'Fundus Scan (Left)',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Fundus_photo_showing_scatter_laser_surgery_for_diabetic_retinopathy_EDA09.JPG/640px-Fundus_photo_showing_scatter_laser_surgery_for_diabetic_retinopathy_EDA09.JPG',
+        name: 'Glaucoma Scan (Left)',
+        imageUrl: fundus_Glaucoma117,
         uploadedAt: new Date('2024-01-12'),
         type: 'fundus',
         eyeSide: 'left',
@@ -187,6 +205,18 @@ const initialPatients: Patient[] = [
           { name: 'Glaucoma', probability: 78, severity: 'high', description: 'Significant optic nerve changes detected.', detectedFrom: 'fundus', justification: 'Increased cup-to-disc ratio (0.8) with peripapillary atrophy visible in fundus.', references: ['AAO Glaucoma Guidelines, 2020'] },
         ],
         summary: 'High glaucoma risk detected. Specialist referral recommended.',
+      },
+      {
+        id: 's3b',
+        name: 'CSCR Scan (Right)',
+        imageUrl: fundus_CSCR99,
+        uploadedAt: new Date('2024-01-14'),
+        type: 'fundus',
+        eyeSide: 'right',
+        diseases: [
+          { name: 'Central Serous Chorioretinopathy', probability: 55, severity: 'medium', description: 'Serous detachment of neurosensory retina.', detectedFrom: 'fundus', justification: 'Fundus shows characteristic dome-shaped elevation at macula consistent with CSCR.', references: ['Daruich A. et al. Prog Retin Eye Res 2015'] },
+        ],
+        summary: 'CSCR detected. Monitor for resolution.',
       },
     ],
   },
@@ -201,18 +231,28 @@ const initialPatients: Patient[] = [
     scans: [
       {
         id: 's4',
-        name: 'Fundus Scan (Right)',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Fundus_of_patient_with_retinitis_pigmentosa%2C_mid_stage.jpg/640px-Fundus_of_patient_with_retinitis_pigmentosa%2C_mid_stage.jpg',
+        name: 'Myopia Scan (Right)',
+        imageUrl: fundus_Myopia12,
         uploadedAt: new Date('2024-01-15'),
         type: 'fundus',
         eyeSide: 'right',
-        linkedOctUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/SD-OCT_Macula_Cross-Section.png/640px-SD-OCT_Macula_Cross-Section.png',
-        linkedOctName: 'Right Eye OCT',
         diseases: [
-          { name: 'Age-Related Macular Degeneration', probability: 55, severity: 'medium', description: 'Drusen deposits visible.', detectedFrom: 'both', justification: 'Drusen visible in fundus, confirmed by OCT showing RPE irregularity.', references: ['AREDS Classification, 2001'] },
-          { name: 'Epiretinal Membrane', probability: 30, severity: 'low', description: 'Thin membrane on retinal surface.', detectedFrom: 'oct', justification: 'OCT shows hyperreflective line on inner retinal surface.', references: ['Govetto et al. Ophthalmology 2018'] },
+          { name: 'Pathological Myopia', probability: 68, severity: 'medium', description: 'Myopic degeneration with tessellation visible.', detectedFrom: 'fundus', justification: 'Fundus shows tigroid/tessellated appearance with visible choroidal vessels.', references: ['Ohno-Matsui K. Asia Pac J Ophthalmol 2016'] },
+          { name: 'Lacquer Cracks', probability: 35, severity: 'low', description: 'Linear breaks in Bruch membrane.', detectedFrom: 'fundus', justification: 'Yellowish linear lesions visible consistent with lacquer cracks.', references: ['Ohno-Matsui K. Retina 2003'] },
         ],
-        summary: 'AMD with moderate probability. Consider anti-VEGF evaluation.',
+        summary: 'Pathological myopia detected. Regular monitoring advised.',
+      },
+      {
+        id: 's4b',
+        name: 'Retinitis Pigmentosa (Left)',
+        imageUrl: fundus_Retinitis,
+        uploadedAt: new Date('2024-01-18'),
+        type: 'fundus',
+        eyeSide: 'left',
+        diseases: [
+          { name: 'Retinitis Pigmentosa', probability: 85, severity: 'high', description: 'Bone spicule pigmentation and attenuated vessels.', detectedFrom: 'fundus', justification: 'Classic bone spicule pigmentation pattern visible in mid-periphery with vessel attenuation.', references: ['Hartong DT. Lancet 2006'] },
+        ],
+        summary: 'Retinitis pigmentosa confirmed. Genetic counseling recommended.',
       },
     ],
   },
