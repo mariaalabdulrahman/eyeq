@@ -192,12 +192,12 @@ const Home = () => {
         </p>
 
         {/* Big Eye - Just the eyeball */}
-        <div ref={containerRef} style={{ position: "relative", width: "300px", height: "300px" }}>
+        <div ref={containerRef} style={{ position: "relative", width: "380px", height: "380px" }}>
           {/* Outer Glow */}
           <div
             style={{
               position: "absolute",
-              inset: "-30px",
+              inset: "-40px",
               borderRadius: "50%",
               background: "radial-gradient(circle, rgba(8, 145, 178, 0.15) 0%, transparent 70%)",
               animation: "glow 3s ease-in-out infinite",
@@ -243,17 +243,17 @@ const Home = () => {
               <path d="M 75 185 Q 85 175 95 180" stroke="#ef4444" strokeWidth="0.4" fill="none" />
             </svg>
 
-            {/* Iris - moves with cursor - LIGHTER BLUE */}
+            {/* Iris - moves with cursor - SMALLER relative to bigger eyeball */}
             <div
               style={{
                 position: "absolute",
                 top: "50%",
                 left: "50%",
-                width: "200px",
-                height: "200px",
+                width: "160px",
+                height: "160px",
                 borderRadius: "50%",
                 background: "radial-gradient(circle at 35% 35%, #93c5fd 0%, #60a5fa 12%, #3b82f6 25%, #2563eb 45%, #1d4ed8 70%, #1e40af 100%)",
-                boxShadow: "inset 0 0 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(59,130,246,0.3), 0 0 25px rgba(8, 145, 178, 0.25)",
+                boxShadow: "inset 0 0 50px rgba(0,0,0,0.5), inset 0 0 15px rgba(59,130,246,0.3), 0 0 20px rgba(8, 145, 178, 0.25)",
                 transform: `translate(calc(-50% + ${pupilPosition.x}px), calc(-50% + ${pupilPosition.y}px))`,
                 transition: "transform 0.08s ease-out",
               }}
@@ -303,36 +303,36 @@ const Home = () => {
                   position: "absolute",
                   top: "50%",
                   left: "50%",
-                  width: "85px",
-                  height: "85px",
+                  width: "70px",
+                  height: "70px",
                   borderRadius: "50%",
                   border: "1px solid rgba(255,255,255,0.15)",
                   transform: "translate(-50%, -50%)",
                 }}
               />
 
-              {/* Pupil - centered within iris */}
+              {/* Pupil - centered within iris - smaller */}
               <div
                 style={{
                   position: "absolute",
                   top: "50%",
                   left: "50%",
-                  width: "60px",
-                  height: "60px",
+                  width: "48px",
+                  height: "48px",
                   borderRadius: "50%",
                   background: "radial-gradient(circle at 40% 40%, #1a1a1a 0%, #000000 60%, #000000 100%)",
                   transform: "translate(-50%, -50%)",
-                  boxShadow: "0 0 35px rgba(0,0,0,0.95), inset 0 0 15px rgba(30,64,175,0.15)",
+                  boxShadow: "0 0 30px rgba(0,0,0,0.95), inset 0 0 12px rgba(30,64,175,0.15)",
                 }}
               >
-                {/* Light Reflections - More realistic catchlights */}
+                {/* Light Reflections - scaled down */}
                 <div
                   style={{
                     position: "absolute",
-                    top: "8px",
-                    right: "10px",
-                    width: "16px",
-                    height: "14px",
+                    top: "6px",
+                    right: "8px",
+                    width: "12px",
+                    height: "10px",
                     borderRadius: "50%",
                     background: "radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.7) 60%, transparent 100%)",
                   }}
@@ -340,10 +340,10 @@ const Home = () => {
                 <div
                   style={{
                     position: "absolute",
-                    bottom: "12px",
-                    left: "10px",
-                    width: "8px",
-                    height: "6px",
+                    bottom: "10px",
+                    left: "8px",
+                    width: "6px",
+                    height: "5px",
                     borderRadius: "50%",
                     background: "radial-gradient(ellipse, rgba(255,255,255,0.6) 0%, transparent 100%)",
                   }}
@@ -351,10 +351,10 @@ const Home = () => {
                 <div
                   style={{
                     position: "absolute",
-                    top: "22px",
-                    right: "16px",
-                    width: "5px",
-                    height: "5px",
+                    top: "18px",
+                    right: "12px",
+                    width: "4px",
+                    height: "4px",
                     borderRadius: "50%",
                     backgroundColor: "rgba(255,255,255,0.5)",
                   }}
@@ -380,7 +380,7 @@ const Home = () => {
 
           {/* Feature Buttons Around Eye - Left and Right sides */}
           {features.map((feature, index) => {
-            const radius = 210;
+            const radius = 260;
             const angleRad = (feature.angle * Math.PI) / 180;
             const x = Math.cos(angleRad) * radius;
             const y = Math.sin(angleRad) * radius;
