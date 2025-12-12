@@ -943,31 +943,44 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       };
 
       const selectedScans = scans.filter((s) => selectedScanIds.includes(s.id));
-      let aiResponse = `**Systemic Disease Risk Assessment:**
+      const systemicHtmlResponse = `
+<h3 style="margin: 0 0 16px 0; color: #1e293b; font-size: 16px; font-weight: 600;">Systemic Disease Risk Assessment</h3>
 
-Based on the detected **Hypertensive Retinopathy** in the selected scans, this patient is at **HIGH RISK** for the following systemic conditions:
+<p style="margin: 0 0 16px 0; line-height: 1.6;">Based on the detected <strong>Hypertensive Retinopathy</strong> in the selected scans, this patient is at <strong style="color: #dc2626;">HIGH RISK</strong> for the following systemic conditions:</p>
 
-**1. Hypertension (High Risk)**
-The presence of arteriovenous nicking, arteriolar narrowing, and retinal fluid indicates poorly controlled systemic hypertension. Retinal microvascular changes directly reflect systemic vascular damage.
+<div style="margin-bottom: 20px; padding: 16px; background: #fef2f2; border-radius: 8px; border-left: 4px solid #dc2626;">
+  <h4 style="margin: 0 0 8px 0; color: #dc2626; font-size: 15px; font-weight: 600;">1. Hypertension (High Risk)</h4>
+  <p style="margin: 0 0 12px 0; color: #374151; line-height: 1.5;">The presence of arteriovenous nicking, arteriolar narrowing, and retinal fluid indicates poorly controlled systemic hypertension. Retinal microvascular changes directly reflect systemic vascular damage.</p>
+  
+  <p style="margin: 0 0 8px 0; color: #0891b2; font-weight: 600; font-size: 13px;">Link to Hypertensive Retinopathy:</p>
+  <p style="margin: 0 0 12px 0; color: #374151; line-height: 1.5; font-size: 13px;">Hypertensive retinopathy is a direct manifestation of chronic high blood pressure causing damage to retinal blood vessels. The severity of retinal changes correlates with duration and severity of systemic hypertension.</p>
+  
+  <p style="margin: 0 0 6px 0; color: #6b7280; font-weight: 600; font-size: 12px;">References:</p>
+  <ul style="margin: 0; padding-left: 16px; color: #6b7280; font-size: 12px; line-height: 1.6;">
+    <li>Wong TY, Mitchell P. "Hypertensive Retinopathy." <em>N Engl J Med.</em> 2004;351:2310-2317.</li>
+    <li>Keith NM, Wagener HP, Barker NW. "Some different types of essential hypertension: their course and prognosis." <em>Am J Med Sci.</em> 1939;197:332-343.</li>
+  </ul>
+</div>
 
-**Link to Hypertensive Retinopathy:**
-Hypertensive retinopathy is a direct manifestation of chronic high blood pressure causing damage to retinal blood vessels. The severity of retinal changes correlates with duration and severity of systemic hypertension.
+<div style="margin-bottom: 20px; padding: 16px; background: #fef2f2; border-radius: 8px; border-left: 4px solid #dc2626;">
+  <h4 style="margin: 0 0 8px 0; color: #dc2626; font-size: 15px; font-weight: 600;">2. Stroke (High Risk)</h4>
+  <p style="margin: 0 0 12px 0; color: #374151; line-height: 1.5;">Hypertensive retinopathy is a strong independent predictor of stroke risk. The retinal microvasculature shares embryological and anatomical similarities with cerebral vessels.</p>
+  
+  <p style="margin: 0 0 8px 0; color: #0891b2; font-weight: 600; font-size: 13px;">Link to Hypertensive Retinopathy:</p>
+  <p style="margin: 0 0 12px 0; color: #374151; line-height: 1.5; font-size: 13px;">Patients with hypertensive retinopathy have a 2-4 fold increased risk of stroke. Retinal arteriolar narrowing and arteriovenous nicking indicate systemic small vessel disease affecting both retinal and cerebral circulation.</p>
+  
+  <p style="margin: 0 0 6px 0; color: #6b7280; font-weight: 600; font-size: 12px;">References:</p>
+  <ul style="margin: 0; padding-left: 16px; color: #6b7280; font-size: 12px; line-height: 1.6;">
+    <li>Wong TY, et al. "Retinal microvascular abnormalities and incident stroke: the Atherosclerosis Risk in Communities Study." <em>Lancet.</em> 2001;358(9288):1134-1140.</li>
+    <li>Ong YT, et al. "Hypertensive retinopathy and risk of stroke." <em>Hypertension.</em> 2013;62(4):706-711.</li>
+  </ul>
+</div>
 
-📚 *References:*
-• Wong TY, Mitchell P. "Hypertensive Retinopathy." N Engl J Med. 2004;351:2310-2317. DOI: 10.1056/NEJMra032865
-• Keith NM, Wagener HP, Barker NW. "Some different types of essential hypertension: their course and prognosis." Am J Med Sci. 1939;197:332-343.
+<div style="padding: 12px 16px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+  <p style="margin: 0; color: #92400e; font-weight: 600; font-size: 13px;"><strong>Recommendation:</strong> Urgent blood pressure optimization and cardiovascular risk assessment recommended.</p>
+</div>`;
 
-**2. Stroke (High Risk)**
-Hypertensive retinopathy is a strong independent predictor of stroke risk. The retinal microvasculature shares embryological and anatomical similarities with cerebral vessels.
-
-**Link to Hypertensive Retinopathy:**
-Patients with hypertensive retinopathy have a 2-4 fold increased risk of stroke. Retinal arteriolar narrowing and arteriovenous nicking indicate systemic small vessel disease affecting both retinal and cerebral circulation.
-
-📚 *References:*
-• Wong TY, et al. "Retinal microvascular abnormalities and incident stroke: the Atherosclerosis Risk in Communities Study." Lancet. 2001;358(9288):1134-1140. DOI: 10.1016/S0140-6736(01)06253-5
-• Ong YT, et al. "Hypertensive retinopathy and risk of stroke." Hypertension. 2013;62(4):706-711. DOI: 10.1161/HYPERTENSIONAHA.113.01414
-
-**Recommendation:** Urgent blood pressure optimization and cardiovascular risk assessment recommended.`;
+      let aiResponse = systemicHtmlResponse;
 
       // Check for systemic disease questions
       const lowerContent = content.toLowerCase();
@@ -986,31 +999,7 @@ Patients with hypertensive retinopathy have a 2-4 fold increased risk of stroke.
 
       if (isSystemicQuery && selectedScans.length >= 0) {
         // Hardcoded response for systemic disease queries - hypertension and stroke
-        aiResponse = `**Systemic Disease Risk Assessment:**
-
-Based on the detected **Hypertensive Retinopathy** in the selected scans, this patient is at **HIGH RISK** for the following systemic conditions:
-
-**1. Hypertension (High Risk)**
-The presence of arteriovenous nicking, arteriolar narrowing, and retinal fluid indicates poorly controlled systemic hypertension. Retinal microvascular changes directly reflect systemic vascular damage.
-
-**Link to Hypertensive Retinopathy:**
-Hypertensive retinopathy is a direct manifestation of chronic high blood pressure causing damage to retinal blood vessels. The severity of retinal changes correlates with duration and severity of systemic hypertension.
-
-📚 *References:*
-• Wong TY, Mitchell P. "Hypertensive Retinopathy." N Engl J Med. 2004;351:2310-2317. DOI: 10.1056/NEJMra032865
-• Keith NM, Wagener HP, Barker NW. "Some different types of essential hypertension: their course and prognosis." Am J Med Sci. 1939;197:332-343.
-
-**2. Stroke (High Risk)**
-Hypertensive retinopathy is a strong independent predictor of stroke risk. The retinal microvasculature shares embryological and anatomical similarities with cerebral vessels.
-
-**Link to Hypertensive Retinopathy:**
-Patients with hypertensive retinopathy have a 2-4 fold increased risk of stroke. Retinal arteriolar narrowing and arteriovenous nicking indicate systemic small vessel disease affecting both retinal and cerebral circulation.
-
-📚 *References:*
-• Wong TY, et al. "Retinal microvascular abnormalities and incident stroke: the Atherosclerosis Risk in Communities Study." Lancet. 2001;358(9288):1134-1140. DOI: 10.1016/S0140-6736(01)06253-5
-• Ong YT, et al. "Hypertensive retinopathy and risk of stroke." Hypertension. 2013;62(4):706-711. DOI: 10.1161/HYPERTENSIONAHA.113.01414
-
-**Recommendation:** Urgent blood pressure optimization and cardiovascular risk assessment recommended.`;
+        aiResponse = systemicHtmlResponse;
       } else if (selectedScans.length > 0) {
         const scanNames = selectedScans.map((s) => s.name).join(", ");
         const allDiseases = selectedScans.flatMap((s) => s.diseases);
