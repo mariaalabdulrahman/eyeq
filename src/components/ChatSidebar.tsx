@@ -26,6 +26,15 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
     scrollToBottom();
   }, [chatHistory]);
 
+  // Auto-select all scans when scans are available
+  useEffect(() => {
+    if (scans.length > 0 && selectedScans.length === 0) {
+      setSelectedScans(scans.map(s => s.id));
+    }
+    // Remove selections that are no longer valid
+    setSelectedScans(prev => prev.filter(id => scans.some(s => s.id === id)));
+  }, [scans]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -218,7 +227,7 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
           {/* Header */}
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Logo size={32} />
+              <Logo size={32} showText={false} />
               <h3 style={{ fontWeight: 600, color: '#111', fontSize: '18px' }}>AI Assistant</h3>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -291,7 +300,7 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
                     flexShrink: 0,
                   }}
                 >
-                  {message.role === 'user' ? '👤' : <Logo size={24} />}
+                  {message.role === 'user' ? '👤' : <Logo size={24} showText={false} />}
                 </div>
                 <div
                   style={{
@@ -366,7 +375,7 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
       {/* Header */}
       <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Logo size={28} />
+          <Logo size={28} showText={false} />
           <div>
             <h3 style={{ fontWeight: 600, color: '#111', fontSize: '14px' }}>AI Assistant</h3>
             <p style={{ fontSize: '11px', color: '#6b7280' }}>
@@ -426,7 +435,7 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
                 flexShrink: 0,
               }}
             >
-              {message.role === 'user' ? '👤' : <Logo size={20} />}
+              {message.role === 'user' ? '👤' : <Logo size={20} showText={false} />}
             </div>
             <div
               style={{

@@ -397,7 +397,7 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
       <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Logo size={28} />
+            <Logo size={28} showText={false} />
             <h3 style={{ fontWeight: 600, color: '#111' }}>Patient Analytics AI</h3>
           </div>
           <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
@@ -547,7 +547,7 @@ export function PatientChatSidebar({ patients, onPatientSelect }: PatientChatSid
                 flexShrink: 0,
               }}
             >
-              {message.role === 'user' ? '👤' : <Logo size={20} />}
+              {message.role === 'user' ? '👤' : <Logo size={20} showText={false} />}
             </div>
             <div style={{ maxWidth: '85%' }}>
               <div
