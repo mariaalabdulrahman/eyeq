@@ -1003,30 +1003,6 @@ export function PatientStatistics({ patients }: PatientStatisticsProps) {
           </ResponsiveContainer>
         </div>
 
-        {/* Risk Levels */}
-        <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Risk Level Distribution</h4>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={riskData}
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={90}
-                dataKey="value"
-                label={({ name, value }) => `${name}: ${value}`}
-                labelLine={false}
-              >
-                {riskData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
 
         {/* Age Distribution - Customizable Interval */}
         <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>

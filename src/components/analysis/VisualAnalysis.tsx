@@ -241,32 +241,6 @@ export function VisualAnalysis({ scan, patient }: VisualAnalysisProps) {
         )}
       </div>
 
-      {/* Scan Types */}
-      <div className="bg-card border border-border rounded-xl p-6">
-        <h3 className="font-semibold text-foreground mb-4">Scan Types</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold">F</div>
-              <div>
-                <p className="font-medium text-foreground">Fundus Scan</p>
-                <p className="text-sm text-muted-foreground">Primary imaging modality</p>
-              </div>
-            </div>
-            <span className="text-2xl font-bold text-cyan-600">1</span>
-          </div>
-          <div className={`flex items-center justify-between p-4 rounded-lg ${scan.linkedOctUrl ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-800/20 border border-gray-200 dark:border-gray-700'}`}>
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${scan.linkedOctUrl ? 'bg-blue-500' : 'bg-gray-400'}`}>O</div>
-              <div>
-                <p className="font-medium text-foreground">OCT Scan</p>
-                <p className="text-sm text-muted-foreground">{scan.linkedOctUrl ? 'Available' : 'Not available'}</p>
-              </div>
-            </div>
-            <span className={`text-2xl font-bold ${scan.linkedOctUrl ? 'text-blue-600' : 'text-gray-400'}`}>{scan.linkedOctUrl ? '1' : '0'}</span>
-          </div>
-        </div>
-      </div>
 
       {/* Ocular Disease Analysis - List format with confidence */}
       <div className="bg-card border border-border rounded-xl p-6 lg:col-span-2">
