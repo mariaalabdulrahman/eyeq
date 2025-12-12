@@ -249,15 +249,15 @@ const LLMChat = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        position: 'relative',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <Logo size={40} />
-          </div>
-          <div>
-            <h1 style={{ fontSize: '16px', fontWeight: 600, color: '#111', margin: 0 }}>Eye-GPT</h1>
-            <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Ocular-Systemic Disease Links</p>
-          </div>
+        <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <Logo size={40} />
+        </div>
+        
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '16px', fontWeight: 600, color: '#111', margin: 0 }}>Eye-GPT</h1>
+          <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Ocular-Systemic Disease Links</p>
         </div>
         
         <button

@@ -17,99 +17,89 @@ const filters: { type: FilterType; icon: React.ElementType; label: string }[] = 
   { type: 'xai', icon: Flame, label: 'xAI Heat Map' },
 ];
 
-// Frangi-like vessel enhancement using eigenvalue analysis simulation
-const applyFrangiVesselFilter = (imageData: ImageData): ImageData => {
+// Enhanced vessel segmentation with better highlighting
+const applyVesselSegmentation = (imageData: ImageData): ImageData => {
   const data = imageData.data;
   const width = imageData.width;
   const height = imageData.height;
   const output = new Uint8ClampedArray(data.length);
   
-  // Extract green channel (best for vessel visibility in fundus images)
+  // Extract green channel (best for vessel visibility)
   const greenChannel = new Float32Array(width * height);
   for (let i = 0; i < width * height; i++) {
-    greenChannel[i] = data[i * 4 + 1]; // Green channel
+    greenChannel[i] = data[i * 4 + 1];
   }
   
-  // Apply Gaussian blur for noise reduction
-  const blurred = gaussianBlur(greenChannel, width, height, 1.5);
+  // Apply multi-scale vessel detection
+  const vesselMask = new Float32Array(width * height);
   
-  // Calculate gradients (Sobel-like)
-  const gx = new Float32Array(width * height);
-  const gy = new Float32Array(width * height);
-  
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
+  // Simple but effective vessel detection using local contrast
+  for (let y = 3; y < height - 3; y++) {
+    for (let x = 3; x < width - 3; x++) {
       const idx = y * width + x;
-      // Sobel operators
-      gx[idx] = (
-        -blurred[(y-1)*width + (x-1)] + blurred[(y-1)*width + (x+1)] +
-        -2*blurred[y*width + (x-1)] + 2*blurred[y*width + (x+1)] +
-        -blurred[(y+1)*width + (x-1)] + blurred[(y+1)*width + (x+1)]
-      ) / 8;
-      gy[idx] = (
-        -blurred[(y-1)*width + (x-1)] - 2*blurred[(y-1)*width + x] - blurred[(y-1)*width + (x+1)] +
-        blurred[(y+1)*width + (x-1)] + 2*blurred[(y+1)*width + x] + blurred[(y+1)*width + (x+1)]
-      ) / 8;
-    }
-  }
-  
-  // Compute Hessian matrix components and vesselness
-  const vesselness = new Float32Array(width * height);
-  
-  for (let y = 2; y < height - 2; y++) {
-    for (let x = 2; x < width - 2; x++) {
-      const idx = y * width + x;
+      const center = greenChannel[idx];
       
-      // Second derivatives (Hessian approximation)
-      const Hxx = blurred[idx - 1] - 2 * blurred[idx] + blurred[idx + 1];
-      const Hyy = blurred[idx - width] - 2 * blurred[idx] + blurred[idx + width];
-      const Hxy = (blurred[idx - width - 1] - blurred[idx - width + 1] - 
-                   blurred[idx + width - 1] + blurred[idx + width + 1]) / 4;
+      // Calculate local mean in different directions
+      let horizontalDiff = 0;
+      let verticalDiff = 0;
+      let diag1Diff = 0;
+      let diag2Diff = 0;
       
-      // Eigenvalues of Hessian
-      const trace = Hxx + Hyy;
-      const det = Hxx * Hyy - Hxy * Hxy;
-      const discriminant = Math.sqrt(Math.max(0, trace * trace - 4 * det));
+      for (let k = 1; k <= 3; k++) {
+        // Horizontal
+        horizontalDiff += Math.abs(center - greenChannel[idx - k]) + Math.abs(center - greenChannel[idx + k]);
+        // Vertical  
+        verticalDiff += Math.abs(center - greenChannel[idx - k * width]) + Math.abs(center - greenChannel[idx + k * width]);
+        // Diagonal
+        diag1Diff += Math.abs(center - greenChannel[idx - k * width - k]) + Math.abs(center - greenChannel[idx + k * width + k]);
+        diag2Diff += Math.abs(center - greenChannel[idx - k * width + k]) + Math.abs(center - greenChannel[idx + k * width - k]);
+      }
       
-      const lambda1 = (trace + discriminant) / 2;
-      const lambda2 = (trace - discriminant) / 2;
+      // Vessel-like structures have high contrast perpendicular to vessel direction
+      const minDiff = Math.min(horizontalDiff, verticalDiff, diag1Diff, diag2Diff);
+      const maxDiff = Math.max(horizontalDiff, verticalDiff, diag1Diff, diag2Diff);
       
-      // Frangi vesselness measure (simplified)
-      // Vessels have lambda2 << 0 and |lambda1| ~ 0
-      if (lambda2 < -0.5) {
-        const Rb = Math.abs(lambda1) / (Math.abs(lambda2) + 0.001);
-        const S = Math.sqrt(lambda1 * lambda1 + lambda2 * lambda2);
-        
-        const beta = 0.5;
-        const c = 15;
-        
-        const v = Math.exp(-Rb * Rb / (2 * beta * beta)) * (1 - Math.exp(-S * S / (2 * c * c)));
-        vesselness[idx] = v * Math.abs(lambda2);
+      // High ratio indicates vessel-like structure
+      if (maxDiff > 30 && minDiff < maxDiff * 0.6) {
+        vesselMask[idx] = (maxDiff - minDiff) / 255;
+      }
+      
+      // Also detect dark linear structures (vessels appear dark on fundus)
+      const neighbors = [
+        greenChannel[idx - 1], greenChannel[idx + 1],
+        greenChannel[idx - width], greenChannel[idx + width],
+        greenChannel[idx - width - 1], greenChannel[idx - width + 1],
+        greenChannel[idx + width - 1], greenChannel[idx + width + 1],
+      ];
+      const avgNeighbor = neighbors.reduce((a, b) => a + b) / 8;
+      
+      if (center < avgNeighbor - 15) {
+        vesselMask[idx] = Math.max(vesselMask[idx], (avgNeighbor - center) / 100);
       }
     }
   }
   
-  // Normalize and apply threshold
+  // Normalize vessel mask
   let maxV = 0;
-  for (let i = 0; i < vesselness.length; i++) {
-    if (vesselness[i] > maxV) maxV = vesselness[i];
+  for (let i = 0; i < vesselMask.length; i++) {
+    if (vesselMask[i] > maxV) maxV = vesselMask[i];
   }
   
-  // Generate output image
+  // Generate output with highlighted vessels
   for (let i = 0; i < width * height; i++) {
     const px = i * 4;
-    const normalized = maxV > 0 ? vesselness[i] / maxV : 0;
-    const isVessel = normalized > 0.15;
+    const normalized = maxV > 0 ? vesselMask[i] / maxV : 0;
+    const isVessel = normalized > 0.2;
     
-    // Background: dark grayscale version of original
-    const gray = (data[px] * 0.3 + data[px + 1] * 0.59 + data[px + 2] * 0.11) * 0.4;
+    // Background: dark grayscale
+    const gray = (data[px] * 0.3 + data[px + 1] * 0.59 + data[px + 2] * 0.11) * 0.35;
     
     if (isVessel) {
-      // Vessel: bright green with intensity based on vesselness
-      const intensity = Math.min(1, normalized * 2);
-      output[px] = gray * (1 - intensity);
-      output[px + 1] = Math.round(100 + 155 * intensity);
-      output[px + 2] = gray * (1 - intensity);
+      // Vessels: bright green/cyan gradient based on intensity
+      const intensity = Math.min(1, normalized * 1.5);
+      output[px] = Math.round(30 * (1 - intensity)); // R
+      output[px + 1] = Math.round(180 + 75 * intensity); // G - bright green
+      output[px + 2] = Math.round(100 * intensity); // B - slight cyan tint
       output[px + 3] = 255;
     } else {
       output[px] = gray;
@@ -204,8 +194,8 @@ export function VisualizationView({ scan }: VisualizationViewProps) {
           const height = canvas.height;
 
           if (filterType === 'vessel') {
-            // Apply Frangi-like vessel segmentation
-            const vesselData = applyFrangiVesselFilter(imageData);
+            // Apply enhanced vessel segmentation
+            const vesselData = applyVesselSegmentation(imageData);
             ctx.putImageData(vesselData, 0, 0);
           } else if (filterType === 'optic') {
             // Optic disc detection - find brightest region (optic disc is typically bright)
