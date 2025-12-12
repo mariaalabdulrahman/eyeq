@@ -9,6 +9,7 @@ import { PatientReport } from "@/components/PatientReport";
 import { PatientStatistics } from "@/components/PatientStatistics";
 import { MedicalTagInput } from "@/components/MedicalTagInput";
 import { TifImage } from "@/components/TifImage";
+import { AgeBar } from "@/components/AgeBar";
 
 type RecordsViewMode = 'home' | 'doctor-report' | 'patient-report' | 'statistics';
 
@@ -582,8 +583,9 @@ const PatientRecords = () => {
                         <>
                           <h2 style={{ fontSize: '28px', fontWeight: 700, color: '#111' }}>{selectedPatient.name}</h2>
                           <p style={{ color: '#6b7280', marginTop: '4px' }}>
-                            Age: {selectedPatient.age || 'N/A'} | Gender: {selectedPatient.gender ? selectedPatient.gender.charAt(0).toUpperCase() + selectedPatient.gender.slice(1) : 'N/A'}
+                            Gender: {selectedPatient.gender ? selectedPatient.gender.charAt(0).toUpperCase() + selectedPatient.gender.slice(1) : 'N/A'}
                           </p>
+                          <AgeBar patient={selectedPatient} />
                           <p style={{ color: '#6b7280', marginTop: '2px' }}>
                             DOB: {new Date(selectedPatient.dateOfBirth).toLocaleDateString()} | 
                             Patient since: {selectedPatient.createdAt.toLocaleDateString()}

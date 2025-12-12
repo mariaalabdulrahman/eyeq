@@ -4,6 +4,7 @@ import { Download, Stethoscope, User, Camera, AlertTriangle, CheckCircle, Clock,
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { TifImage } from "./TifImage";
+import { calculateTrueAge } from "./AgeBar";
 
 interface PatientReportProps {
   patient: Patient | null;
@@ -154,7 +155,7 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text(`Patient: ${patient.name}`, 20, 55);
-    doc.text(`Age: ${patient.age || 'N/A'} | Gender: ${patient.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : 'N/A'}`, 20, 62);
+    doc.text(`Actual Age: ${patient.age || 'N/A'} | True Age: ${calculateTrueAge(patient)} | Gender: ${patient.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : 'N/A'}`, 20, 62);
     doc.text(`DOB: ${new Date(patient.dateOfBirth).toLocaleDateString()}`, 20, 69);
     doc.text(`Total Scans: ${patient.scans.length}`, 20, 76);
     doc.text(`Risk Level: ${risk.level}`, 20, 83);
@@ -231,7 +232,7 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
                 <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#111' }}>Clinical Report</h2>
               </div>
               <p style={{ color: '#6b7280' }}>
-                Patient: {patient.name} | Age: {patient.age || 'N/A'} | Gender: {patient.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : 'N/A'}
+                Patient: {patient.name} | Actual Age: {patient.age || 'N/A'} | True Age: {calculateTrueAge(patient)} | Gender: {patient.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : 'N/A'}
               </p>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -627,6 +628,9 @@ export function PatientReport({ patient, reportType, isEditMode, onRequestEdit }
               <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#111' }}>Your Eye Health Summary</h2>
             </div>
             <p style={{ color: '#6b7280' }}>Hello, {patient.name.split(' ')[0]}! Here's an easy-to-understand overview of your eye health.</p>
+            <p style={{ color: '#6b7280', marginTop: '4px', fontSize: '14px' }}>
+              Actual Age: {patient.age || 'N/A'} | True Age (based on scan analysis): {calculateTrueAge(patient)}
+            </p>
           </div>
           <button
             onClick={downloadPDF}
