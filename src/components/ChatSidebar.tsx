@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChatMessage, ScanAnalysis } from "@/types/scan";
-import { Maximize2, Minimize2, X } from "lucide-react";
+import { Maximize2, Minimize2, X, ChevronDown, Check } from "lucide-react";
+import Logo from "@/components/Logo";
 
 interface ChatSidebarProps {
   scans: ScanAnalysis[];
@@ -13,7 +14,9 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
   const [selectedScans, setSelectedScans] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -22,6 +25,17 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
   useEffect(() => {
     scrollToBottom();
   }, [chatHistory]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +52,146 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
         : [...prev, scanId]
     );
   };
+
+  const selectAllScans = () => {
+    setSelectedScans(scans.map(s => s.id));
+  };
+
+  const clearSelection = () => {
+    setSelectedScans([]);
+  };
+
+  // Dropdown component for image selection
+  const ImageDropdown = ({ compact = false }: { compact?: boolean }) => (
+    <div ref={dropdownRef} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setDropdownOpen(!dropdownOpen)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '8px',
+          padding: compact ? '8px 12px' : '10px 14px',
+          borderRadius: '8px',
+          border: '1px solid #e5e7eb',
+          backgroundColor: 'white',
+          cursor: 'pointer',
+          fontSize: compact ? '13px' : '14px',
+          color: '#374151',
+          minWidth: compact ? '180px' : '220px',
+          width: '100%',
+        }}
+      >
+        <span>
+          {selectedScans.length === 0 
+            ? 'Select images...' 
+            : selectedScans.length === scans.length 
+              ? 'All images selected' 
+              : `${selectedScans.length} image(s) selected`}
+        </span>
+        <ChevronDown size={16} style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+      </button>
+
+      {dropdownOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          right: 0,
+          marginTop: '4px',
+          backgroundColor: 'white',
+          border: '1px solid #e5e7eb',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          zIndex: 50,
+          maxHeight: '250px',
+          overflowY: 'auto',
+        }}>
+          {/* Select All / Clear */}
+          <div style={{ display: 'flex', gap: '8px', padding: '8px 12px', borderBottom: '1px solid #e5e7eb' }}>
+            <button
+              type="button"
+              onClick={selectAllScans}
+              style={{
+                flex: 1,
+                padding: '6px 10px',
+                borderRadius: '6px',
+                border: '1px solid #0891b2',
+                backgroundColor: '#ecfeff',
+                color: '#0891b2',
+                fontSize: '12px',
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              Select All
+            </button>
+            <button
+              type="button"
+              onClick={clearSelection}
+              style={{
+                flex: 1,
+                padding: '6px 10px',
+                borderRadius: '6px',
+                border: '1px solid #e5e7eb',
+                backgroundColor: 'white',
+                color: '#6b7280',
+                fontSize: '12px',
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              Clear
+            </button>
+          </div>
+
+          {/* Image list */}
+          {scans.map((scan) => (
+            <button
+              key={scan.id}
+              type="button"
+              onClick={() => toggleScanSelection(scan.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                width: '100%',
+                padding: '10px 12px',
+                border: 'none',
+                backgroundColor: selectedScans.includes(scan.id) ? '#ecfeff' : 'white',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              <div style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '4px',
+                border: selectedScans.includes(scan.id) ? '2px solid #0891b2' : '2px solid #d1d5db',
+                backgroundColor: selectedScans.includes(scan.id) ? '#0891b2' : 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                {selectedScans.includes(scan.id) && <Check size={12} color="white" />}
+              </div>
+              <span style={{ fontSize: '13px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {scan.name}
+              </span>
+            </button>
+          ))}
+
+          {scans.length === 0 && (
+            <div style={{ padding: '16px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' }}>
+              No images available
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 
   // Fullscreen modal
   if (isFullscreen) {
@@ -63,8 +217,8 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
         }}>
           {/* Header */}
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '24px' }}>🤖</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Logo size={32} />
               <h3 style={{ fontWeight: 600, color: '#111', fontSize: '18px' }}>AI Assistant</h3>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -101,32 +255,13 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
             </div>
           </div>
 
-          {/* Image Selection */}
+          {/* Image Selection Dropdown */}
           {scans.length > 0 && (
             <div style={{ padding: '12px 20px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
               <p style={{ fontSize: '12px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>
                 Select Images for Context
               </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {scans.map((scan) => (
-                  <button
-                    key={scan.id}
-                    onClick={() => toggleScanSelection(scan.id)}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '16px',
-                      border: selectedScans.includes(scan.id) ? '2px solid #0891b2' : '1px solid #e5e7eb',
-                      backgroundColor: selectedScans.includes(scan.id) ? '#ecfeff' : 'white',
-                      color: selectedScans.includes(scan.id) ? '#0891b2' : '#374151',
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {selectedScans.includes(scan.id) && '✓ '}
-                    {scan.name}
-                  </button>
-                ))}
-              </div>
+              <ImageDropdown />
             </div>
           )}
 
@@ -154,10 +289,9 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
                     justifyContent: 'center',
                     backgroundColor: message.role === 'user' ? '#0891b2' : '#f3f4f6',
                     flexShrink: 0,
-                    fontSize: '18px',
                   }}
                 >
-                  {message.role === 'user' ? '👤' : '🤖'}
+                  {message.role === 'user' ? '👤' : <Logo size={24} />}
                 </div>
                 <div
                   style={{
@@ -231,8 +365,8 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
       <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '20px' }}>🤖</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Logo size={28} />
           <div>
             <h3 style={{ fontWeight: 600, color: '#111', fontSize: '14px' }}>AI Assistant</h3>
             <p style={{ fontSize: '11px', color: '#6b7280' }}>
@@ -258,35 +392,13 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
         </button>
       </div>
 
-      {/* Image Selection */}
+      {/* Image Selection Dropdown */}
       {scans.length > 0 && (
         <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
           <p style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>
             Select Images for Context
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {scans.map((scan) => (
-              <button
-                key={scan.id}
-                onClick={() => toggleScanSelection(scan.id)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '16px',
-                  border: selectedScans.includes(scan.id) ? '2px solid #0891b2' : '1px solid #e5e7eb',
-                  backgroundColor: selectedScans.includes(scan.id) ? '#ecfeff' : 'white',
-                  color: selectedScans.includes(scan.id) ? '#0891b2' : '#374151',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                {selectedScans.includes(scan.id) && '✓ '}
-                {scan.name.slice(0, 15)}{scan.name.length > 15 ? '...' : ''}
-              </button>
-            ))}
-          </div>
+          <ImageDropdown compact />
         </div>
       )}
 
@@ -314,7 +426,7 @@ export function ChatSidebar({ scans, chatHistory, onSendMessage }: ChatSidebarPr
                 flexShrink: 0,
               }}
             >
-              {message.role === 'user' ? '👤' : '🤖'}
+              {message.role === 'user' ? '👤' : <Logo size={20} />}
             </div>
             <div
               style={{
